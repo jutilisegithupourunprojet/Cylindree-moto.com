@@ -280,6 +280,31 @@ p{margin:0 0 1rem}
 .champ select,.champ input{padding:.5rem .6rem;border:1px solid var(--trait-fort);
   border-radius:5px;background:var(--fond);color:var(--texte);font-size:.92rem;
   font-family:inherit;width:100%}
+/* Menu deroulant maison : remplace les <select> a tres nombreuses options
+   (ecole, categorie, marque) dont l'ouverture native peut se faire vers le
+   haut faute de place sous le champ. La liste est positionnee explicitement
+   sous le bouton, donc s'ouvre toujours vers le bas. Le <select> reel est
+   conserve (masque) comme source de valeur pour le script de filtrage. */
+.menu-deroulant{position:relative}
+.md-select-reel{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.md-bouton{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  width:100%;padding:.5rem .6rem;border:1px solid var(--trait-fort);border-radius:5px;
+  background:var(--fond);color:var(--texte);font-size:.92rem;font-family:inherit;
+  text-align:left;cursor:pointer}
+.md-bouton:hover{border-color:var(--accent)}
+.menu-deroulant.ouvert .md-bouton{border-color:var(--accent)}
+.md-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.md-fleche{width:14px;height:14px;flex:none;color:var(--pale);transition:transform .12s}
+.menu-deroulant.ouvert .md-fleche{transform:rotate(180deg);color:var(--accent)}
+.md-liste{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;
+  margin:0;padding:.3rem;list-style:none;max-height:280px;overflow-y:auto;
+  background:var(--carte);border:1px solid var(--trait-fort);border-radius:7px;
+  box-shadow:var(--ombre)}
+.md-liste[hidden]{display:none}
+.md-liste li{padding:.45rem .6rem;border-radius:4px;font-size:.92rem;cursor:pointer;
+  color:var(--texte)}
+.md-liste li.md-surlignee{background:var(--creux)}
+.md-liste li[aria-selected="true"]{color:var(--accent);font-weight:650}
 .compteur{font-size:.9rem;color:var(--doux);margin-bottom:1rem}
 .vide{padding:2.5rem 1rem;text-align:center;color:var(--doux);background:var(--carte);
   border:1px dashed var(--trait-fort);border-radius:8px}
@@ -1264,21 +1289,46 @@ nos sources, pas qu'elle vaut zéro.</p></div>
     enregistrer(d["url"], "0.7")
 
 
+def menu_perso(id_sel, vals, tout, libelle):
+    """Menu deroulant custom : bouton + liste toujours ouverte vers le bas.
+
+    Le <select> reel est conserve, masque, comme source de valeur : le script
+    de filtrage (filtrer()) n'a besoin d'aucune modification, il continue de
+    lire E.<champ>.value et d'ecouter l'evenement 'change'.
+    """
+    opts_select = ('<option value="">%s</option>' % e(tout)
+                  + "".join('<option value="%s">%s</option>' % (e(v), e(v)) for v in vals))
+    opts_liste = ('<li role="option" data-valeur="" aria-selected="true">%s</li>' % e(tout)
+                 + "".join('<li role="option" data-valeur="%s">%s</li>' % (e(v), e(v))
+                           for v in vals))
+    return """<div class="champ">
+<label id="%(id)s-label">%(lib)s</label>
+<div class="menu-deroulant" data-cible="%(id)s">
+  <button type="button" class="md-bouton" id="%(id)s-btn" aria-haspopup="listbox"
+    aria-expanded="false" aria-labelledby="%(id)s-label %(id)s-btn">
+    <span class="md-val">%(tout)s</span>
+    <svg class="md-fleche" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6"
+        stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <ul class="md-liste" role="listbox" id="%(id)s-liste" hidden>%(opts_liste)s</ul>
+  <select id="%(id)s" class="md-select-reel" tabindex="-1" aria-hidden="true">%(opts_select)s</select>
+</div></div>""" % {"id": id_sel, "lib": e(libelle), "tout": e(tout),
+                   "opts_liste": opts_liste, "opts_select": opts_select}
+
+
 def page_comparateur():
     ecoles = sorted({m["ecole"] for m in pub if m["ecole"]})
     cats = sorted({m["categorie"] for m in pub if m["categorie"]})
     marques = sorted({m["marque"] for m in pub})
 
-    def opts(vals, tout):
-        return ('<option value="">%s</option>' % tout
-                + "".join('<option value="%s">%s</option>' % (e(v), e(v)) for v in vals))
-
     filtres = """<div class="filtres">
 <div class="champ"><label for="f-q">Recherche</label>
   <input id="f-q" type="search" placeholder="MT-07, Africa Twin…" autocomplete="off"></div>
-<div class="champ"><label for="f-ecole">École</label><select id="f-ecole">%s</select></div>
-<div class="champ"><label for="f-cat">Catégorie</label><select id="f-cat">%s</select></div>
-<div class="champ"><label for="f-marque">Marque</label><select id="f-marque">%s</select></div>
+%(md_ecole)s
+%(md_cat)s
+%(md_marque)s
 <div class="champ"><label for="f-a2">Permis A2</label><select id="f-a2">
   <option value="">Indifférent</option><option value="oui">Compatible A2</option></select></div>
 <div class="champ"><label for="f-cyl">Cylindrée maximale</label><select id="f-cyl">
@@ -1292,7 +1342,9 @@ def page_comparateur():
   <option value="pr">Pertinence</option><option value="p">Puissance</option>
   <option value="kg">Poids</option><option value="cy">Cylindrée</option>
   <option value="s">Hauteur de selle</option></select></div>
-</div>""" % (opts(ecoles, "Toutes"), opts(cats, "Toutes"), opts(marques, "Toutes"))
+</div>""" % {"md_ecole": menu_perso("f-ecole", ecoles, "Toutes", "École"),
+             "md_cat": menu_perso("f-cat", cats, "Toutes", "Catégorie"),
+             "md_marque": menu_perso("f-marque", marques, "Toutes", "Marque")}
 
     corps = """<div class="conteneur section">
 <h1>Comparateur de motos</h1>
@@ -1327,6 +1379,74 @@ et compatibilité permis A2. Le filtrage est instantané et ne demande aucun com
 
 JS = r"""
 (function(){
+  // Menu deroulant maison pour ecole / categorie / marque : la liste est
+  // toujours positionnee sous le bouton (voir CSS .md-liste), donc s'ouvre
+  // toujours vers le bas, contrairement au <select> natif dont le sens
+  // d'ouverture depend de la place disponible a l'ecran.
+  document.querySelectorAll('.menu-deroulant').forEach(function(menu){
+    var bouton=menu.querySelector('.md-bouton'),
+        liste=menu.querySelector('.md-liste'),
+        val=menu.querySelector('.md-val'),
+        reel=menu.querySelector('.md-select-reel'),
+        options=Array.prototype.slice.call(liste.querySelectorAll('li')),
+        surlignee=-1;
+
+    function fermer(rendreFocus){
+      menu.classList.remove('ouvert');
+      liste.hidden=true;
+      bouton.setAttribute('aria-expanded','false');
+      if(rendreFocus) bouton.focus();
+    }
+    function ouvrir(){
+      menu.classList.add('ouvert');
+      liste.hidden=false;
+      bouton.setAttribute('aria-expanded','true');
+      var i=options.findIndex(function(o){return o.getAttribute('aria-selected')==='true';});
+      surligner(i<0?0:i);
+    }
+    function surligner(i){
+      if(surlignee>=0) options[surlignee].classList.remove('md-surlignee');
+      surlignee=Math.max(0,Math.min(options.length-1,i));
+      options[surlignee].classList.add('md-surlignee');
+      options[surlignee].scrollIntoView({block:'nearest'});
+    }
+    function choisir(opt){
+      options.forEach(function(o){o.setAttribute('aria-selected',o===opt?'true':'false');});
+      val.textContent=opt.textContent;
+      reel.value=opt.getAttribute('data-valeur');
+      reel.dispatchEvent(new Event('change',{bubbles:true}));
+      fermer(false);
+    }
+
+    bouton.addEventListener('click',function(){
+      menu.classList.contains('ouvert')?fermer(false):ouvrir();
+    });
+    options.forEach(function(o){
+      o.addEventListener('click',function(){choisir(o);});
+      o.addEventListener('mouseenter',function(){surligner(options.indexOf(o));});
+    });
+    bouton.addEventListener('keydown',function(ev){
+      if(ev.key==='ArrowDown'||ev.key==='Enter'||ev.key===' '){
+        ev.preventDefault();
+        menu.classList.contains('ouvert')?surligner(surlignee+1):ouvrir();
+      }else if(ev.key==='ArrowUp'){
+        ev.preventDefault();
+        if(!menu.classList.contains('ouvert')) ouvrir(); else surligner(surlignee-1);
+      }
+    });
+    liste.addEventListener('keydown',function(ev){
+      if(ev.key==='ArrowDown'){ev.preventDefault();surligner(surlignee+1);}
+      else if(ev.key==='ArrowUp'){ev.preventDefault();surligner(surlignee-1);}
+      else if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();choisir(options[surlignee]);}
+      else if(ev.key==='Escape'){ev.preventDefault();fermer(true);}
+      else if(ev.key==='Home'){ev.preventDefault();surligner(0);}
+      else if(ev.key==='End'){ev.preventDefault();surligner(options.length-1);}
+    });
+    document.addEventListener('click',function(ev){
+      if(!menu.contains(ev.target)) fermer(false);
+    });
+  });
+
   var D=[],res=document.getElementById('resultats'),cpt=document.getElementById('compteur'),
       vide=document.getElementById('vide');
   var F={q:'f-q',ecole:'f-ecole',cat:'f-cat',marque:'f-marque',a2:'f-a2',
