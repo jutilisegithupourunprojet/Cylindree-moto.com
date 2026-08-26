@@ -225,13 +225,12 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 
 .entete{background:var(--carte);border-bottom:1px solid var(--trait);
   position:sticky;top:0;z-index:20}
-.entete::after{content:"";display:block;height:3px;
-  background-image:repeating-linear-gradient(115deg,
-    var(--accent) 0 10px, transparent 10px 20px);opacity:.7}
-.barre{display:flex;align-items:center;gap:1.5rem;min-height:60px;flex-wrap:wrap}
+.barre{display:flex;align-items:center;gap:1.5rem clamp(1.2rem,4vw,3.2rem);
+  min-height:60px;flex-wrap:wrap}
 .logo{font-family:var(--police-titre);font-weight:600;font-size:1.4rem;
-  letter-spacing:.02em;text-transform:uppercase;text-decoration:none}
-.nav-principale{margin-left:auto;display:flex;gap:1.25rem;flex-wrap:wrap}
+  letter-spacing:.02em;text-transform:uppercase;text-decoration:none;flex:none}
+.nav-principale{flex:1 1 auto;display:flex;justify-content:space-evenly;
+  flex-wrap:wrap;gap:.5rem 1.25rem}
 .nav-principale a{text-decoration:none;color:var(--doux);font-size:.94rem;font-weight:500}
 .nav-principale a:hover{color:var(--accent)}
 
@@ -368,11 +367,6 @@ p{margin:0 0 1rem}
 /* --- identité nationale et bandeaux --- */
 .bandes{display:flex;height:5px;width:100%}
 .bandes i{flex:1}
-
-/* --- filet cranté : une reference directe au pneu, utilisee en accroche
-   de bandeau et en separateur de section. Discret, jamais decoratif seul. */
-.cran{height:6px;background-image:repeating-linear-gradient(115deg,
-  var(--accent) 0 3px, transparent 3px 11px);opacity:.55}
 
 .hero-nation,.hero-cat{position:relative;overflow:hidden;isolation:isolate;
   background:#15100a;color:#f3efe7;margin-bottom:2rem}
@@ -1352,24 +1346,34 @@ nos sources, pas qu'elle vaut zéro.</p></div>
     enregistrer(d["url"], "0.7")
 
 
-def menu_perso(id_sel, vals, tout, libelle):
+def menu_perso(id_sel, options, libelle, valeur_defaut=""):
     """Menu deroulant custom : bouton + liste toujours ouverte vers le bas.
+
+    'options' est une liste de tuples (valeur, libelle_affiche), y compris
+    l'entree par defaut ("", "Toutes"...) quand il y en a une. 'valeur_defaut'
+    indique laquelle est presenting au chargement (une chaine vide pour la
+    plupart des filtres, mais par exemple "pr" pour le tri par pertinence,
+    qui n'a pas de case vide).
 
     Le <select> reel est conserve, masque, comme source de valeur : le script
     de filtrage (filtrer()) n'a besoin d'aucune modification, il continue de
     lire E.<champ>.value et d'ecouter l'evenement 'change'.
     """
-    opts_select = ('<option value="">%s</option>' % e(tout)
-                  + "".join('<option value="%s">%s</option>' % (e(v), e(v)) for v in vals))
-    opts_liste = ('<li role="option" data-valeur="" aria-selected="true">%s</li>' % e(tout)
-                 + "".join('<li role="option" data-valeur="%s">%s</li>' % (e(v), e(v))
-                           for v in vals))
+    label_defaut = next((l for v, l in options if v == valeur_defaut), options[0][1])
+    opts_select = "".join(
+        '<option value="%s"%s>%s</option>'
+        % (e(v), " selected" if v == valeur_defaut else "", e(l))
+        for v, l in options)
+    opts_liste = "".join(
+        '<li role="option" data-valeur="%s"%s>%s</li>'
+        % (e(v), ' aria-selected="true"' if v == valeur_defaut else "", e(l))
+        for v, l in options)
     return """<div class="champ">
 <label id="%(id)s-label">%(lib)s</label>
 <div class="menu-deroulant" data-cible="%(id)s">
   <button type="button" class="md-bouton" id="%(id)s-btn" aria-haspopup="listbox"
     aria-expanded="false" aria-labelledby="%(id)s-label %(id)s-btn">
-    <span class="md-val">%(tout)s</span>
+    <span class="md-val">%(defaut)s</span>
     <svg class="md-fleche" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
       <path d="M5 7l5 6 5-6" fill="none" stroke="currentColor" stroke-width="1.6"
         stroke-linecap="round" stroke-linejoin="round"/>
@@ -1377,7 +1381,7 @@ def menu_perso(id_sel, vals, tout, libelle):
   </button>
   <ul class="md-liste" role="listbox" id="%(id)s-liste" hidden>%(opts_liste)s</ul>
   <select id="%(id)s" class="md-select-reel" tabindex="-1" aria-hidden="true">%(opts_select)s</select>
-</div></div>""" % {"id": id_sel, "lib": e(libelle), "tout": e(tout),
+</div></div>""" % {"id": id_sel, "lib": e(libelle), "defaut": e(label_defaut),
                    "opts_liste": opts_liste, "opts_select": opts_select}
 
 
@@ -1392,22 +1396,26 @@ def page_comparateur():
 %(md_ecole)s
 %(md_cat)s
 %(md_marque)s
-<div class="champ"><label for="f-a2">Permis A2</label><select id="f-a2">
-  <option value="">Indifférent</option><option value="oui">Compatible A2</option></select></div>
-<div class="champ"><label for="f-cyl">Cylindrée maximale</label><select id="f-cyl">
-  <option value="">Indifférente</option><option value="125">125 cm³</option>
-  <option value="400">400 cm³</option><option value="700">700 cm³</option>
-  <option value="1000">1000 cm³</option></select></div>
-<div class="champ"><label for="f-selle">Hauteur de selle max.</label><select id="f-selle">
-  <option value="">Indifférente</option><option value="780">780 mm</option>
-  <option value="810">810 mm</option><option value="840">840 mm</option></select></div>
-<div class="champ"><label for="f-tri">Trier par</label><select id="f-tri">
-  <option value="pr">Pertinence</option><option value="p">Puissance</option>
-  <option value="kg">Poids</option><option value="cy">Cylindrée</option>
-  <option value="s">Hauteur de selle</option></select></div>
-</div>""" % {"md_ecole": menu_perso("f-ecole", ecoles, "Toutes", "École"),
-             "md_cat": menu_perso("f-cat", cats, "Toutes", "Catégorie"),
-             "md_marque": menu_perso("f-marque", marques, "Toutes", "Marque")}
+%(md_a2)s
+%(md_cyl)s
+%(md_selle)s
+%(md_tri)s
+</div>""" % {
+        "md_ecole": menu_perso("f-ecole", [("", "Toutes")] + [(v, v) for v in ecoles], "École"),
+        "md_cat": menu_perso("f-cat", [("", "Toutes")] + [(v, v) for v in cats], "Catégorie"),
+        "md_marque": menu_perso("f-marque", [("", "Toutes")] + [(v, v) for v in marques], "Marque"),
+        "md_a2": menu_perso("f-a2", [("", "Indifférent"), ("oui", "Compatible A2")], "Permis A2"),
+        "md_cyl": menu_perso("f-cyl", [("", "Indifférente"), ("125", "125 cm³"),
+                                       ("400", "400 cm³"), ("700", "700 cm³"),
+                                       ("1000", "1000 cm³")], "Cylindrée maximale"),
+        "md_selle": menu_perso("f-selle", [("", "Indifférente"), ("780", "780 mm"),
+                                           ("810", "810 mm"), ("840", "840 mm")],
+                               "Hauteur de selle max."),
+        "md_tri": menu_perso("f-tri", [("pr", "Pertinence"), ("p", "Puissance"),
+                                       ("kg", "Poids"), ("cy", "Cylindrée"),
+                                       ("s", "Hauteur de selle")],
+                             "Trier par", valeur_defaut="pr"),
+    }
 
     corps = """<div class="conteneur section">
 <h1>Comparateur de motos</h1>
