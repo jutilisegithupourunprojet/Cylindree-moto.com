@@ -30,8 +30,8 @@ que des casques nettement moins chers. Plusieurs des mieux notés coûtaient moi
 de 200 €.</p></div>
 
 <p>Ce que le prix achète réellement : le confort, la légèreté, l'insonorisation,
-la qualité de l'écran, la ventilation, la finition. Ce sont de vrais arguments —
-un casque confortable est un casque que vous portez correctement — mais ce ne
+la qualité de l'écran, la ventilation, la finition. Ce sont de vrais arguments.
+Un casque confortable est un casque que vous portez correctement, mais ce ne
 sont pas des arguments de sécurité.</p>
 
 <p>Conséquence pratique : <strong>un budget de 150 à 300 € suffit pour un casque
@@ -77,7 +77,7 @@ rangé à bord.</li>
 
 <p>Le modulable a un atout que l'intégral n'a pas : la <strong>double
 homologation P/J</strong>, qui l'autorise mentonnière fermée (P) comme relevée
-(J). C'est ce qui rend le quotidien plus simple — ouvrir à la station-service,
+(J). C'est ce qui rend le quotidien plus simple, ouvrir à la station-service,
 respirer dans les embouteillages, parler à quelqu'un sans se déséquiper.</p>
 
 <div class="encart"><p class="encart-titre">Le chiffre à connaître sur les modulables</p>
@@ -170,15 +170,15 @@ encaissé un choc.</p>"""},
  ],
 
  "sources": [
-  ("UFC-Que Choisir — casques moto et scooter : les plus chers ne sont pas les plus sûrs",
+  ("UFC-Que Choisir, casques moto et scooter : les plus chers ne sont pas les plus sûrs",
    "https://www.quechoisir.org/actualite-casques-moto-et-scooter-les-plus-chers-ne-sont-pas-les-plus-surs-n65299/"),
-  ("Le Repaire des Motards — comment bien choisir son casque moto",
+  ("Le Repaire des Motards, comment bien choisir son casque moto",
    "https://www.lerepairedesmotards.com/dossiers/casques.php"),
-  ("Motoblouz — casques modulables : avantages et inconvénients",
+  ("Motoblouz, casques modulables : avantages et inconvénients",
    "https://www.motoblouz.com/enjoytheride/conseils-equipement/23332-casques-modulables-les-avantages-et-les-inconvenients-2023-06-26"),
-  ("France Moto Quad — norme ECE 22.06, homologation et choix en 2026",
+  ("France Moto Quad, norme ECE 22.06, homologation et choix en 2026",
    "https://france-moto-quad.fr/blog/casque-moto-homologation-ece-22-06/"),
-  ("Dafy Moto — guide des tailles de casque",
+  ("Dafy Moto, guide des tailles de casque",
    "https://www.dafy-moto.com/comment-choisir-la-taille-de-son-casque-moto.html"),
  ],
 },
@@ -191,7 +191,7 @@ encaissé un choc.</p>"""},
  "desc": ("Casque, blouson, gants, pantalon, bottes, airbag : ce qui est "
           "obligatoire, ce qui est recommandé, et le budget réel poste par poste."),
  "chapo": ("Deux équipements seulement sont obligatoires à moto en France. Le "
-           "reste relève de votre jugement — et c'est précisément là que se "
+           "reste relève de votre jugement, et c'est précisément là que se "
            "joue la différence entre une chute sans conséquence et plusieurs "
            "semaines d'arrêt. Voici ce que chaque poste coûte réellement."),
  "sections": [
@@ -217,7 +217,7 @@ routière, et ce sont eux qui font la différence en cas de glissade.</p></div>"
   {"h2": "Comprendre les normes en trente secondes",
    "html": """<p>Deux sigles à retenir sur les étiquettes.</p>
 
-<h3>EN 17092 — les vêtements</h3>
+<h3>EN 17092. Les vêtements</h3>
 <p>Cette norme classe blousons et pantalons selon leur résistance à l'abrasion
 et aux chocs :</p>
 <div class="tableau-large"><table class="specs">
@@ -231,7 +231,7 @@ quotidiens. <strong>Le bon niveau pour la plupart des motards.</strong></td></tr
 protections contre les chocs.</td></tr>
 </tbody></table></div>
 
-<h3>EN 1621 — les protections</h3>
+<h3>EN 1621. Les protections</h3>
 <p>Elle concerne les coques d'épaules, coudes, genoux et la dorsale
 (EN 1621-2). Un blouson peut être vendu avec des emplacements vides : vérifiez
 que les protections sont bien incluses, sinon ajoutez-les au budget.</p>"""},
@@ -302,7 +302,7 @@ quelques dixièmes de seconde à l'abrasion.</li>
 <li><strong>5. Le gilet airbag</strong>, quand le budget le permet.</li>
 </ul>
 <p>Rappel qui vaut pour tous les postes : l'équipement d'occasion est
-déconseillé pour tout ce qui absorbe un choc — casque, dorsale, protections.
+déconseillé pour tout ce qui absorbe un choc, casque, dorsale, protections.
 Vous ne pouvez pas savoir ce qu'ils ont déjà encaissé.</p>"""},
  ],
 
@@ -326,17 +326,17 @@ Vous ne pouvez pas savoir ce qu'ils ont déjà encaissé.</p>"""},
  ],
 
  "sources": [
-  ("Le Repaire des Motards — équipement du pilote : les normes européennes",
+  ("Le Repaire des Motards, équipement du pilote : les normes européennes",
    "https://www.lerepairedesmotards.com/dossiers/equipement-protection-moto-norme-europeenne.php"),
-  ("ESR Formations — équipement obligatoire permis moto 2026",
+  ("ESR Formations, équipement obligatoire permis moto 2026",
    "https://www.esrformations.fr/equipement-obligatoire-permis-moto/"),
-  ("Boutique Biker — guide de l'équipement moto 2026",
+  ("Boutique Biker, guide de l'équipement moto 2026",
    "https://www.boutique-biker.com/blogs/blog-moto/le-guide-ultime-de-lequipement-moto-2026"),
-  ("3AS Racing — budget moto débutant, le vrai coût tout compris",
+  ("3AS Racing, budget moto débutant, le vrai coût tout compris",
    "https://blog.3as-racing.com/budget-moto-debutant-vrai-cout-tout-compris-2026/"),
-  ("Belles Machines — comparatif des gilets airbag moto 2026",
+  ("Belles Machines, comparatif des gilets airbag moto 2026",
    "https://bellesmachines.com/test-airbag-moto/"),
-  ("Moto Scoot Services — gilets airbag sans abonnement",
+  ("Moto Scoot Services, gilets airbag sans abonnement",
    "https://moto-scoot-services.fr/meilleur-gilet-airbag-sans-abonnement"),
  ],
 },
@@ -356,7 +356,7 @@ Vous ne pouvez pas savoir ce qu'ils ont déjà encaissé.</p>"""},
 
   {"h2": "Ce que ça coûte réellement",
    "html": """<div class="tableau-large"><table class="specs">
-<caption>Tarifs annuels constatés — 2026</caption>
+<caption>Tarifs annuels constatés, 2026</caption>
 <tbody>
 <tr><th scope="row">Au tiers (minimum légal)</th><td>≈ 455 €</td></tr>
 <tr><th scope="row">Intermédiaire (vol et incendie)</th><td>≈ 648 €</td></tr>
@@ -371,7 +371,7 @@ Vous ne pouvez pas savoir ce qu'ils ont déjà encaissé.</p>"""},
 <div class="encart"><p class="encart-titre">La surprime jeune conducteur</p>
 <p>Elle s'applique par paliers dégressifs : <strong>100 % la première année,
 50 % la deuxième, 25 % la troisième</strong>, puis disparaît. Votre première
-année coûte donc le double du tarif de référence — un point à intégrer au budget
+année coûte donc le double du tarif de référence, un point à intégrer au budget
 avant l'achat, pas après.</p></div>"""},
 
   {"h2": "Les leviers qui marchent, et de combien",
@@ -403,7 +403,7 @@ de 300 € d'écart moyen. Faites-la avant chaque échéance annuelle, pas seule
 réduction</strong>. Après treize ans sans sinistre, vous atteignez le bonus
 maximal de 50 % : votre prime est quasiment divisée par deux. C'est
 l'argument le plus fort en faveur d'une conduite prudente les premières
-années — au-delà de la sécurité elle-même.</p>"""},
+années, au-delà de la sécurité elle-même.</p>"""},
 
   {"h2": "Le choix du modèle pèse lourd",
    "html": """<p>C'est le point que les guides d'achat oublient presque toujours.
@@ -418,18 +418,18 @@ puissance équivalente, précisément pour ces raisons.</p>
 
 <div class="encart"><p class="encart-titre">Le réflexe à prendre</p>
 <p>Demandez <strong>trois devis d'assurance avant de signer le bon de
-commande</strong>. Un écart de 300 €/an sur trois ans représente 900 € — soit
+commande</strong>. Un écart de 300 €/an sur trois ans représente 900 €, soit
 davantage que la différence de prix entre deux modèles que vous hésitez à
 départager.</p></div>"""},
 
   {"h2": "Quelle formule choisir",
    "html": """<ul class="tick">
-<li><strong>Au tiers</strong> — pertinent pour une moto d'occasion de faible
+<li><strong>Au tiers</strong>, pertinent pour une moto d'occasion de faible
 valeur, typiquement en dessous de 3 000 €. En cas de destruction, vous perdez
 la machine, mais la prime reste basse.</li>
-<li><strong>Intermédiaire</strong> — le bon compromis dès que le vol devient un
+<li><strong>Intermédiaire</strong>, le bon compromis dès que le vol devient un
 vrai risque : stationnement en extérieur, zone urbaine, modèle recherché.</li>
-<li><strong>Tous risques</strong> — cohérent sur une moto neuve ou récente, et
+<li><strong>Tous risques</strong>, cohérent sur une moto neuve ou récente, et
 souvent exigé en cas de financement à crédit.</li>
 </ul>
 <p>Attention à un piège classique : une formule tous risques avec une franchise
@@ -458,15 +458,15 @@ formule.</p>"""},
  ],
 
  "sources": [
-  ("Jeune Motard — prix de l'assurance moto A2 en 2026",
+  ("Jeune Motard, prix de l'assurance moto A2 en 2026",
    "https://jeunemotard.fr/assurance-articles/prix-assurance-moto-a2/"),
-  ("Actual Assurance — assurance moto 2026 : prix, garanties et comment payer moins cher",
+  ("Actual Assurance, assurance moto 2026 : prix, garanties et comment payer moins cher",
    "https://actualassurance.fr/blog/assurance-moto-2026-prix-garanties-et-comment-payer-moins-cher"),
-  ("Leocare — prix de l'assurance moto 2026",
+  ("Leocare, prix de l'assurance moto 2026",
    "https://leocare.eu/fr/assurance-moto-scooter-en-ligne/prix/"),
-  ("Tout pour la Moto — assurance moto moins chère en 2026, méthodes concrètes",
+  ("Tout pour la Moto, assurance moto moins chère en 2026, méthodes concrètes",
    "https://www.toutpourlamoto.fr/assurance-moto-moins-chere-2026-2"),
-  ("LeLynx — assurance moto jeune conducteur : prix et garanties",
+  ("LeLynx, assurance moto jeune conducteur : prix et garanties",
    "https://www.lelynx.fr/assurance-moto/jeune-conducteur/"),
  ],
 },

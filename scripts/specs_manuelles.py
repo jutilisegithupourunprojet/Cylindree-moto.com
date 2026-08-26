@@ -54,7 +54,7 @@ MODELES = [
   "reservoir_l": 14, "prix_lancement_eur": 9699,
   "cadre": "Tubulaire en acier, sous-cadre en tubes d'acier",
   "freins": "2 disques flottants 310 mm, ABS / disque 240 mm, ABS",
-  "pneus": "Dunlop Roadsport 2 — 120/70 ZR17 / 180/55 ZR17",
+  "pneus": "Dunlop Roadsport 2, 120/70 ZR17 / 180/55 ZR17",
   "a2": "version A2 disponible",
   "source": "https://www.lerepairedesmotards.com/technique/fiches/tech-suzuki-gsx-8r.php"},
 
@@ -114,7 +114,7 @@ MODELES = [
   "cadre": "Double poutre en aluminium, sous-cadre démontable",
   "freins": "2 disques 320 mm, étriers Brembo radiaux 4 pistons, ABS en courbe / "
             "disque 220 mm, étrier Brembo 2 pistons",
-  "pneus": "Pirelli Diablo Rosso Corsa II — 120/70 ZR17 / 180/55 ZR17",
+  "pneus": "Pirelli Diablo Rosso Corsa II, 120/70 ZR17 / 180/55 ZR17",
   "a2": "version A2 disponible",
   "source": "https://www.lerepairedesmotards.com/technique/fiches/tech-aprilia-tuono-660.php"},
 
@@ -128,7 +128,7 @@ MODELES = [
   "cadre": "Treillis en acier",
   "suspension": "WP APEX, débattement 150 mm avant et arrière",
   "freins": "Disque 320 mm, étrier ByBre, ABS en courbe / disque 230 mm",
-  "pneus": "Pirelli Scorpion Rally STR — 110/70 R17 / 150/60 R17",
+  "pneus": "Pirelli Scorpion Rally STR, 110/70 R17 / 150/60 R17",
   "a2": "compatible A2 sans bridage",
   "source": "https://www.lerepairedesmotards.com/technique/fiches/tech-husqvarna-svartpilen-401.php"},
 
@@ -181,7 +181,7 @@ MODELES = [
   "transmission": "Boîte 6 rapports, embrayage multidisque à bain d'huile "
                   "avec fonction anti-dribble, chaîne",
   "freins": "2 disques 300 mm, étriers 2 pistons / disque 220 mm",
-  "pneus": "Dunlop Sportmax Roadsport 2 — 120/70 R17 / 160/60 R17",
+  "pneus": "Dunlop Sportmax Roadsport 2, 120/70 R17 / 160/60 R17",
   "a2": "version A2 disponible",
   "source": "https://www.lerepairedesmotards.com/technique/fiches/tech-kawasaki-z650.php"},
 

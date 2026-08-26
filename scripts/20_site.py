@@ -15,7 +15,7 @@ Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
   site/assets/{style.css, comparateur.js, data.json}
   site/sitemap.xml, site/robots.txt
 """
-import csv, io, json, os, re, html, unicodedata, shutil, sys
+import csv, io, json, os, re, html, unicodedata, shutil, sys, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
 from guides_equipement import GUIDES_EQUIPEMENT as _G2
@@ -70,11 +70,26 @@ def lire(nom):
         return list(csv.DictReader(f))
 
 
+_EMDASH_FIN = re.compile(r"\s*—\s*\)")   # ex. "(2004—)" : plage ouverte
+_EMDASH_DEBUT = re.compile(r"\(\s*—\s*")
+
+def sans_emdash(html_txt):
+    """Filet de securite : le contenu editorial est ecrit sans tiret cadratin,
+    mais des donnees brutes (specs Wikipedia non reecrites) peuvent encore en
+    contenir un, par exemple une plage d'annees ouverte "(2004—)". On les
+    normalise ici plutot que de laisser passer le caractere."""
+    if "—" not in html_txt:
+        return html_txt
+    html_txt = _EMDASH_FIN.sub(")", html_txt)
+    html_txt = _EMDASH_DEBUT.sub("(", html_txt)
+    return html_txt.replace("—", ", ")
+
+
 def ecrire(chemin, contenu):
     p = os.path.join(SITE, chemin)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     with io.open(p, "w", encoding="utf-8") as f:
-        f.write(contenu)
+        f.write(sans_emdash(contenu))
 
 
 # ----------------------------------------------------------------- gabarit
@@ -150,26 +165,48 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
               "site": e(SITE_NOM), "racine": RACINE, "script": script}
 
 
+# ----------------------------------------------------------------- polices
+# Oswald (variable, licence OFL) auto-hebergee en base64 : aucune requete
+# externe au chargement, conforme au reste du site.
+_FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+
+def _font_b64(nom):
+    p = os.path.join(_FONT_DIR, nom)
+    if not os.path.exists(p):
+        return ""
+    with open(p, "rb") as f:
+        return base64.b64encode(f.read()).decode("ascii")
+
+_OSWALD_B64 = _font_b64("oswald-variable.woff2")
+FONT_FACE_CSS = ""
+if _OSWALD_B64:
+    FONT_FACE_CSS = (
+        "@font-face{font-family:'Oswald';font-style:normal;"
+        "font-weight:500 700;font-display:swap;"
+        "src:url(data:font/woff2;base64," + _OSWALD_B64 + ") format('woff2');}\n"
+    )
+
 # ----------------------------------------------------------------- CSS
-CSS = """
+CSS = FONT_FACE_CSS + """
 :root{
-  --fond:#f2f3f2; --carte:#fff; --creux:#e7eae9;
-  --texte:#12181a; --doux:#55636a; --pale:#7d8b91;
-  --trait:#d5dbda; --trait-fort:#b6c0be;
-  --accent:#9a6410; --accent-clair:#f3e8d3;
-  --petrole:#123b41; --vert:#2c6a4e; --rouge:#973124;
-  --ombre:0 1px 2px rgba(18,24,26,.05),0 8px 22px -14px rgba(18,24,26,.22);
+  --fond:#f1eee6; --carte:#fff; --creux:#e9e3d6;
+  --texte:#1a1714; --doux:#5c554a; --pale:#8a8172;
+  --trait:#ded6c4; --trait-fort:#c4b9a0;
+  --accent:#b93f0a; --accent-clair:#f8ded0;
+  --petrole:#0e3b3d; --vert:#2c6a4e; --rouge:#8f2a1f;
+  --ombre:0 1px 2px rgba(26,23,20,.06),0 8px 22px -14px rgba(26,23,20,.24);
   --police:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --police-titre:"Oswald",Impact,"Arial Narrow",var(--police);
   --mono:ui-monospace,"SFMono-Regular","Consolas","Liberation Mono",monospace;
   --large:1180px;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --fond:#0e1315; --carte:#161d20; --creux:#121a1c;
-    --texte:#e7eceb; --doux:#94a3a8; --pale:#74838a;
-    --trait:#253034; --trait-fort:#354449;
-    --accent:#dfa548; --accent-clair:#2a2216;
-    --petrole:#8fc6cb; --vert:#6dbf94; --rouge:#e08272;
+    --fond:#14110c; --carte:#1f1b15; --creux:#191510;
+    --texte:#f1ece2; --doux:#b9ae9c; --pale:#8e8371;
+    --trait:#332b1f; --trait-fort:#473c2a;
+    --accent:#ff7a33; --accent-clair:#3a2013;
+    --petrole:#5fc2b8; --vert:#6dbf94; --rouge:#e0836f;
     --ombre:0 1px 2px rgba(0,0,0,.4),0 10px 28px -16px rgba(0,0,0,.7);
   }
 }
@@ -188,8 +225,12 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 
 .entete{background:var(--carte);border-bottom:1px solid var(--trait);
   position:sticky;top:0;z-index:20}
+.entete::after{content:"";display:block;height:3px;
+  background-image:repeating-linear-gradient(115deg,
+    var(--accent) 0 10px, transparent 10px 20px);opacity:.7}
 .barre{display:flex;align-items:center;gap:1.5rem;min-height:60px;flex-wrap:wrap}
-.logo{font-weight:700;font-size:1.2rem;letter-spacing:-.02em;text-decoration:none}
+.logo{font-family:var(--police-titre);font-weight:600;font-size:1.4rem;
+  letter-spacing:.02em;text-transform:uppercase;text-decoration:none}
 .nav-principale{margin-left:auto;display:flex;gap:1.25rem;flex-wrap:wrap}
 .nav-principale a{text-decoration:none;color:var(--doux);font-size:.94rem;font-weight:500}
 .nav-principale a:hover{color:var(--accent)}
@@ -201,11 +242,14 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 .fil .sep{margin:0 .45rem;color:var(--trait-fort)}
 
 .section{padding:2.5rem 0}
-h1{font-size:clamp(1.7rem,4.2vw,2.5rem);line-height:1.15;letter-spacing:-.022em;
+h1{font-family:var(--police-titre);font-weight:600;
+  font-size:clamp(1.9rem,4.6vw,2.8rem);line-height:1.08;letter-spacing:.001em;
   margin:.4rem 0 .6rem;text-wrap:balance}
-h2{font-size:clamp(1.25rem,2.8vw,1.6rem);letter-spacing:-.015em;margin:2.2rem 0 1rem;
+h2{font-family:var(--police-titre);font-weight:600;
+  font-size:clamp(1.4rem,3vw,1.8rem);letter-spacing:.001em;margin:2.2rem 0 1rem;
   text-wrap:balance}
-h3{font-size:1.05rem;margin:1.6rem 0 .5rem}
+h3{font-family:var(--police-titre);font-weight:600;font-size:1.2rem;
+  letter-spacing:.001em;margin:1.6rem 0 .5rem}
 p{margin:0 0 1rem}
 .chapo{font-size:1.08rem;color:var(--doux);max-width:64ch}
 
@@ -228,7 +272,8 @@ p{margin:0 0 1rem}
 .carte-img img{width:100%;height:100%;object-fit:cover}
 .carte-corps{padding:.85rem 1rem 1rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
 .carte-marque{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale)}
-.carte-nom{font-weight:650;font-size:1.02rem;line-height:1.3;letter-spacing:-.01em}
+.carte-nom{font-family:var(--police-titre);font-weight:600;font-size:1.12rem;
+  line-height:1.22;letter-spacing:.001em}
 .carte-specs{margin-top:auto;padding-top:.5rem;font-size:.83rem;color:var(--doux);
   font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:.15rem .7rem}
 
@@ -254,15 +299,18 @@ p{margin:0 0 1rem}
 .specs td{font-variant-numeric:tabular-nums;font-weight:550}
 .specs tr:last-child th,.specs tr:last-child td{border-bottom:0}
 
-.encart{background:var(--carte);border:1px solid var(--trait);border-left:3px solid var(--accent);
-  border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1.5rem 0}
-.encart-titre{font-size:.72rem;text-transform:uppercase;letter-spacing:.11em;
-  color:var(--accent);font-weight:650;margin-bottom:.35rem}
+.encart{background:var(--accent-clair);border:1px solid var(--trait);
+  border-left:4px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:1rem 1.2rem;margin:1.5rem 0}
+.encart-titre{font-family:var(--police-titre);font-size:.78rem;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.35rem}
 .encart p{margin:0;font-size:.94rem}
 
 .duel{display:grid;gap:1rem;grid-template-columns:1fr}
 @media(min-width:760px){.duel{grid-template-columns:1fr auto 1fr;align-items:start}}
-.duel-vs{align-self:center;font-weight:700;color:var(--accent);font-size:1.1rem;text-align:center}
+.duel-vs{align-self:center;font-family:var(--police-titre);font-weight:600;
+  color:var(--accent);font-size:1.3rem;letter-spacing:.04em;text-transform:uppercase;
+  text-align:center}
 .tab-duel{width:100%;border-collapse:collapse;background:var(--carte);
   border:1px solid var(--trait);border-radius:8px;overflow:hidden;margin-top:1.5rem}
 .tab-duel th,.tab-duel td{padding:.6rem .8rem;border-bottom:1px solid var(--trait);font-size:.92rem}
@@ -321,52 +369,61 @@ p{margin:0 0 1rem}
 .bandes{display:flex;height:5px;width:100%}
 .bandes i{flex:1}
 
+/* --- filet cranté : une reference directe au pneu, utilisee en accroche
+   de bandeau et en separateur de section. Discret, jamais decoratif seul. */
+.cran{height:6px;background-image:repeating-linear-gradient(115deg,
+  var(--accent) 0 3px, transparent 3px 11px);opacity:.55}
+
 .hero-nation,.hero-cat{position:relative;overflow:hidden;isolation:isolate;
-  background:#0c1214;color:#eef2f1;margin-bottom:2rem}
+  background:#15100a;color:#f3efe7;margin-bottom:2rem}
 /* le bandeau est sombre dans les deux themes : on y emploie toujours la
    variante claire de la couleur nationale. Le bleu britannique d'origine
    tombe a 1,28:1 sur ce fond, la variante claire remonte au-dela de 4,5:1. */
 .hero-nation{--nat-actif:var(--nat-nuit)}
 .hero-nation .bandes{position:absolute;top:0;left:0;z-index:3}
 .hero-fond{position:absolute;inset:0;background-size:cover;background-position:center;
-  opacity:.30;filter:grayscale(.35) contrast(1.05);z-index:0}
+  opacity:.32;filter:grayscale(.3) contrast(1.08) saturate(1.1);z-index:0}
 .hero-nation::after,.hero-cat::after{content:"";position:absolute;inset:0;z-index:1;
-  background:linear-gradient(105deg,#0c1214 8%,rgba(12,18,20,.86) 48%,rgba(12,18,20,.42) 100%)}
+  background:linear-gradient(105deg,#15100a 8%,rgba(21,16,10,.86) 48%,rgba(21,16,10,.42) 100%)}
 .hero-corps{position:relative;z-index:2;padding:clamp(2.6rem,7vw,4.4rem) 0 clamp(2rem,5vw,3rem);
   max-width:min(680px,100%)}
-.hero-eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;
-  font-weight:650;color:var(--nat-actif,#dfa548);margin:0 0 .5rem;
+.hero-eyebrow{font-family:var(--police-titre);font-size:.8rem;text-transform:uppercase;
+  letter-spacing:.16em;font-weight:600;color:var(--nat-actif,#ff7a33);margin:0 0 .5rem;
   display:flex;align-items:center;gap:.5rem}
-.hero-cat .hero-eyebrow{color:#dfa548}
+.hero-cat .hero-eyebrow{color:#ff7a33}
 .hero-drapeau{font-size:1.15rem;line-height:1}
-.hero-nation h1,.hero-cat h1{margin:0;color:#fff;font-size:clamp(1.9rem,5vw,3rem);
-  letter-spacing:-.025em;line-height:1.05}
+.hero-nation h1,.hero-cat h1{font-family:var(--police-titre);margin:0;color:#fff;
+  font-size:clamp(2.1rem,5.6vw,3.4rem);font-weight:600;letter-spacing:.002em;
+  line-height:1.02;text-transform:uppercase}
 .hero-signature{margin:.5rem 0 0;font-size:1.1rem;font-weight:600;
-  color:var(--nat-actif,#dfa548)}
-.hero-chapo{margin:.9rem 0 0;color:#c3cecd;font-size:1.02rem;line-height:1.6;
+  color:var(--nat-actif,#ff7a33)}
+.hero-chapo{margin:.9rem 0 0;color:#d4cbba;font-size:1.02rem;line-height:1.6;
   max-width:60ch}
 .hero-corps .chiffres{margin-top:1.8rem;gap:1.2rem 2.2rem}
-.hero-corps .chiffre .v{color:#fff}
-.hero-corps .chiffre .l{color:#93a3a2}
+.hero-corps .chiffre .v{font-family:var(--police-titre);color:#fff;font-weight:600}
+.hero-corps .chiffre .l{color:#a79c89}
 
 .hero-accueil{position:relative;overflow:hidden;isolation:isolate;
-  background:#0c1214;color:#eef2f1;border-bottom:1px solid var(--trait)}
+  background:#15100a;color:#f3efe7;border-bottom:1px solid var(--trait)}
 .hero-accueil::after{content:"";position:absolute;inset:0;z-index:1;
-  background:linear-gradient(100deg,#0c1214 6%,rgba(12,18,20,.9) 46%,rgba(12,18,20,.5) 100%)}
+  background:linear-gradient(100deg,#15100a 6%,rgba(21,16,10,.9) 46%,rgba(21,16,10,.5) 100%)}
 .hero-accueil .hero-corps{max-width:min(700px,100%);
   padding:clamp(3rem,8vw,5.5rem) 0 clamp(2.4rem,5vw,3.4rem)}
-.hero-accueil .hero-eyebrow{color:#dfa548}
-.hero-accueil h1{color:#fff;font-size:clamp(2rem,5.4vw,3.3rem);
-  letter-spacing:-.03em;line-height:1.03;margin:0}
+.hero-accueil .hero-eyebrow{color:#ff7a33}
+.hero-accueil h1{font-family:var(--police-titre);color:#fff;font-weight:600;
+  font-size:clamp(2.2rem,5.8vw,3.6rem);letter-spacing:.002em;line-height:1;
+  text-transform:uppercase}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin:2rem 0 0}
-.bouton,.bouton-secondaire{display:inline-block;padding:.7rem 1.3rem;border-radius:6px;
-  font-size:.95rem;font-weight:600;text-decoration:none;transition:transform .12s,background .12s}
-.bouton{background:#dfa548;color:#12181a}
-.bouton:hover{background:#eab962;transform:translateY(-1px)}
-.bouton-secondaire{border:1px solid rgba(238,242,241,.35);color:#eef2f1}
-.bouton-secondaire:hover{border-color:#dfa548;color:#dfa548;transform:translateY(-1px)}
-.hero-credit{margin:1.6rem 0 0;font-size:.76rem;color:#8b9a99}
-.hero-credit a{color:#b3c0bf}
+.bouton,.bouton-secondaire{display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.4rem;border-radius:4px;font-family:var(--police-titre);
+  font-size:.95rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
+  text-decoration:none;transition:transform .12s,background .12s,color .12s}
+.bouton{background:#ff7a33;color:#1a1512}
+.bouton:hover{background:#ff9557;transform:translateY(-1px)}
+.bouton-secondaire{border:1.5px solid rgba(243,239,231,.35);color:#f3efe7}
+.bouton-secondaire:hover{border-color:#ff7a33;color:#ff7a33;transform:translateY(-1px)}
+.hero-credit{margin:1.6rem 0 0;font-size:.76rem;color:#93876f}
+.hero-credit a{color:#c4b8a0}
 
 .hero-mosaique{position:absolute;top:0;right:0;bottom:0;width:42%;z-index:1;
   display:none;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;
@@ -392,7 +449,8 @@ p{margin:0 0 1rem}
 .ce-pays{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale);
   display:flex;align-items:center;gap:.4rem}
 .ce-drapeau{font-size:1rem;line-height:1}
-.ce-nom{font-weight:650;font-size:1.08rem;letter-spacing:-.015em;color:var(--ce-actif)}
+.ce-nom{font-family:var(--police-titre);font-weight:600;font-size:1.2rem;
+  letter-spacing:.001em;color:var(--ce-actif)}
 .ce-signature{font-size:.9rem;color:var(--doux);line-height:1.4;margin-top:.15rem}
 .ce-chiffres{margin-top:auto;padding-top:.6rem;font-size:.8rem;color:var(--pale);
   font-variant-numeric:tabular-nums}
@@ -422,10 +480,12 @@ p{margin:0 0 1rem}
 .grille-guide{display:flex;flex-direction:column;gap:1.2rem;margin:1.5rem 0}
 .carte-guide{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
   padding:1.3rem;box-shadow:var(--ombre);scroll-margin-top:80px}
-.cg-tete{display:flex;align-items:baseline;gap:.7rem;margin-bottom:.8rem}
-.cg-rang{font-size:.8rem;font-weight:700;color:var(--accent);
-  font-variant-numeric:tabular-nums}
-.cg-tete h3{margin:0;font-size:1.2rem;letter-spacing:-.015em}
+.cg-tete{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem}
+.cg-rang{font-family:var(--police-titre);font-size:1rem;font-weight:600;
+  color:var(--accent);font-variant-numeric:tabular-nums;flex:none;
+  width:2.1rem;height:2.1rem;border:1.5px solid var(--accent);border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.cg-tete h3{margin:0;font-size:1.25rem;letter-spacing:.001em}
 .cg-img{border-radius:6px;overflow:hidden;margin-bottom:1rem;background:var(--creux);
   max-height:280px}
 .cg-img img{width:100%;height:100%;object-fit:cover}
@@ -467,7 +527,8 @@ p{margin:0 0 1rem}
   text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.5rem;
   box-shadow:var(--ombre);transition:border-color .15s,transform .15s}
 .carte-guide-lien:hover{transform:translateY(-2px)}
-.cgl-titre{font-weight:650;font-size:1.08rem;letter-spacing:-.015em;line-height:1.25}
+.cgl-titre{font-family:var(--police-titre);font-weight:600;font-size:1.22rem;
+  letter-spacing:.001em;line-height:1.2}
 .cgl-desc{font-size:.9rem;color:var(--doux);line-height:1.45}
 
 /* --- entree par modele sur la page Duels --- */
@@ -494,11 +555,13 @@ p{margin:0 0 1rem}
   margin-bottom:.35rem}
 .cd-img img{width:100%;height:100%;object-fit:cover}
 .cd-marque{font-size:.66rem;text-transform:uppercase;letter-spacing:.09em;color:var(--pale)}
-.cd-nom{font-weight:650;font-size:.92rem;line-height:1.25;letter-spacing:-.01em}
+.cd-nom{font-family:var(--police-titre);font-weight:600;font-size:1rem;
+  line-height:1.2;letter-spacing:.001em}
 .cd-spec{font-size:.78rem;color:var(--doux);font-variant-numeric:tabular-nums;
   line-height:1.35}
-.cd-vs{align-self:center;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;
-  color:var(--accent);font-weight:700;padding-top:2.2rem}
+.cd-vs{align-self:center;font-family:var(--police-titre);font-size:.78rem;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--accent);
+  font-weight:600;padding-top:2.2rem}
 .cd-pied{display:flex;flex-wrap:wrap;gap:.35rem;padding-top:.6rem;
   border-top:1px solid var(--trait)}
 
@@ -803,7 +866,7 @@ def page_modele(m):
             cred.append("© %s" % e(m["image_auteur"]))
         if m["image_licence"]:
             cred.append(e(m["image_licence"]))
-        lien = (' — <a href="%s" rel="nofollow">source</a>' % e(m["image_page"])
+        lien = (', <a href="%s" rel="nofollow">source</a>' % e(m["image_page"])
                 if m["image_page"] else "")
         photo = ('<figure class="fiche-photo"><img src="%s" alt="%s" width="900">'
                  '<figcaption class="credit">%s%s</figcaption></figure>'
@@ -822,14 +885,14 @@ def page_modele(m):
     a2 = ""
     if m["a2_compatible"] == "oui":
         a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
-              '<p><strong>Compatible.</strong> %s — sous les 35 kW et un rapport '
+              '<p><strong>Compatible.</strong> %s, sous les 35 kW et un rapport '
               'poids/puissance inférieur à 0,2 kW/kg. Vérifiez l\'existence d\'une '
               'version bridée homologuée auprès du concessionnaire.</p></div>'
               % e(m["a2_detail"]))
     elif m["a2_compatible"] == "non":
         a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
               '<p><strong>Non compatible</strong> en l\'état : %s. Un kit de bridage '
-              'homologué existe parfois — renseignez-vous auprès du constructeur.</p></div>'
+              'homologué existe parfois. Renseignez-vous auprès du constructeur.</p></div>'
               % e(m["a2_detail"]))
 
     # identite
@@ -970,7 +1033,7 @@ ECOLES = {
    "signature": "Ingénierie et longévité",
    "texte": "Ingénierie et longévité. Le flat-twin BMW a défini la moto de voyage "
             "moderne, avec des solutions techniques que personne d'autre n'a "
-            "osées — cardan, Telelever, boxer transversal."},
+            "osées, cardan, Telelever, boxer transversal."},
  "autrichienne": {
    "pays": "Autriche", "emoji": "🇦🇹",
    "bandes": ["#ED2939", "#F7F7F7", "#ED2939"],
@@ -1172,7 +1235,7 @@ def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps="",
     suite = ""
     if total > MAX_LISTE:
         suite = ('<p class="compteur">%d modèles au total. Les %d plus consultés sont '
-                 'affichés ci-dessous — utilisez le <a href="/comparateur.html">comparateur</a> '
+                 'affichés ci-dessous, utilisez le <a href="/comparateur.html">comparateur</a> '
                  "pour filtrer l'ensemble.</p>" % (total, MAX_LISTE))
     else:
         suite = ('<p class="compteur">%d modèle%s</p>'
@@ -1225,7 +1288,7 @@ def page_duel(d):
             ca = cb = ""
         lignes.append('<tr><th scope="row">%s</th><td class="%s">%s</td>'
                       '<td class="%s">%s</td></tr>'
-                      % (lib, ca, fmt(va) or "—", cb, fmt(vb) or "—"))
+                      % (lib, ca, fmt(va) or "-", cb, fmt(vb) or "-"))
     tab = ('<div class="tableau-large"><table class="tab-duel"><thead><tr>'
            '<th>Critère</th><th>%s</th><th>%s</th></tr></thead><tbody>%s</tbody>'
            '</table></div>' % (e(na), e(nb), "".join(lignes)))
@@ -1492,7 +1555,7 @@ JS = r"""
     vide.hidden=out.length>0;
     res.innerHTML=out.slice(0,180).map(carte).join('');
     if(out.length>180){
-      cpt.textContent=out.length+' modèles trouvés — les 180 premiers sont affichés';
+      cpt.textContent=out.length+' modèles trouvés, les 180 premiers sont affichés';
     }
   }
 
@@ -1537,7 +1600,7 @@ def page_accueil():
         credit_accueil = ('<p class="hero-credit">En photo : <a href="%s%s">%s</a>'
                           '%s</p>'
                           % (RACINE, e(vedette["url"]), e(vedette["nom_affichage"]),
-                             " — © " + e(vedette["image_auteur"])
+                             ", © " + e(vedette["image_auteur"])
                              if vedette.get("image_auteur") else ""))
 
     corps = """<section class="hero-accueil">
@@ -1598,7 +1661,7 @@ le calcul est fait pour chaque modèle à partir des données constructeur.</p>
              "ecoles": ecoles_html, "cats": cats_html, "bloca2": grille(a2),
              "fond": fond_accueil, "credit": credit_accueil, "racine": RACINE}
 
-    ecrire("index.html", page("%s — fiches techniques, comparateur et duels moto"
+    ecrire("index.html", page("%s, fiches techniques, comparateur et duels moto"
                               % SITE_NOM, SITE_DESC, corps, SITE_URL + "/"))
     enregistrer("/", "1.0")
 
@@ -1693,7 +1756,7 @@ def pages_hubs():
     selecteur = """<div class="selecteur">
   <label for="d-modele">Quelle moto vous intéresse ?</label>
   <select id="d-modele">
-    <option value="">— Choisissez un modèle —</option>
+    <option value="">Choisissez un modèle</option>
     %s
   </select>
   <p class="selecteur-aide">%d modèles ont au moins un duel.

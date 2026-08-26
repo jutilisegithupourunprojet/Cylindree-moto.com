@@ -335,10 +335,29 @@ démarrage, mais déconseillé à l'échelle : pour un site en production il fau
 télécharger et les servir soi-même. Toutes les URL sont dans la colonne
 `image_vignette`, le téléchargement est donc trivial à automatiser.
 
+## Identité visuelle
+
+Palette réchauffée façon atelier (papier brut, sable, oil-black) plutôt que le
+gris froid par défaut, avec un accent orange course affirmé (`#b93f0a` en clair,
+`#ff7a33` en sombre) et le pétrole déjà présent en secondaire. Les titres, noms
+de modèles et boutons passent en **Oswald** (condensé, façon plaque signalétique
+d'atelier), auto-hébergée en base64 dans le CSS : zéro requête externe.
+
+Touches mécaniques : bandeau à rayures diagonales sous l'en-tête (référence au
+flanc de pneu), badges de rang circulaires sur les cartes de guide, bandes aux
+couleurs nationales sur les pages école. Toutes les couleurs (accent y compris)
+ont été revérifiées au seuil AA après ce changement de palette.
+
+Ponctuation : le tiret cadratin (—) est banni du contenu éditorial, remplacé
+par un point ou une virgule selon le sens de la phrase. Un filet de sécurité
+(`sans_emdash()` dans `20_site.py`) nettoie aussi les données brutes issues de
+Wikipédia qui en contiendraient encore un.
+
 ## Performance
 
-Aucune police externe, aucune bibliothèque JavaScript, aucun appel réseau tiers.
-Le CSS fait 8 Ko, le script du comparateur 2,5 Ko. Les pages pèsent entre 8 et
+Aucune police externe chargée au runtime (Oswald est auto-hébergée en base64),
+aucune bibliothèque JavaScript, aucun appel réseau tiers. Le CSS fait 51 Ko
+police incluse, le script du comparateur 2,5 Ko. Les pages pèsent entre 8 et
 65 Ko. Les images sont en `loading="lazy"` sauf celles visibles d'emblée.
 
 Le comparateur filtre côté navigateur sur un fichier de 325 Ko chargé une fois :

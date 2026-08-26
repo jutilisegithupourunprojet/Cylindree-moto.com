@@ -18,7 +18,7 @@ DATE_MAJ = "25 août 2026"
 # --- briques reutilisables ------------------------------------------------
 
 METHODE = """<p>Ce guide ne repose pas sur un essai que nous aurions conduit :
-nous ne roulons pas les motos que nous décrivons. Il croise trois sources —
+nous ne roulons pas les motos que nous décrivons. Il croise trois sources,
 les caractéristiques constructeur de notre base, les essais publiés par la
 presse spécialisée, et les retours de propriétaires sur les forums français.
 Les impressions de conduite rapportées ici sont donc <strong>celles des
@@ -35,7 +35,7 @@ REGLE_A2 = """<p>Une moto est autorisée au permis A2 si elle respecte
 </ul>
 <p>Ce troisième point est celui qu'on oublie le plus souvent : toutes les grosses
 motos ne sont pas bridables. Vérifiez toujours qu'une <strong>version A2
-homologuée existe pour le millésime précis</strong> qui vous intéresse — la
+homologuée existe pour le millésime précis</strong> qui vous intéresse. La
 réponse change d'une année à l'autre chez un même constructeur.</p>"""
 
 
@@ -49,7 +49,7 @@ GUIDES = [
  "desc": ("Les motos A2 qui valent le coup en 2026 : natives 47 ch ou grosses "
           "cylindrées bridées, prix, coût d'assurance et retours de propriétaires."),
  "chapo": ("Le permis A2 vous limite à 47,5 chevaux pendant deux ans. Cette "
-           "contrainte n'interdit ni le plaisir ni le choix — à condition de "
+           "contrainte n'interdit ni le plaisir ni le choix, à condition de "
            "comprendre qu'il existe deux stratégies d'achat très différentes, "
            "et que la seconde est celle que choisissent la plupart des motards "
            "français."),
@@ -61,13 +61,13 @@ GUIDES = [
    "html": """<p>C'est la décision qui structure tout le reste, bien avant le
 choix d'un modèle.</p>
 
-<div class="encart"><p class="encart-titre">Stratégie 1 — la moto nativement A2</p>
+<div class="encart"><p class="encart-titre">Stratégie 1. La moto nativement A2</p>
 <p>Une machine conçue pour développer 47 ch. Vous l'achetez, vous roulez, rien
 à modifier. Moins chère à l'achat comme à l'assurance, plus légère, plus facile.
 Le revers : dans deux ans, quand vous passerez en A, vous devrez la revendre
 pour monter en gamme.</p></div>
 
-<div class="encart"><p class="encart-titre">Stratégie 2 — la grosse cylindrée bridée</p>
+<div class="encart"><p class="encart-titre">Stratégie 2. La grosse cylindrée bridée</p>
 <p>Vous achetez une moto plus puissante vendue en version A2 homologuée. Après
 deux ans, un professionnel la débride et vous récupérez la puissance intégrale.
 Vous achetez une seule fois. Le revers : coût d'achat et d'assurance plus élevés
@@ -75,7 +75,7 @@ d'emblée, machine plus lourde à manœuvrer pendant l'apprentissage.</p></div>
 
 <p>En France, la seconde domine largement le marché : la Yamaha MT-07 en version
 A2 est la moto la plus vendue de la catégorie depuis des années. Mais elle n'est
-pas le bon choix pour tout le monde — un gabarit léger ou un usage exclusivement
+pas le bon choix pour tout le monde. Un gabarit léger ou un usage exclusivement
 urbain trouvera plus de confort sur une native.</p>"""},
 
   {"h2": "Les natives A2 : simples et honnêtes", "cartes": [
@@ -177,7 +177,7 @@ urbain trouvera plus de confort sur une native.</p>"""},
 jeune permis A2, l'assurance pèse lourd et surprend souvent.</p>
 
 <div class="tableau-large"><table class="specs">
-<caption>Assurance moto, jeune conducteur A2 — ordres de grandeur 2026</caption>
+<caption>Assurance moto, jeune conducteur A2, ordres de grandeur 2026</caption>
 <tbody>
 <tr><th scope="row">Au tiers (minimum légal)</th><td>≈ 455 €/an</td></tr>
 <tr><th scope="row">Intermédiaire (vol et incendie)</th><td>≈ 648 €/an</td></tr>
@@ -235,19 +235,19 @@ intimide à l'arrêt est une moto que vous sortirez moins.</p>"""},
  ],
 
  "sources": [
-  ("Le Repaire des Motards — essai comparatif Honda CB500 Hornet",
+  ("Le Repaire des Motards, essai comparatif Honda CB500 Hornet",
    "https://www.lerepairedesmotards.com/essais/comparo/honda-cb500-hornet-cfmoto-450nk.php"),
-  ("Jeune Motard — test Yamaha MT-07 A2 : prix, bridage, carte grise",
+  ("Jeune Motard, test Yamaha MT-07 A2 : prix, bridage, carte grise",
    "https://jeunemotard.fr/choisir-sa-moto-articles/test-yamaha-mt-07/"),
-  ("Jeune Motard — test Kawasaki Z650 A2",
+  ("Jeune Motard, test Kawasaki Z650 A2",
    "https://jeunemotard.fr/test-kawasaki-z650-a2"),
-  ("Jeune Motard — test Triumph Trident 660 A2",
+  ("Jeune Motard, test Triumph Trident 660 A2",
    "https://jeunemotard.fr/choisir-sa-moto-articles/test-triumph-trident-660/"),
-  ("Jeune Motard — prix de l'assurance moto A2 en 2026",
+  ("Jeune Motard, prix de l'assurance moto A2 en 2026",
    "https://jeunemotard.fr/assurance-articles/prix-assurance-moto-a2/"),
-  ("Forum Le Repaire des Motards — retours de propriétaires MT-07 en A2",
+  ("Forum Le Repaire des Motards, retours de propriétaires MT-07 en A2",
    "https://www.lerepairedesmotards.com/forum/read.php?3,3100328"),
-  ("Le Repaire des Motards — Honda baisse les prix de la gamme 500",
+  ("Le Repaire des Motards, Honda baisse les prix de la gamme 500",
    "https://www.lerepairedesmotards.com/actualites/2026/promos-baisses-prix-honda-forza-500-hornet-nx-cbr.php"),
  ],
 },
@@ -262,7 +262,7 @@ intimide à l'arrêt est une moto que vous sortirez moins.</p>"""},
  "chapo": ("La question n'est pas « quelle est la meilleure moto pour débuter » "
            "mais « quelle moto vais-je réellement oser sortir du garage ». "
            "Trois critères comptent avant la marque et le style : le poids, la "
-           "hauteur de selle, et le budget total — celui qui inclut ce que "
+           "hauteur de selle, et le budget total, celui qui inclut ce que "
            "personne ne compte."),
  "sections": [
 
@@ -271,7 +271,7 @@ intimide à l'arrêt est une moto que vous sortirez moins.</p>"""},
 représente rarement plus des deux tiers de la dépense réelle.</p>
 
 <div class="tableau-large"><table class="specs">
-<caption>Trois scénarios de première année — ordres de grandeur constatés</caption>
+<caption>Trois scénarios de première année, ordres de grandeur constatés</caption>
 <tbody>
 <tr><th scope="row">Budget serré (occasion âgée, équipement minimum)</th><td>≈ 6 500 €</td></tr>
 <tr><th scope="row">Confort (occasion récente, équipement complet)</th><td>≈ 10 100 €</td></tr>
@@ -289,7 +289,7 @@ Une formule résume bien l'arbitrage : mieux vaut une moto à 3 000 € avec
 1 500 € d'équipement que l'inverse.</p>
 <ul class="tick">
 <li><strong>Minimum fonctionnel et homologué</strong> : environ 500 €.</li>
-<li><strong>Ensemble crédible neuf</strong> — casque certifié, blouson CE avec
+<li><strong>Ensemble crédible neuf</strong>, casque certifié, blouson CE avec
 dorsale, gants CE, bottes, pantalon renforcé : 800 à 1 500 €.</li>
 </ul>
 <p>La tentation de rouler « juste pour cinq minutes » en jean et baskets est le
@@ -301,7 +301,7 @@ est la seule barrière entre vous et le bitume.</p>"""},
 concrètes.</p>
 <p>D'abord la décote : une moto neuve perd <strong>20 à 30 % de sa valeur la
 première année</strong>. Ensuite les chutes. Elles sont fréquentes les premiers
-mois — un pied qui glisse à l'arrêt, une manœuvre ratée dans un parking, une
+mois, un pied qui glisse à l'arrêt, une manœuvre ratée dans un parking, une
 béquille mal posée. Sur une machine d'occasion, une rayure se digère. Sur une
 moto sortie de concession trois semaines plus tôt, beaucoup moins.</p>
 <p>Un budget d'environ 1 500 € permet déjà de trouver une machine en état
@@ -310,7 +310,7 @@ confortable.</p>
 <div class="encart"><p class="encart-titre">Le contre-argument honnête</p>
 <p>La moto neuve apporte la garantie constructeur et l'absence d'historique
 douteux. Si vous n'avez aucun moyen de faire évaluer une occasion par quelqu'un
-de compétent, le neuf achète de la tranquillité — c'est un arbitrage
+de compétent, le neuf achète de la tranquillité. C'est un arbitrage
 défendable.</p></div>"""},
 
   {"h2": "Les trois critères qui comptent vraiment",
@@ -325,7 +325,7 @@ machine à hauteur de cuisses.</p>
 
 <h3>2. Le poids</h3>
 <p>Sous-estimer le poids est l'erreur la plus fréquente des débutants. Ce n'est
-pas un problème en roulant — c'est un problème à l'arrêt, en marche arrière,
+pas un problème en roulant. C'est un problème à l'arrêt, en marche arrière,
 dans un parking en pente, ou pour relever la machine après une chute. Une moto
 de 180 kg pardonne beaucoup plus qu'une de 230 kg.</p>
 
@@ -341,8 +341,8 @@ pour un premier apprentissage serein. Au-delà, la moto reste maîtrisable mais
 demande plus d'attention pendant que vous construisez vos automatismes.</p>
 <p>Cela dit, le marché français réel s'écarte de cette recommandation : la
 majorité des jeunes permis A2 achètent des motos de 650 à 700 cm³ en version
-bridée. Ce n'est pas absurde — bridées, elles délivrent la même puissance qu'une
-native — mais elles sont plus lourdes, et c'est le poids qui pose problème au
+bridée. Ce n'est pas absurde. Bridées, elles délivrent la même puissance qu'une
+native, mais elles sont plus lourdes, et c'est le poids qui pose problème au
 début, pas la puissance.</p>"""},
 
   {"h2": "Quelques modèles régulièrement conseillés", "cartes": [
@@ -412,17 +412,17 @@ manœuvrer.</li>
  ],
 
  "sources": [
-  ("3AS Racing — budget moto débutant 2026, le vrai coût tout compris",
+  ("3AS Racing, budget moto débutant 2026, le vrai coût tout compris",
    "https://blog.3as-racing.com/budget-moto-debutant-vrai-cout-tout-compris-2026/"),
-  ("Passion Moto Sécurité — quelle moto pour débuter",
+  ("Passion Moto Sécurité, quelle moto pour débuter",
    "https://moto-securite.fr/moto-debuter/"),
-  ("Liberty Rider — les erreurs des débutants à moto",
+  ("Liberty Rider, les erreurs des débutants à moto",
    "https://liberty-rider.com/blog/mood-motard/debutants/top-8-des-erreurs-commises-par-les-debutants-a-moto"),
-  ("Honda Moto France — erreurs courantes des motards débutants",
+  ("Honda Moto France, erreurs courantes des motards débutants",
    "https://honda-moto.fr/erreurs-courantes-motards-debutants-comment-eviter/"),
-  ("Caradisiac — acheter votre première moto, le guide d'achat",
+  ("Caradisiac, acheter votre première moto, le guide d'achat",
    "https://www.caradisiac.com/acheter-votre-premiere-moto-le-guide-d-achat-215596.htm"),
-  ("Jeune Motard — prix de l'assurance moto A2 en 2026",
+  ("Jeune Motard, prix de l'assurance moto A2 en 2026",
    "https://jeunemotard.fr/assurance-articles/prix-assurance-moto-a2/"),
  ],
 },
@@ -447,7 +447,7 @@ entre trois heures d'autoroute reposantes et trois heures d'épuisement. Une
 bulle réglable en hauteur change tout.</li>
 <li><strong>La selle.</strong> Le point le plus critiqué sur presque tous les
 modèles, y compris haut de gamme. Prévoyez que vous devrez peut-être la
-remplacer — c'est fréquent, et c'est un budget.</li>
+remplacer, c'est fréquent, et c'est un budget.</li>
 <li><strong>Le débattement de suspension.</strong> Un critère peu regardé mais
 déterminant sur les routes dégradées : 150 mm apporte un confort nettement
 supérieur à 130 mm, surtout chargé.</li>
@@ -476,7 +476,7 @@ autant que son rembourrage.</li>
      "prix": "15 799 €", "puissance": "119 ch", "poids": "≈ 220 kg",
      "pour": "Garder une moto vive au quotidien et partir loin de temps en temps.",
      "forts": ["Le trois-cylindres est unanimement salué : disponible partout",
-               "Excellente sur route sinueuse — « du bonheur » en montagne, "
+               "Excellente sur route sinueuse, « du bonheur » en montagne "
                "selon les propriétaires",
                "Équipement complet en finition GT"],
      "reserves": ["La selle est le reproche principal : plusieurs propriétaires "
@@ -548,7 +548,7 @@ plus complète sur les critères qui comptent en voyage.</li>
 <li><strong>Budget contenu, usage voyage régulier</strong> : Versys 650. À
 8 449 €, elle offre l'essentiel de ce qu'apportent des machines à 15 000 €.</li>
 <li><strong>Vous voulez une moto vive au quotidien qui sait voyager</strong> :
-Tracer 9 GT — en intégrant le budget d'une selle et d'une bulle plus hautes.</li>
+Tracer 9 GT, en intégrant le budget d'une selle et d'une bulle plus hautes.</li>
 <li><strong>Vous roulez surtout seul, sur petites routes</strong> : Tiger
 Sport 660.</li>
 </ul>
@@ -577,19 +577,19 @@ selle confort d'un spécialiste comme faisant partie du prix d'achat.</p>"""},
  ],
 
  "sources": [
-  ("Le Repaire des Motards — routière Honda NT1100 2026",
+  ("Le Repaire des Motards, routière Honda NT1100 2026",
    "https://www.lerepairedesmotards.com/actualites/2025/routiere-honda-nt1100-2026.php"),
-  ("Forum MT09.net — 30 000 km en 9 mois sur Tracer 9 GT, avis propriétaire",
+  ("Forum MT09.net, 30 000 km en 9 mois sur Tracer 9 GT, avis propriétaire",
    "https://www.mt09.net/t15142-apres-30000km-en-9-mois-mon-avis-sur-la-tracer-9-gt"),
-  ("Caradisiac — avis de propriétaires sur la gamme Yamaha Tracer",
+  ("Caradisiac, avis de propriétaires sur la gamme Yamaha Tracer",
    "https://www.caradisiac.com/gamme-moto--yamaha-tracer/avis/"),
-  ("Le Repaire des Motards — essai Kawasaki Versys 650",
+  ("Le Repaire des Motards, essai Kawasaki Versys 650",
    "https://www.lerepairedesmotards.com/essais/motos/kawasaki-versys-650-abs.php"),
-  ("A2 Riders — test Versys 650, le trail pour voyager en A2",
+  ("A2 Riders, test Versys 650, le trail pour voyager en A2",
    "https://a2riders.com/essais/test-kawasaki-versys-650-2022-trail-routier-gt-voyage-duo-a2/"),
-  ("Emoto — comparatif Tracer 9 GT, Tiger Sport 800, F900XR, V100",
+  ("Emoto, comparatif Tracer 9 GT, Tiger Sport 800, F900XR, V100",
    "https://www.emoto.com/comparatifs/tracer-9-gt-tiger-sport-800-f900xr-v100-et-turismo-veloce-10537.php"),
-  ("Moto-Net — fiche technique Triumph Tiger Sport 660 2026",
+  ("Moto-Net, fiche technique Triumph Tiger Sport 660 2026",
    "https://www.moto-net.com/article/fiche-technique-moto-triumph-tiger-sport-660-2026.html"),
  ],
 },

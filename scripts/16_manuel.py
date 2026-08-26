@@ -95,7 +95,7 @@ for m in MODELES:
      "marque": marque, "marque_id": slug(marque),
      "modele": nom, "nom_fr": nom, "titre_fr": nom,
      "pays_origine": pays, "ecole": ecole,
-     "source": "Saisie manuelle — fiche constructeur (%s)" % DATE_SAISIE,
+     "source": "Saisie manuelle, fiche constructeur (%s)" % DATE_SAISIE,
      "url_wikipedia": m["source"], "url_wikipedia_fr": m["source"],
      "source_specs_fr": m["source"],
      "saisie_manuelle": True,
@@ -135,7 +135,10 @@ for m in MODELES:
     else:
         r["a2_compatible"], r["a2_detail"] = "à vérifier", clean(m.get("a2", ""))
     if m.get("note"):
-        r["a2_detail"] = (r["a2_detail"] + " — " + m["note"]).strip(" —")
+        base = r["a2_detail"].strip()
+        if base and not base.endswith((".", "!", "?")):
+            base += "."
+        r["a2_detail"] = (base + " " + m["note"]).strip()
 
     img = image_commons(nom, m.get("annee_debut"))
     if img:
