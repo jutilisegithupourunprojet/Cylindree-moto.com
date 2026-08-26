@@ -292,6 +292,96 @@ p{margin:0 0 1rem}
 .liste-liens a:hover{border-color:var(--accent)}
 .liste-liens .n{color:var(--pale);font-size:.82rem;font-variant-numeric:tabular-nums}
 
+/* --- identité nationale et bandeaux --- */
+.bandes{display:flex;height:5px;width:100%}
+.bandes i{flex:1}
+
+.hero-nation,.hero-cat{position:relative;overflow:hidden;isolation:isolate;
+  background:#0c1214;color:#eef2f1;margin-bottom:2rem}
+/* le bandeau est sombre dans les deux themes : on y emploie toujours la
+   variante claire de la couleur nationale. Le bleu britannique d'origine
+   tombe a 1,28:1 sur ce fond, la variante claire remonte au-dela de 4,5:1. */
+.hero-nation{--nat-actif:var(--nat-nuit)}
+.hero-nation .bandes{position:absolute;top:0;left:0;z-index:3}
+.hero-fond{position:absolute;inset:0;background-size:cover;background-position:center;
+  opacity:.30;filter:grayscale(.35) contrast(1.05);z-index:0}
+.hero-nation::after,.hero-cat::after{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(105deg,#0c1214 8%,rgba(12,18,20,.86) 48%,rgba(12,18,20,.42) 100%)}
+.hero-corps{position:relative;z-index:2;padding:clamp(2.6rem,7vw,4.4rem) 0 clamp(2rem,5vw,3rem);
+  max-width:min(680px,100%)}
+.hero-eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;
+  font-weight:650;color:var(--nat-actif,#dfa548);margin:0 0 .5rem;
+  display:flex;align-items:center;gap:.5rem}
+.hero-cat .hero-eyebrow{color:#dfa548}
+.hero-drapeau{font-size:1.15rem;line-height:1}
+.hero-nation h1,.hero-cat h1{margin:0;color:#fff;font-size:clamp(1.9rem,5vw,3rem);
+  letter-spacing:-.025em;line-height:1.05}
+.hero-signature{margin:.5rem 0 0;font-size:1.1rem;font-weight:600;
+  color:var(--nat-actif,#dfa548)}
+.hero-chapo{margin:.9rem 0 0;color:#c3cecd;font-size:1.02rem;line-height:1.6;
+  max-width:60ch}
+.hero-corps .chiffres{margin-top:1.8rem;gap:1.2rem 2.2rem}
+.hero-corps .chiffre .v{color:#fff}
+.hero-corps .chiffre .l{color:#93a3a2}
+
+.hero-accueil{position:relative;overflow:hidden;isolation:isolate;
+  background:#0c1214;color:#eef2f1;border-bottom:1px solid var(--trait)}
+.hero-accueil::after{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(100deg,#0c1214 6%,rgba(12,18,20,.9) 46%,rgba(12,18,20,.5) 100%)}
+.hero-accueil .hero-corps{max-width:min(700px,100%);
+  padding:clamp(3rem,8vw,5.5rem) 0 clamp(2.4rem,5vw,3.4rem)}
+.hero-accueil .hero-eyebrow{color:#dfa548}
+.hero-accueil h1{color:#fff;font-size:clamp(2rem,5.4vw,3.3rem);
+  letter-spacing:-.03em;line-height:1.03;margin:0}
+.hero-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin:2rem 0 0}
+.bouton,.bouton-secondaire{display:inline-block;padding:.7rem 1.3rem;border-radius:6px;
+  font-size:.95rem;font-weight:600;text-decoration:none;transition:transform .12s,background .12s}
+.bouton{background:#dfa548;color:#12181a}
+.bouton:hover{background:#eab962;transform:translateY(-1px)}
+.bouton-secondaire{border:1px solid rgba(238,242,241,.35);color:#eef2f1}
+.bouton-secondaire:hover{border-color:#dfa548;color:#dfa548;transform:translateY(-1px)}
+.hero-credit{margin:1.6rem 0 0;font-size:.76rem;color:#8b9a99}
+.hero-credit a{color:#b3c0bf}
+
+.hero-mosaique{position:absolute;top:0;right:0;bottom:0;width:42%;z-index:1;
+  display:none;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;
+  opacity:.5;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 55%);
+  mask-image:linear-gradient(90deg,transparent,#000 55%)}
+@media(min-width:900px){.hero-mosaique{display:grid}}
+.hero-mosaique img{width:100%;height:100%;object-fit:cover}
+
+.grille-ecoles{display:grid;gap:1.1rem;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:1.6rem}
+.carte-ecole{--ce-actif:var(--nat);background:var(--carte);border:1px solid var(--trait);
+  border-radius:8px;overflow:hidden;text-decoration:none;color:inherit;
+  box-shadow:var(--ombre);display:flex;flex-direction:column;
+  transition:border-color .15s,transform .15s}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .carte-ecole{--ce-actif:var(--nat-nuit)}
+}
+.carte-ecole:hover{transform:translateY(-3px);border-color:var(--ce-actif)}
+.ce-img{aspect-ratio:16/9;background:var(--creux) center/cover}
+.ce-vide{background:var(--creux)}
+.ce-corps{padding:.9rem 1.05rem 1.1rem;display:flex;flex-direction:column;gap:.25rem;flex:1}
+.ce-pays{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale);
+  display:flex;align-items:center;gap:.4rem}
+.ce-drapeau{font-size:1rem;line-height:1}
+.ce-nom{font-weight:650;font-size:1.08rem;letter-spacing:-.015em;color:var(--ce-actif)}
+.ce-signature{font-size:.9rem;color:var(--doux);line-height:1.4;margin-top:.15rem}
+.ce-chiffres{margin-top:auto;padding-top:.6rem;font-size:.8rem;color:var(--pale);
+  font-variant-numeric:tabular-nums}
+
+/* pastille de nationalité sur les fiches */
+.etiq-nat{display:inline-flex;align-items:center;gap:.35rem;font-size:.7rem;
+  font-weight:650;text-transform:uppercase;letter-spacing:.07em;
+  padding:.18rem .5rem;border-radius:3px;text-decoration:none;
+  border:1px solid var(--nat,var(--accent));color:var(--nat,var(--accent))}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .etiq-nat{border-color:var(--nat-nuit,var(--accent));
+    color:var(--nat-nuit,var(--accent))}
+}
+
 /* --- guides d'achat --- */
 .guide{max-width:820px}
 .guide h2{scroll-margin-top:80px;padding-top:.6rem;border-top:1px solid var(--trait)}
@@ -720,8 +810,12 @@ def page_modele(m):
     # identite
     ident = []
     if m["ecole"]:
-        ident.append('<a class="etiq ecole" href="%s/ecoles/%s.html">école %s</a>'
-                     % (RACINE, slug(m["ecole"]), e(m["ecole"])))
+        _id = ECOLES.get(slug(m["ecole"]), ECOLE_DEFAUT)
+        ident.append('<a class="etiq-nat" href="%s/ecoles/%s.html" '
+                     'style="--nat:%s;--nat-nuit:%s">'
+                     '<span aria-hidden="true">%s</span> école %s</a>'
+                     % (RACINE, slug(m["ecole"]), _id["accent"], _id["accent_nuit"],
+                        _id["emoji"], e(m["ecole"])))
     if m["categorie"]:
         ident.append('<a class="etiq" href="%s/categories/%s.html">%s</a>'
                      % (RACINE, slug(m["categorie"]), e(m["categorie"])))
@@ -805,9 +899,249 @@ Les valeurs absentes ne figurent pas dans la source.</p></div>
     enregistrer(m["url"], "0.8")
 
 
+# ----------------------------------------------------------------- ecoles
+# Chaque ecole porte les couleurs de son pays. Ce ne sont pas des drapeaux
+# reproduits mais des bandes de couleurs nationales : le drapeau lui-meme est
+# rendu par l'emoji, qui reste lisible et accessible.
+ECOLES = {
+ "japonaise": {
+   "pays": "Japon", "emoji": "🇯🇵",
+   "bandes": ["#BC002D", "#F7F7F7", "#BC002D"],
+   "accent": "#C41E3A", "accent_nuit": "#F08098",
+   "signature": "Fiabilité et polyvalence",
+   "texte": "Fiabilité, production de masse et polyvalence. Les quatre grands "
+            "constructeurs nippons ont imposé un standard de robustesse que le "
+            "reste du monde a dû rattraper. On ne les choisit pas pour le "
+            "panache, mais pour la certitude que la moto démarrera dans dix ans."},
+ "italienne": {
+   "pays": "Italie", "emoji": "🇮🇹",
+   "bandes": ["#008C45", "#F4F5F0", "#CD212A"],
+   "accent": "#CD212A", "accent_nuit": "#F2707A",
+   "signature": "Le caractère avant la raison",
+   "texte": "Le caractère avant la raison. Châssis affûtés, moteurs typés et un "
+            "dessin qui n'a jamais cherché le consensus. L'école italienne assume "
+            "de faire des motos qu'on aime ou qu'on déteste, rarement des machines "
+            "qui laissent indifférent."},
+ "americaine": {
+   "pays": "États-Unis", "emoji": "🇺🇸",
+   "bandes": ["#B22234", "#F7F7F7", "#3C3B6E"],
+   "accent": "#B22234", "accent_nuit": "#EE7C88",
+   "signature": "Le couple et la ligne droite",
+   "texte": "Le gros twin, le couple à bas régime et la ligne droite. Une "
+            "conception née de routes larges et de longues distances, où le "
+            "confort et la présence comptent davantage que le chrono."},
+ "britannique": {
+   "pays": "Royaume-Uni", "emoji": "🇬🇧",
+   "bandes": ["#012169", "#F5F5F5", "#C8102E"],
+   "accent": "#C8102E", "accent_nuit": "#F0808F",
+   "signature": "L'école historique",
+   "texte": "L'école historique. Twins verticaux, esthétique intemporelle et une "
+            "influence qui dépasse largement les volumes produits. Beaucoup de "
+            "codes du motocyclisme moderne viennent de ces ateliers."},
+ "allemande": {
+   "pays": "Allemagne", "emoji": "🇩🇪",
+   "bandes": ["#1A1A1A", "#DD0000", "#FFCE00"],
+   "accent": "#B8860B", "accent_nuit": "#EBC55A",
+   "signature": "Ingénierie et longévité",
+   "texte": "Ingénierie et longévité. Le flat-twin BMW a défini la moto de voyage "
+            "moderne, avec des solutions techniques que personne d'autre n'a "
+            "osées — cardan, Telelever, boxer transversal."},
+ "autrichienne": {
+   "pays": "Autriche", "emoji": "🇦🇹",
+   "bandes": ["#ED2939", "#F7F7F7", "#ED2939"],
+   "accent": "#ED2939", "accent_nuit": "#F58089",
+   "signature": "Le tout-terrain comme point de départ",
+   "texte": "Le tout-terrain comme point de départ. Des machines légères, "
+            "nerveuses, orientées performance, où l'orange n'est pas une "
+            "coquetterie mais une signature de compétition."},
+ "indienne": {
+   "pays": "Inde", "emoji": "🇮🇳",
+   "bandes": ["#FF9933", "#F7F7F7", "#138808"],
+   "accent": "#C8651B", "accent_nuit": "#F0A85E",
+   "signature": "Le rapport prix-plaisir",
+   "texte": "Longtemps cantonnée aux petites cylindrées utilitaires, l'école "
+            "indienne s'est imposée en Europe avec des twins simples et "
+            "abordables, au style assumé."},
+ "espagnole": {
+   "pays": "Espagne", "emoji": "🇪🇸",
+   "bandes": ["#AA151B", "#F1BF00", "#AA151B"],
+   "accent": "#AA151B", "accent_nuit": "#EB7B80",
+   "signature": "Petites cylindrées et trial",
+   "texte": "Une tradition de petites cylindrées vives et de trial, portée par "
+            "des marques qui ont marqué les années 1970 et 1980."},
+ "suedoise": {
+   "pays": "Suède", "emoji": "🇸🇪",
+   "bandes": ["#006AA7", "#FECC00", "#006AA7"],
+   "accent": "#006AA7", "accent_nuit": "#5FA8D3",
+   "signature": "Le tout-terrain nordique",
+   "texte": "Une école née du tout-terrain et du motocross, aujourd'hui prolongée "
+            "par des roadsters au dessin épuré."},
+ "coreenne": {
+   "pays": "Corée du Sud", "emoji": "🇰🇷",
+   "bandes": ["#CD2E3A", "#F7F7F7", "#0047A0"],
+   "accent": "#CD2E3A", "accent_nuit": "#F0838C",
+   "signature": "L'accessible",
+   "texte": "Une production tournée vers l'accessibilité, souvent dérivée de "
+            "licences japonaises."},
+ "taiwanaise": {
+   "pays": "Taïwan", "emoji": "🇹🇼",
+   "bandes": ["#000095", "#F7F7F7", "#FE0000"],
+   "accent": "#0033A0", "accent_nuit": "#6E9BE0",
+   "signature": "Le scooter urbain",
+   "texte": "Spécialiste du scooter urbain et des petites cylindrées, avec une "
+            "présence européenne solide sur ce créneau."},
+ "francaise": {
+   "pays": "France", "emoji": "🇫🇷",
+   "bandes": ["#002395", "#F5F5F5", "#ED2939"],
+   "accent": "#002395", "accent_nuit": "#7796DD",
+   "signature": "Le deux-roues du quotidien",
+   "texte": "Une école tournée vers le deux-roues urbain et le cyclomoteur, avec "
+            "une histoire industrielle longue et quelques tentatives ambitieuses "
+            "sur les grosses cylindrées."},
+ "tcheque": {
+   "pays": "Tchéquie", "emoji": "🇨🇿",
+   "bandes": ["#11457E", "#F5F5F5", "#D7141A"],
+   "accent": "#11457E", "accent_nuit": "#7E9DD0",
+   "signature": "La simplicité robuste",
+   "texte": "Des machines simples, robustes et faciles à entretenir, conçues pour "
+            "durer dans des conditions difficiles."},
+ "polonaise": {
+   "pays": "Pologne", "emoji": "🇵🇱",
+   "bandes": ["#F5F5F5", "#DC143C", "#DC143C"],
+   "accent": "#DC143C", "accent_nuit": "#F2818F",
+   "signature": "L'après-guerre utilitaire",
+   "texte": "Une production essentiellement utilitaire, marquée par l'histoire "
+            "industrielle de l'après-guerre."},
+}
+ECOLE_DEFAUT = {"pays": "", "emoji": "🏍️", "bandes": ["#9A6410", "#F2F2F2", "#123B41"],
+                "accent": "#9A6410", "accent_nuit": "#DFA548",
+                "signature": "", "texte": ""}
+
+
+def bandes_html(ident):
+    return ('<div class="bandes" aria-hidden="true">%s</div>'
+            % "".join('<i style="background:%s"></i>' % c for c in ident["bandes"]))
+
+
+def _fond(liste):
+    """Image de fond d'un bandeau : la fiche la mieux classee qui en possede une."""
+    for m in liste:
+        u = m.get("image_vignette") or m.get("image_url")
+        if u and m.get("image_utilisable") == "oui":
+            return u
+    return ""
+
+
+def _chiffres(liste):
+    n_a2 = sum(1 for m in liste if m["a2_compatible"] == "oui")
+    marques = len({m["marque"] for m in liste if m["marque"]})
+    cases = [("%d" % len(liste), "modèles"), ("%d" % marques, "marques")]
+    if n_a2:
+        cases.append(("%d" % n_a2, "compatibles A2"))
+    return ('<div class="chiffres">%s</div>'
+            % "".join('<div class="chiffre"><span class="v">%s</span>'
+                      '<span class="l">%s</span></div>' % (v, l) for v, l in cases))
+
+
+def hero_ecole(ecole, liste):
+    ident = ECOLES.get(slug(ecole), ECOLE_DEFAUT)
+    fond = _fond(liste)
+    img = ('<div class="hero-fond" style="background-image:url(%s)" aria-hidden="true"></div>'
+           % e(fond)) if fond else ""
+    top = [m for m in liste if (m.get("image_vignette") or m.get("image_url"))
+           and m.get("image_utilisable") == "oui"][:4]
+    mosaique = ""
+    if len(top) >= 3:
+        mosaique = ('<div class="hero-mosaique" aria-hidden="true">%s</div>'
+                    % "".join('<img src="%s" alt="" loading="lazy" decoding="async">'
+                              % e(m.get("image_vignette") or m["image_url"])
+                              for m in top[:4]))
+    return """<header class="hero-nation" style="--nat:%(accent)s;--nat-nuit:%(nuit)s">
+%(bandes)s
+%(img)s
+<div class="conteneur hero-corps">
+  <p class="hero-eyebrow"><span class="hero-drapeau">%(emoji)s</span> %(pays)s</p>
+  <h1>L'école %(ecole)s</h1>
+  <p class="hero-signature">%(signature)s</p>
+  <p class="hero-chapo">%(texte)s</p>
+  %(chiffres)s
+</div>
+%(mosaique)s
+</header>""" % {"accent": ident["accent"], "nuit": ident["accent_nuit"],
+                "bandes": bandes_html(ident), "img": img,
+                "emoji": ident["emoji"], "pays": e(ident["pays"]),
+                "ecole": e(ecole), "signature": e(ident["signature"]),
+                "texte": e(ident["texte"]), "chiffres": _chiffres(liste),
+                "mosaique": mosaique}
+
+
+CAT_TEXTES = {
+ "Roadster": "Guidon large, position droite, pas de carénage. La catégorie la "
+             "plus polyvalente, et de loin la plus vendue en France.",
+ "Sportive": "Position engagée, carénage intégral, châssis rigide. Conçues pour "
+             "la performance avant le confort.",
+ "Trail / Aventure": "Grandes roues, longues suspensions, position haute. Le "
+                     "compromis qui accepte la route dégradée et le voyage chargé.",
+ "Custom / Cruiser": "Selle basse, couple à bas régime, pieds en avant. Le "
+                     "plaisir de rouler tranquille plutôt que vite.",
+ "Routière / GT": "Protection au vent, confort de selle, capacité de bagages. "
+                  "Les machines qui avalent les kilomètres sans fatiguer.",
+ "Scooter / Cyclomoteur": "Transmission automatique, plancher plat, rangement "
+                          "intégré. La réponse la plus simple à la circulation urbaine.",
+ "Tout-terrain": "Légèreté, débattement de suspension et garde au sol. Pensées "
+                 "pour le chemin, pas pour le bitume.",
+ "Compétition": "Machines de course ou dérivés directs, rarement homologuées "
+                "pour la route.",
+ "Café racer": "Le style né dans les cafés britanniques des années 1960 : "
+               "guidon bracelet, selle monoplace, ligne épurée.",
+ "Supermotard": "Un tout-terrain chaussé en jantes de 17 pouces. Vif, léger, "
+                "taillé pour la ville et les petites routes.",
+}
+
+
+def hero_categorie(cat, liste):
+    fond = _fond(liste)
+    img = ('<div class="hero-fond" style="background-image:url(%s)" aria-hidden="true"></div>'
+           % e(fond)) if fond else ""
+    txt = CAT_TEXTES.get(cat, "")
+    return """<header class="hero-cat">
+%(img)s
+<div class="conteneur hero-corps">
+  <p class="hero-eyebrow">Catégorie</p>
+  <h1>%(cat)s</h1>
+  %(txt)s
+  %(chiffres)s
+</div>
+</header>""" % {"img": img, "cat": e(cat),
+                "txt": '<p class="hero-chapo">%s</p>' % e(txt) if txt else "",
+                "chiffres": _chiffres(liste)}
+
+
+def carte_ecole(ecole, liste):
+    """Vignette d'ecole : couleurs nationales, photo et signature editoriale."""
+    ident = ECOLES.get(slug(ecole), ECOLE_DEFAUT)
+    fond = _fond(liste)
+    img = ('<div class="ce-img" style="background-image:url(%s)" aria-hidden="true"></div>'
+           % e(fond)) if fond else '<div class="ce-img ce-vide" aria-hidden="true"></div>'
+    n_a2 = sum(1 for m in liste if m["a2_compatible"] == "oui")
+    return ('<a class="carte-ecole" href="%s/ecoles/%s.html" '
+            'style="--nat:%s;--nat-nuit:%s">%s%s'
+            '<div class="ce-corps">'
+            '<span class="ce-pays"><span class="ce-drapeau">%s</span> %s</span>'
+            '<span class="ce-nom">École %s</span>'
+            '<span class="ce-signature">%s</span>'
+            '<span class="ce-chiffres">%d modèles%s</span>'
+            '</div></a>'
+            % (RACINE, slug(ecole), ident["accent"], ident["accent_nuit"],
+               bandes_html(ident), img, ident["emoji"], e(ident["pays"]),
+               e(ecole), e(ident["signature"]), len(liste),
+               " · %d en A2" % n_a2 if n_a2 else ""))
+
+
 MAX_LISTE = 120   # au-dela, la page devient trop lourde : on renvoie au comparateur
 
-def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps=""):
+def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps="",
+               entete=""):
     total = len(liste)
     montres = liste[:MAX_LISTE]
     suite = ""
@@ -818,9 +1152,13 @@ def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps="")
     else:
         suite = ('<p class="compteur">%d modèle%s</p>'
                  % (total, "s" if total > 1 else ""))
-    corps = ('<div class="conteneur section"><h1>%s</h1><p class="chapo">%s</p>'
-             '%s%s%s</div>'
-             % (e(h1), intro, extra_corps, suite, grille(montres, 6)))
+    if entete:
+        corps = ('%s<div class="conteneur section">%s%s%s</div>'
+                 % (entete, extra_corps, suite, grille(montres, 6)))
+    else:
+        corps = ('<div class="conteneur section"><h1>%s</h1><p class="chapo">%s</p>'
+                 '%s%s%s</div>'
+                 % (e(h1), intro, extra_corps, suite, grille(montres, 6)))
     desc = re.sub(r"<[^>]+>", "", intro)[:158]
     ecrire(chemin.lstrip("/"), page(titre, desc, corps, SITE_URL + chemin, "", fil))
     enregistrer(chemin, prio)
@@ -1057,8 +1395,7 @@ def page_accueil():
     duels_top = duels_ok[:9]
 
     ecoles_html = "".join(
-        '<li><a href="/ecoles/%s.html"><span>École %s</span>'
-        '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
+        carte_ecole(k, v)
         for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1]))[:8])
     cats_html = "".join(
         '<li><a href="/categories/%s.html"><span>%s</span>'
@@ -1068,9 +1405,27 @@ def page_accueil():
         '<li><a href="%s"><span>%s ou %s</span></a></li>'
         % (e(d["url"]), e(d["modele_a"]), e(d["modele_b"])) for d in duels_top)
 
-    corps = """<section class="heros"><div class="conteneur">
+    vedette = next((m for m in top
+                    if (m.get("image_vignette") or m.get("image_url"))
+                    and m.get("image_utilisable") == "oui"), None)
+    fond_accueil = ""
+    credit_accueil = ""
+    if vedette:
+        fond_accueil = ('<div class="hero-fond" style="background-image:url(%s)" '
+                        'aria-hidden="true"></div>'
+                        % e(vedette.get("image_vignette") or vedette["image_url"]))
+        credit_accueil = ('<p class="hero-credit">En photo : <a href="%s%s">%s</a>'
+                          '%s</p>'
+                          % (RACINE, e(vedette["url"]), e(vedette["nom_affichage"]),
+                             " — © " + e(vedette["image_auteur"])
+                             if vedette.get("image_auteur") else ""))
+
+    corps = """<section class="hero-accueil">
+%(fond)s
+<div class="conteneur hero-corps">
+<p class="hero-eyebrow">Annuaire moto</p>
 <h1>Les fiches techniques moto, sans le bruit</h1>
-<p class="chapo">%(n)d modèles documentés, un comparateur qui filtre vraiment, et des
+<p class="hero-chapo">%(n)d modèles documentés, un comparateur qui filtre vraiment, et des
 duels chiffrés pour trancher entre deux motos. Compatibilité permis A2 calculée
 pour chaque machine.</p>
 <div class="chiffres">
@@ -1079,7 +1434,13 @@ pour chaque machine.</p>
   <div class="chiffre"><span class="v">%(a2)d</span><span class="l">compatibles A2</span></div>
   <div class="chiffre"><span class="v">%(d)d</span><span class="l">duels</span></div>
 </div>
-</div></section>
+<p class="hero-actions">
+  <a class="bouton" href="%(racine)s/comparateur.html">Ouvrir le comparateur</a>
+  <a class="bouton-secondaire" href="%(racine)s/guides/">Voir les guides d'achat</a>
+</p>
+%(credit)s
+</div>
+</section>
 
 <div class="conteneur section">
 <h2>Guides d&rsquo;achat</h2>
@@ -1097,7 +1458,7 @@ constructeur et retours de motards qui roulent ces machines.</p>
 <p class="chapo">Chaque pays a sa façon de concevoir une moto. La fiabilité
 japonaise, le caractère italien, le twin américain : trois philosophies, trois
 manières de rouler.</p>
-<ul class="liste-liens">%(ecoles)s</ul>
+<div class="grille-ecoles">%(ecoles)s</div>
 
 <h2>Par catégorie</h2>
 <ul class="liste-liens">%(cats)s</ul>
@@ -1114,7 +1475,8 @@ le calcul est fait pour chaque modèle à partir des données constructeur.</p>
                  '<span class="cgl-titre">%s</span>'
                  '<span class="cgl-desc">%s</span></a>'
                  % (e(x["slug"]), e(x["h1"]), e(x["desc"])) for x in GUIDES),
-             "ecoles": ecoles_html, "cats": cats_html, "bloca2": grille(a2)}
+             "ecoles": ecoles_html, "cats": cats_html, "bloca2": grille(a2),
+             "fond": fond_accueil, "credit": credit_accueil, "racine": RACINE}
 
     ecrire("index.html", page("%s — fiches techniques, comparateur et duels moto"
                               % SITE_NOM, SITE_DESC, corps, SITE_URL + "/"))
@@ -1150,14 +1512,13 @@ def pages_hubs():
                    [("Accueil", "/"), ("Marques", "/marques/"), (marque, None)], "0.8")
 
     # ecoles
-    li = "".join('<li><a href="/ecoles/%s.html"><span>École %s</span>'
-                 '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
-                 for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1])))
     corps = ('<div class="conteneur section"><h1>Les écoles de la moto</h1>'
              '<p class="chapo">Japonaise, italienne, américaine, britannique : '
              'chaque tradition industrielle a façonné une manière de concevoir '
              'une machine. Un classement que personne d\'autre ne propose.</p>'
-             '<ul class="liste-liens">%s</ul></div>' % li)
+             '<div class="grille-ecoles">%s</div></div>'
+             % "".join(carte_ecole(k, v)
+                       for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1]))))
     ecrire("ecoles/index.html",
            page("Les écoles de la moto : japonaise, italienne, américaine",
                 "Classement des motos par école nationale : japonaise, italienne, "
@@ -1166,43 +1527,30 @@ def pages_hubs():
                 [("Accueil", "/"), ("Écoles", None)]))
     enregistrer("/ecoles/", "0.9")
 
-    TEXTES = {
-     "japonaise": "Fiabilité, production de masse et polyvalence. Les quatre grands "
-                  "constructeurs nippons ont imposé un standard de robustesse que le "
-                  "reste du monde a dû rattraper.",
-     "italienne": "Le caractère avant la raison. Châssis affûtés, moteurs typés et "
-                  "un dessin qui n'a jamais cherché le consensus.",
-     "americaine": "Le gros twin, le couple à bas régime et la ligne droite. Une "
-                   "conception née de routes larges et de longues distances.",
-     "britannique": "L'école historique. Twins verticaux, esthétique intemporelle et "
-                    "une influence qui dépasse largement les volumes produits.",
-     "allemande": "Ingénierie et longévité. Le flat-twin BMW a défini la moto de "
-                  "voyage moderne.",
-     "autrichienne": "Le tout-terrain comme point de départ. Des machines légères, "
-                     "nerveuses, orientées performance.",
-    }
     for ecole, liste in par_ecole.items():
         s = slug(ecole)
-        intro = TEXTES.get(s, "Les modèles de l'école %s." % e(ecole))
+        ident = ECOLES.get(s, ECOLE_DEFAUT)
+        intro = ident["texte"] or ("Les modèles de l'école %s." % e(ecole))
         intro += (" %d modèles répertoriés, de %s." %
                   (len(liste), ", ".join(sorted({m["marque"] for m in liste})[:6])))
         page_liste("/ecoles/%s.html" % s,
                    "Motos de l'école %s : modèles et caractéristiques" % ecole,
                    "L'école %s" % ecole, intro, liste,
                    [("Accueil", "/"), ("Écoles", "/ecoles/"), (ecole.capitalize(), None)],
-                   "0.85")
+                   "0.85", entete=hero_ecole(ecole, liste))
 
     # categories
     for cat, liste in par_cat.items():
         s = slug(cat)
-        intro = ("Les %d modèles de la catégorie %s, classés par pertinence. "
-                 "Filtrez par cylindrée et hauteur de selle dans le "
-                 "<a href=\"/comparateur.html\">comparateur</a>."
-                 % (len(liste), e(cat)))
+        intro = (CAT_TEXTES.get(cat, "") + " ") if CAT_TEXTES.get(cat) else ""
+        intro += ("%d modèles classés par pertinence. Filtrez par cylindrée et "
+                  "hauteur de selle dans le "
+                  "<a href=\"/comparateur.html\">comparateur</a>." % len(liste))
         page_liste("/categories/%s.html" % s,
                    "%s : tous les modèles et fiches techniques" % cat,
                    cat, intro, liste,
-                   [("Accueil", "/"), (cat, None)], "0.8")
+                   [("Accueil", "/"), (cat, None)], "0.8",
+                   entete=hero_categorie(cat, liste))
 
     # duels : entree par modele
     impliques = {}

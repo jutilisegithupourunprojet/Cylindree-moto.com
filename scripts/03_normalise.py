@@ -42,7 +42,7 @@ MARQUES = {
  "Maico": ("Allemagne", "allemande"), "Brennabor": ("Allemagne", "allemande"),
  "KTM": ("Autriche", "autrichienne"), "Puch": ("Autriche", "autrichienne"),
  "Husqvarna": ("Suède", "suédoise"),
- "Peugeot": ("France", "francaise"),
+ "Peugeot": ("France", "française"),
  "Derbi": ("Espagne", "espagnole"),
  "Royal Enfield": ("Inde", "indienne"), "Bajaj": ("Inde", "indienne"),
  "Hero Honda": ("Inde", "indienne"), "TVS": ("Inde", "indienne"),

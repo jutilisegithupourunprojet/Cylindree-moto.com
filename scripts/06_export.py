@@ -193,6 +193,15 @@ if _sources_sup:
     print("collecte FR : +%d modeles (total %d)" % (len(_ajout), len(rows)))
 
 
+# normalisation des libelles : certaines fiches collectees avant la
+# correction des accents portent encore "francaise"
+_ACCENTS = {"francaise": "française", "suedoise": "suédoise",
+            "coreenne": "coréenne", "tcheque": "tchèque",
+            "americaine": "américaine"}
+for r in rows:
+    if r.get("ecole") in _ACCENTS:
+        r["ecole"] = _ACCENTS[r["ecole"]]
+
 def nom_affiche(r):
     """Evite 'BMW BMW G310R' : le champ 'modele' contient souvent deja la marque."""
     mo = (r.get("modele") or "").strip()
