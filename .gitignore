@@ -1,0 +1,13 @@
+# Sortie générée : reconstructible avec `python scripts/20_site.py`
+site/
+
+# Fichiers de travail intermédiaires (10 Mo), reconstructibles depuis
+# les scripts de collecte 01 à 16
+data/raw/
+!data/raw/modeles_manuels.json
+
+# Divers
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

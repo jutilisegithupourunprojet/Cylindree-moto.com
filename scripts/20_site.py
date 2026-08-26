@@ -1,0 +1,1528 @@
+# -*- coding: utf-8 -*-
+"""
+Generateur de site statique a partir de data/out/*.csv
+
+Produit du HTML pur : pas de base de donnees, pas de serveur, pas de plugin.
+Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
+
+  site/index.html
+  site/motos/<marque>/<modele>.html
+  site/marques/<marque>.html
+  site/ecoles/<ecole>.html
+  site/categories/<slug>.html
+  site/duels/<a>-vs-<b>.html
+  site/comparateur.html
+  site/assets/{style.css, comparateur.js, data.json}
+  site/sitemap.xml, site/robots.txt
+"""
+import csv, io, json, os, re, html, unicodedata, shutil, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
+from guides_equipement import GUIDES_EQUIPEMENT as _G2
+GUIDES = _G1 + _G2
+from collections import defaultdict
+
+BASE = os.path.join(os.path.dirname(__file__), "..")
+OUT = os.path.join(BASE, "data", "out")
+SITE = os.path.join(BASE, "site")
+
+SITE_NOM = "Cylindrée"
+SITE_URL = "https://example.com"          # a remplacer par le domaine reel
+SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
+             "Caractéristiques vérifiées, compatibilité permis A2, "
+             "écoles japonaise, italienne et américaine.")
+
+# seuils de publication : mieux vaut peu de fiches completes que beaucoup de vides
+MIN_COMPLETUDE = 45
+
+# prefixe racine des URL (vide = site servi a la racine du domaine)
+RACINE = ""
+
+
+# ----------------------------------------------------------------- utilitaires
+def slug(s):
+    s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode()
+    s = re.sub(r"[^a-zA-Z0-9]+", "-", s).strip("-").lower()
+    return re.sub(r"-{2,}", "-", s) or "x"
+
+
+def e(s):
+    return html.escape(str(s or ""), quote=True)
+
+
+def num(v, unite="", dec=0):
+    """Formate un nombre a la francaise. Chaine vide si absent - jamais de zero invente."""
+    if v in (None, "", "0", 0):
+        return ""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return e(v)
+    t = ("%%.%df" % dec) % f
+    ent, _, frac = t.partition(".")
+    ent = re.sub(r"(?<=\d)(?=(\d{3})+$)", " ", ent)
+    out = ent + ("," + frac if frac else "")
+    return out + (" " + unite if unite else "")
+
+
+def lire(nom):
+    with io.open(os.path.join(OUT, nom), encoding="utf-8-sig") as f:
+        return list(csv.DictReader(f))
+
+
+def ecrire(chemin, contenu):
+    p = os.path.join(SITE, chemin)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with io.open(p, "w", encoding="utf-8") as f:
+        f.write(contenu)
+
+
+# ----------------------------------------------------------------- gabarit
+def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
+    fil_html = ""
+    if fil:
+        items = []
+        crumbs = []
+        for i, (lib, href) in enumerate(fil, 1):
+            if href:
+                items.append('<a href="%s">%s</a>' % (e(href), e(lib)))
+            else:
+                items.append('<span aria-current="page">%s</span>' % e(lib))
+            crumbs.append({"@type": "ListItem", "position": i, "name": lib,
+                           "item": SITE_URL + href if href else None})
+        fil_html = ('<nav class="fil" aria-label="Fil d\'Ariane">%s</nav>'
+                    % '<span class="sep">›</span>'.join(items))
+        extra_head += ('<script type="application/ld+json">%s</script>'
+                       % json.dumps({"@context": "https://schema.org",
+                                     "@type": "BreadcrumbList",
+                                     "itemListElement": crumbs},
+                                    ensure_ascii=False))
+    return """<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%(titre)s</title>
+<meta name="description" content="%(desc)s">
+<link rel="canonical" href="%(canon)s">
+<meta property="og:title" content="%(titre)s">
+<meta property="og:description" content="%(desc)s">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<link rel="stylesheet" href="%(racine)s/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏍️</text></svg>">
+%(extra)s
+</head>
+<body>
+<a class="saut" href="#contenu">Aller au contenu</a>
+<header class="entete">
+  <div class="conteneur barre">
+    <a class="logo" href="%(racine)s/">%(site)s</a>
+    <nav class="nav-principale" aria-label="Navigation principale">
+      <a href="%(racine)s/guides/">Guides</a>
+      <a href="%(racine)s/comparateur.html">Comparateur</a>
+      <a href="%(racine)s/marques/">Marques</a>
+      <a href="%(racine)s/ecoles/">Écoles</a>
+      <a href="%(racine)s/duels/">Duels</a>
+    </nav>
+  </div>
+</header>
+<main id="contenu">
+%(fil)s
+%(corps)s
+</main>
+<footer class="pied">
+  <div class="conteneur">
+    <p class="pied-titre">%(site)s</p>
+    <p>Fiches techniques, comparateur et duels de motos.</p>
+    <p class="mention">Données issues de Wikipédia, sous licence
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" rel="license nofollow">CC&nbsp;BY-SA&nbsp;4.0</a>.
+      Chaque fiche renvoie à son article source. Les photographies conservent
+      la licence et l'auteur indiqués sur la fiche.</p>
+    <p class="mention">Les caractéristiques sont fournies à titre indicatif et
+      peuvent comporter des erreurs. Vérifiez auprès du constructeur avant tout achat.</p>
+  </div>
+</footer>
+%(script)s
+</body>
+</html>""" % {"titre": e(titre), "desc": e(desc), "canon": e(canon),
+              "extra": extra_head, "corps": corps, "fil": fil_html,
+              "site": e(SITE_NOM), "racine": RACINE, "script": script}
+
+
+# ----------------------------------------------------------------- CSS
+CSS = """
+:root{
+  --fond:#f2f3f2; --carte:#fff; --creux:#e7eae9;
+  --texte:#12181a; --doux:#55636a; --pale:#7d8b91;
+  --trait:#d5dbda; --trait-fort:#b6c0be;
+  --accent:#9a6410; --accent-clair:#f3e8d3;
+  --petrole:#123b41; --vert:#2c6a4e; --rouge:#973124;
+  --ombre:0 1px 2px rgba(18,24,26,.05),0 8px 22px -14px rgba(18,24,26,.22);
+  --police:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular","Consolas","Liberation Mono",monospace;
+  --large:1180px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --fond:#0e1315; --carte:#161d20; --creux:#121a1c;
+    --texte:#e7eceb; --doux:#94a3a8; --pale:#74838a;
+    --trait:#253034; --trait-fort:#354449;
+    --accent:#dfa548; --accent-clair:#2a2216;
+    --petrole:#8fc6cb; --vert:#6dbf94; --rouge:#e08272;
+    --ombre:0 1px 2px rgba(0,0,0,.4),0 10px 28px -16px rgba(0,0,0,.7);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--fond);color:var(--texte);font-family:var(--police);
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit;text-underline-offset:2px;text-decoration-color:var(--accent)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.conteneur{max-width:var(--large);margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+.saut{position:absolute;left:-9999px}
+.saut:focus{left:1rem;top:1rem;z-index:99;background:var(--carte);padding:.6rem 1rem;
+  border:2px solid var(--accent);border-radius:4px}
+
+.entete{background:var(--carte);border-bottom:1px solid var(--trait);
+  position:sticky;top:0;z-index:20}
+.barre{display:flex;align-items:center;gap:1.5rem;min-height:60px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:1.2rem;letter-spacing:-.02em;text-decoration:none}
+.nav-principale{margin-left:auto;display:flex;gap:1.25rem;flex-wrap:wrap}
+.nav-principale a{text-decoration:none;color:var(--doux);font-size:.94rem;font-weight:500}
+.nav-principale a:hover{color:var(--accent)}
+
+.fil{max-width:var(--large);margin:0 auto;padding:.9rem clamp(1rem,4vw,2rem) 0;
+  font-size:.84rem;color:var(--pale)}
+.fil a{color:var(--doux);text-decoration:none}
+.fil a:hover{color:var(--accent);text-decoration:underline}
+.fil .sep{margin:0 .45rem;color:var(--trait-fort)}
+
+.section{padding:2.5rem 0}
+h1{font-size:clamp(1.7rem,4.2vw,2.5rem);line-height:1.15;letter-spacing:-.022em;
+  margin:.4rem 0 .6rem;text-wrap:balance}
+h2{font-size:clamp(1.25rem,2.8vw,1.6rem);letter-spacing:-.015em;margin:2.2rem 0 1rem;
+  text-wrap:balance}
+h3{font-size:1.05rem;margin:1.6rem 0 .5rem}
+p{margin:0 0 1rem}
+.chapo{font-size:1.08rem;color:var(--doux);max-width:64ch}
+
+.heros{background:var(--carte);border-bottom:1px solid var(--trait);
+  padding:clamp(2.5rem,7vw,4.5rem) 0}
+.heros h1{margin-top:0}
+.heros .chapo{font-size:1.15rem}
+.chiffres{display:flex;flex-wrap:wrap;gap:1.5rem 2.5rem;margin-top:2rem}
+.chiffre .v{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;display:block;color:var(--accent)}
+.chiffre .l{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale)}
+
+.grille{display:grid;gap:1.1rem;
+  grid-template-columns:repeat(auto-fill,minmax(255px,1fr))}
+.carte{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
+  overflow:hidden;box-shadow:var(--ombre);display:flex;flex-direction:column;
+  text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+.carte:hover{border-color:var(--accent);transform:translateY(-2px)}
+.carte-img{aspect-ratio:16/10;background:var(--creux);overflow:hidden}
+.carte-img img{width:100%;height:100%;object-fit:cover}
+.carte-corps{padding:.85rem 1rem 1rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
+.carte-marque{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale)}
+.carte-nom{font-weight:650;font-size:1.02rem;line-height:1.3;letter-spacing:-.01em}
+.carte-specs{margin-top:auto;padding-top:.5rem;font-size:.83rem;color:var(--doux);
+  font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:.15rem .7rem}
+
+.etiq{display:inline-block;font-size:.7rem;font-weight:650;text-transform:uppercase;
+  letter-spacing:.07em;padding:.16rem .45rem;border-radius:3px;border:1px solid currentColor}
+.etiq.a2{color:var(--vert)}
+.etiq.a2non{color:var(--doux)}
+.etiq.ecole{color:var(--accent)}
+
+.fiche{display:grid;gap:2rem;grid-template-columns:1fr}
+@media(min-width:900px){.fiche{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.fiche-photo{border-radius:8px;overflow:hidden;border:1px solid var(--trait);background:var(--carte)}
+.credit{font-size:.74rem;color:var(--pale);padding:.5rem .7rem;border-top:1px solid var(--trait)}
+.credit a{color:var(--doux)}
+
+.specs{width:100%;border-collapse:collapse;background:var(--carte);
+  border:1px solid var(--trait);border-radius:8px;overflow:hidden}
+.specs caption{text-align:left;font-size:.74rem;text-transform:uppercase;
+  letter-spacing:.11em;color:var(--pale);padding:.9rem 1rem .3rem}
+.specs th,.specs td{padding:.6rem 1rem;border-bottom:1px solid var(--trait);
+  text-align:left;font-size:.94rem}
+.specs th{font-weight:500;color:var(--doux);width:48%}
+.specs td{font-variant-numeric:tabular-nums;font-weight:550}
+.specs tr:last-child th,.specs tr:last-child td{border-bottom:0}
+
+.encart{background:var(--carte);border:1px solid var(--trait);border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1.5rem 0}
+.encart-titre{font-size:.72rem;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--accent);font-weight:650;margin-bottom:.35rem}
+.encart p{margin:0;font-size:.94rem}
+
+.duel{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:760px){.duel{grid-template-columns:1fr auto 1fr;align-items:start}}
+.duel-vs{align-self:center;font-weight:700;color:var(--accent);font-size:1.1rem;text-align:center}
+.tab-duel{width:100%;border-collapse:collapse;background:var(--carte);
+  border:1px solid var(--trait);border-radius:8px;overflow:hidden;margin-top:1.5rem}
+.tab-duel th,.tab-duel td{padding:.6rem .8rem;border-bottom:1px solid var(--trait);font-size:.92rem}
+.tab-duel thead th{font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--doux);border-bottom:1px solid var(--trait-fort)}
+.tab-duel td{text-align:center;font-variant-numeric:tabular-nums}
+.tab-duel th[scope=row]{text-align:left;font-weight:500;color:var(--doux)}
+.gagne{color:var(--vert);font-weight:650}
+
+.filtres{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
+  padding:1.1rem;display:grid;gap:.9rem;
+  grid-template-columns:repeat(auto-fit,minmax(165px,1fr));margin-bottom:1.5rem}
+.champ{display:flex;flex-direction:column;gap:.3rem}
+.champ label{font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;color:var(--pale)}
+.champ select,.champ input{padding:.5rem .6rem;border:1px solid var(--trait-fort);
+  border-radius:5px;background:var(--fond);color:var(--texte);font-size:.92rem;
+  font-family:inherit;width:100%}
+.compteur{font-size:.9rem;color:var(--doux);margin-bottom:1rem}
+.vide{padding:2.5rem 1rem;text-align:center;color:var(--doux);background:var(--carte);
+  border:1px dashed var(--trait-fort);border-radius:8px}
+
+.liste-liens{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  list-style:none;padding:0;margin:0}
+.liste-liens a{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline;
+  padding:.6rem .8rem;background:var(--carte);border:1px solid var(--trait);
+  border-radius:6px;text-decoration:none;font-size:.94rem}
+.liste-liens a:hover{border-color:var(--accent)}
+.liste-liens .n{color:var(--pale);font-size:.82rem;font-variant-numeric:tabular-nums}
+
+/* --- guides d'achat --- */
+.guide{max-width:820px}
+.guide h2{scroll-margin-top:80px;padding-top:.6rem;border-top:1px solid var(--trait)}
+.guide-meta{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--accent);font-weight:650;margin:0 0 .3rem}
+.sommaire{background:var(--creux);border-radius:8px;padding:1.1rem 1.3rem;margin:2rem 0}
+.sommaire-t{font-size:.72rem;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--pale);font-weight:650;margin:0 0 .6rem}
+.sommaire ol{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:.35rem}
+.sommaire a{color:var(--texte);text-decoration:none;font-size:.95rem}
+.sommaire a:hover{color:var(--accent);text-decoration:underline}
+
+.grille-guide{display:flex;flex-direction:column;gap:1.2rem;margin:1.5rem 0}
+.carte-guide{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
+  padding:1.3rem;box-shadow:var(--ombre);scroll-margin-top:80px}
+.cg-tete{display:flex;align-items:baseline;gap:.7rem;margin-bottom:.8rem}
+.cg-rang{font-size:.8rem;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums}
+.cg-tete h3{margin:0;font-size:1.2rem;letter-spacing:-.015em}
+.cg-img{border-radius:6px;overflow:hidden;margin-bottom:1rem;background:var(--creux);
+  max-height:280px}
+.cg-img img{width:100%;height:100%;object-fit:cover}
+.cg-pour{font-size:.96rem;margin:0 0 .9rem}
+.cg-chiffres{display:flex;flex-wrap:wrap;gap:1.6rem;padding:.8rem 0;
+  border-top:1px solid var(--trait);border-bottom:1px solid var(--trait);margin-bottom:1rem}
+.cg-chiffres>div{display:flex;flex-direction:column;gap:.1rem}
+.cg-l{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--pale)}
+.cg-v{font-weight:650;font-variant-numeric:tabular-nums;font-size:.98rem}
+.cg-listes{display:grid;gap:1.2rem;grid-template-columns:1fr}
+@media(min-width:640px){.cg-listes{grid-template-columns:1fr 1fr}}
+.cg-sl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;font-weight:650;
+  margin:0 0 .4rem}
+.cg-listes>div:first-child .cg-sl{color:var(--vert)}
+.cg-listes>div:last-child .cg-sl{color:var(--rouge)}
+.cg-plus,.cg-moins{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;
+  gap:.35rem;font-size:.92rem}
+.cg-plus li::marker{color:var(--vert)}
+.cg-moins li::marker{color:var(--rouge)}
+.cg-verdict{margin:1.1rem 0 .8rem;padding:.8rem 1rem;background:var(--creux);
+  border-radius:6px;font-size:.95rem}
+.cg-lien{display:inline-block;font-size:.88rem;font-weight:600;color:var(--accent);
+  text-decoration:none;border-bottom:1px solid currentColor}
+.cg-absent{font-size:.84rem;color:var(--pale);font-style:italic}
+
+.faq{background:var(--carte);border:1px solid var(--trait);border-radius:6px;
+  padding:.85rem 1.1rem;margin-bottom:.6rem}
+.faq summary{cursor:pointer;font-weight:600;font-size:.98rem}
+.faq summary::marker{color:var(--accent)}
+.faq p{margin:.7rem 0 0;font-size:.94rem;color:var(--doux)}
+.sources{font-size:.88rem;color:var(--doux);padding-left:1.2rem;
+  display:flex;flex-direction:column;gap:.4rem}
+.sources a{word-break:break-word}
+
+.grille-guides-index{display:grid;gap:1rem;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-top:1.5rem}
+.carte-guide-lien{background:var(--carte);border:1px solid var(--trait);
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1.2rem;
+  text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.5rem;
+  box-shadow:var(--ombre);transition:border-color .15s,transform .15s}
+.carte-guide-lien:hover{transform:translateY(-2px)}
+.cgl-titre{font-weight:650;font-size:1.08rem;letter-spacing:-.015em;line-height:1.25}
+.cgl-desc{font-size:.9rem;color:var(--doux);line-height:1.45}
+
+/* --- entree par modele sur la page Duels --- */
+.selecteur{background:var(--carte);border:1px solid var(--trait);
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:1.2rem 1.3rem;margin:1.5rem 0 2rem;max-width:640px}
+.selecteur label{display:block;font-size:.74rem;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--accent);font-weight:650;margin-bottom:.5rem}
+.selecteur select{width:100%;padding:.65rem .7rem;border:1px solid var(--trait-fort);
+  border-radius:6px;background:var(--fond);color:var(--texte);
+  font-size:1rem;font-family:inherit}
+.selecteur-aide{margin:.6rem 0 0;font-size:.86rem;color:var(--doux)}
+
+.grille-duels{display:grid;gap:1rem;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.carte-duel{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
+  padding:1rem;text-decoration:none;color:inherit;box-shadow:var(--ombre);
+  display:flex;flex-direction:column;gap:.8rem;
+  transition:border-color .15s,transform .15s}
+.carte-duel:hover{border-color:var(--accent);transform:translateY(-2px)}
+.cd-cotes{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:start}
+.cd-cote{display:flex;flex-direction:column;gap:.2rem;min-width:0}
+.cd-img{aspect-ratio:4/3;background:var(--creux);border-radius:5px;overflow:hidden;
+  margin-bottom:.35rem}
+.cd-img img{width:100%;height:100%;object-fit:cover}
+.cd-marque{font-size:.66rem;text-transform:uppercase;letter-spacing:.09em;color:var(--pale)}
+.cd-nom{font-weight:650;font-size:.92rem;line-height:1.25;letter-spacing:-.01em}
+.cd-spec{font-size:.78rem;color:var(--doux);font-variant-numeric:tabular-nums;
+  line-height:1.35}
+.cd-vs{align-self:center;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--accent);font-weight:700;padding-top:2.2rem}
+.cd-pied{display:flex;flex-wrap:wrap;gap:.35rem;padding-top:.6rem;
+  border-top:1px solid var(--trait)}
+
+.pied{background:var(--carte);border-top:1px solid var(--trait);margin-top:4rem;
+  padding:2rem 0;font-size:.9rem;color:var(--doux)}
+.pied-titre{font-weight:700;color:var(--texte);margin-bottom:.3rem}
+.mention{font-size:.8rem;color:var(--pale);max-width:75ch}
+.tableau-large{overflow-x:auto}
+"""
+
+
+# ----------------------------------------------------------------- donnees
+modeles = lire("modeles.csv")
+duels = lire("duels.csv")
+
+pub = [m for m in modeles
+       if int(m["completude_pct"] or 0) >= MIN_COMPLETUDE
+       and m["marque"] and m["nom_affichage"]]
+for m in pub:
+    m["url"] = "/motos/%s/%s.html" % (slug(m["marque"]), m["modele_id"])
+par_id = {m["modele_id"]: m for m in pub}
+
+print("%d modeles publiables sur %d" % (len(pub), len(modeles)))
+
+par_marque = defaultdict(list)
+par_ecole = defaultdict(list)
+par_cat = defaultdict(list)
+for m in pub:
+    par_marque[m["marque"]].append(m)
+    if m["ecole"]:
+        par_ecole[m["ecole"]].append(m)
+    if m["categorie"]:
+        par_cat[m["categorie"]].append(m)
+for d in (par_marque, par_ecole, par_cat):
+    for k in d:
+        d[k].sort(key=lambda x: -float(x["priorite"] or 0))
+
+duels_ok = [d for d in duels
+            if d["modele_a_id"] in par_id and d["modele_b_id"] in par_id]
+for d in duels_ok:
+    d["url"] = "/duels/%s.html" % d["duel_id"]
+print("%d duels publiables sur %d" % (len(duels_ok), len(duels)))
+
+urls = []
+
+
+def enregistrer(chemin, prio="0.6"):
+    urls.append((chemin, prio))
+
+
+# ----------------------------------------------------------------- fragments
+def vignette(m, prio_img=False):
+    img = m.get("image_vignette") or m["image_url"]
+    if img and m["image_utilisable"] == "oui":
+        lazy = "" if prio_img else ' loading="lazy" decoding="async"'
+        media = ('<div class="carte-img"><img src="%s" alt="%s"%s></div>'
+                 % (e(img), e(m["nom_affichage"]), lazy))
+    else:
+        media = '<div class="carte-img"></div>'
+    bits = []
+    if m["cylindree_cc"]:
+        bits.append(num(m["cylindree_cc"], "cm³"))
+    if m["puissance_ch"]:
+        bits.append(num(m["puissance_ch"], "ch", 0))
+    if m["poids_kg"]:
+        bits.append(num(m["poids_kg"], "kg", 0))
+    a2 = ('<span class="etiq a2">A2</span>' if m["a2_compatible"] == "oui" else "")
+    return ('<a class="carte" href="%s%s">%s<div class="carte-corps">'
+            '<span class="carte-marque">%s</span>'
+            '<span class="carte-nom">%s</span>'
+            '<span class="carte-specs">%s %s</span></div></a>'
+            % (RACINE, e(m["url"]), media, e(m["marque"]), e(m["nom_affichage"]),
+               " · ".join(bits), a2))
+
+
+def grille(liste, prio_n=0):
+    if not liste:
+        return '<p class="vide">Aucun modèle pour cette sélection.</p>'
+    return ('<div class="grille">%s</div>'
+            % "".join(vignette(m, i < prio_n) for i, m in enumerate(liste)))
+
+
+def _cote(m):
+    """Donnees d'un des deux cotes d'un duel."""
+    return {"n": m["nom_affichage"], "m": m["marque"],
+            "i": (m.get("image_vignette") or m["image_url"]) if m["image_utilisable"] == "oui" else "",
+            "cy": m["cylindree_cc"] or "", "p": m["puissance_ch"] or "",
+            "kg": m["poids_kg"] or ""}
+
+
+def _cote_html(c, lazy=True):
+    img = ('<img src="%s" alt="%s"%s>'
+           % (e(c["i"]), e(c["n"]), ' loading="lazy" decoding="async"' if lazy else "")
+           ) if c["i"] else ""
+    bits = [x for x in (num(c["cy"], "cm³"), num(c["p"], "ch", 0),
+                        num(c["kg"], "kg", 0)) if x]
+    return ('<div class="cd-cote"><div class="cd-img">%s</div>'
+            '<span class="cd-marque">%s</span>'
+            '<span class="cd-nom">%s</span>'
+            '<span class="cd-spec">%s</span></div>'
+            % (img, e(c["m"]), e(c["n"]), " · ".join(bits)))
+
+
+def carte_duel(d, lazy=True):
+    a, b = _cote(par_id[d["modele_a_id"]]), _cote(par_id[d["modele_b_id"]])
+    etiqs = ['<span class="etiq">%s</span>' % e(d["categorie"])]
+    if d["a2"] == "oui":
+        etiqs.append('<span class="etiq a2">A2</span>')
+    if d["inter_ecoles"] == "oui":
+        etiqs.append('<span class="etiq ecole">%s / %s</span>'
+                     % (e(d["ecole_a"]), e(d["ecole_b"])))
+    return ('<a class="carte-duel" href="%s%s">'
+            '<div class="cd-cotes">%s<span class="cd-vs">contre</span>%s</div>'
+            '<div class="cd-pied">%s</div></a>'
+            % (RACINE, e(d["url"]), _cote_html(a, lazy), _cote_html(b, lazy),
+               " ".join(etiqs)))
+
+
+
+
+# ------------------------------------------------- traduction du vocabulaire
+# Les champs libres de Wikipedia EN restent en anglais. On traduit le
+# vocabulaire technique recurrent au moment de l'affichage ; le CSV conserve
+# le texte source pour rester tracable.
+TERMES = [
+    # transmissions
+    (r"\bconstant mesh\b", "à prise constante"),
+    (r"\b(\d+)[- ]speed\b", r"\1 rapports"),
+    (r"\bspeed manual\b", "rapports, boîte manuelle"),
+    (r"\bmanual transmission\b", "boîte manuelle"),
+    (r"\bcontinuously variable transmission\b", "variateur continu"),
+    (r"\bCVT\b", "variateur continu (CVT)"),
+    (r"\bautomatic\b", "automatique"),
+    (r"\bsemi-automatic\b", "semi-automatique"),
+    (r"\bwet (?:multi-?plate )?clutch\b", "embrayage multidisque à bain d'huile"),
+    (r"\bdry clutch\b", "embrayage à sec"),
+    (r"\bmulti-?plate\b", "multidisque"),
+    (r"\bslipper clutch\b", "embrayage antidribble"),
+    (r"\bwet\b", "à bain d'huile"),
+    (r"\bchain drive\b", "transmission par chaîne"),
+    (r"\bshaft drive\b", "transmission par cardan"),
+    (r"\bbelt drive\b", "transmission par courroie"),
+    (r"\bfinal drive\b", "transmission finale"),
+    (r"\bchain\b", "chaîne"),
+    (r"\bshaft\b", "cardan"),
+    (r"\bbelt\b", "courroie"),
+    (r"\bgearbox\b", "boîte de vitesses"),
+    (r"\bsequential\b", "séquentielle"),
+    # freins
+    (r"\bdisc brakes?\b", "freins à disque"),
+    (r"\bdrum brakes?\b", "freins à tambour"),
+    (r"\btwin disc\b", "double disque"),
+    (r"\bdual disc\b", "double disque"),
+    (r"\bsingle disc\b", "simple disque"),
+    (r"\bfloating disc\b", "disque flottant"),
+    (r"\bdisc\b", "disque"),
+    (r"\bdrum\b", "tambour"),
+    (r"\bcalipers?\b", "étrier"),
+    (r"\bpistons?\b", "pistons"),
+    (r"\bmm\b", "mm"),
+    # suspensions
+    (r"\btelescopic forks?\b", "fourche télescopique"),
+    (r"\binverted forks?\b", "fourche inversée"),
+    (r"\bupside[- ]down forks?\b", "fourche inversée"),
+    (r"\busd forks?\b", "fourche inversée"),
+    (r"\bfork\b", "fourche"),
+    (r"\bswinga?rm\b", "bras oscillant"),
+    (r"\bmonoshock\b", "monoamortisseur"),
+    (r"\btwin shocks?\b", "double amortisseur"),
+    (r"\bshock absorbers?\b", "amortisseur"),
+    (r"\bshocks?\b", "amortisseur"),
+    (r"\bpreload\b", "précontrainte"),
+    (r"\badjustable\b", "réglable"),
+    (r"\brebound\b", "détente"),
+    (r"\bdamping\b", "amortissement"),
+    (r"\bspring\b", "ressort"),
+    (r"\btravel\b", "débattement"),
+    # cadres
+    (r"\bsingle cradle\b", "simple berceau"),
+    (r"\bdouble cradle\b", "double berceau"),
+    (r"\bduplex cradle\b", "double berceau"),
+    (r"\bhalf-duplex cradle\b", "demi-berceau"),
+    (r"\bfull duplex cradle\b", "double berceau complet"),
+    (r"\bcradle\b", "berceau"),
+    (r"\btrellis\b", "treillis"),
+    (r"\blattice\b", "treillis"),
+    (r"\bperimeter\b", "périmétrique"),
+    (r"\bbackbone\b", "poutre"),
+    (r"\bspine\b", "poutre"),
+    (r"\bmonocoque\b", "monocoque"),
+    (r"\btubular\b", "tubulaire"),
+    (r"\bsteel\b", "acier"),
+    (r"\baluminium\b", "aluminium"),
+    (r"\baluminum\b", "aluminium"),
+    (r"\bcast\b", "coulé"),
+    (r"\bcarbon fibre\b", "fibre de carbone"),
+    (r"\bcarbon fiber\b", "fibre de carbone"),
+    (r"\bdiamond\b", "diamant"),
+    (r"\bframe\b", "cadre"),
+    # moteur
+    (r"\bfour-?stroke\b", "quatre temps"),
+    (r"\btwo-?stroke\b", "deux temps"),
+    (r"\bliquid-?cooled\b", "refroidissement liquide"),
+    (r"\bair-?cooled\b", "refroidissement par air"),
+    (r"\boil-?cooled\b", "refroidissement par huile"),
+    (r"\bwater-?cooled\b", "refroidissement liquide"),
+    (r"\bfuel injection\b", "injection électronique"),
+    (r"\bcarburett?ors?\b", "carburateur"),
+    (r"\bvalves?\b", "soupapes"),
+    (r"\bcamshafts?\b", "arbre à cames"),
+    (r"\boverhead camshaft\b", "arbre à cames en tête"),
+    (r"\bcylinders?\b", "cylindres"),
+    (r"\belectric start\b", "démarreur électrique"),
+    (r"\bkick ?start\b", "kick"),
+    # pneus / roues
+    (r"\btyres?\b", "pneus"),
+    (r"\btires?\b", "pneus"),
+    (r"\bspoked?\b", "à rayons"),
+    (r"\balloy wheels?\b", "jantes alliage"),
+    (r"\bwheels?\b", "roues"),
+    (r"\btubeless\b", "tubeless"),
+    # positions
+    (r"\bfront (?:and|&) rear\b", "avant et arrière"),
+    (r"\bfront\b", "avant"),
+    (r"\brear\b", "arrière"),
+    (r"\bleft\b", "gauche"),
+    (r"\bright\b", "droite"),
+    (r"\bboth\b", "les deux"),
+    # divers
+    (r"\bversion\b", "version"),
+    (r"\boptional\b", "en option"),
+    (r"\bstandard\b", "de série"),
+    (r"\bwith\b", "avec"),
+    (r"\band\b", "et"),
+    (r"\bor\b", "ou"),
+    (r"\bfor the\b", "pour la"),
+    (r"\bfor\b", "pour"),
+    (r"\bsingle\b", "simple"),
+    (r"\bdual\b", "double"),
+    (r"\btwin\b", "double"),
+    (r"\btriple\b", "triple"),
+]
+_TERMES = [(re.compile(p, re.I), r) for p, r in TERMES]
+
+
+def fr_tech(s):
+    """Traduit le vocabulaire technique anglais recurrent. Non exhaustif :
+    les formulations rares restent en anglais plutot que d'etre deformees."""
+    if not s:
+        return ""
+    out = str(s)
+    for rx, rep in _TERMES:
+        out = rx.sub(rep, out)
+    out = re.sub(r"\s+", " ", out).strip(" ,;:")
+    return out[:1].upper() + out[1:] if out else ""
+
+
+LIGNES_SPECS = [
+    ("Cylindrée", lambda m: num(m["cylindree_cc"], "cm³")),
+    ("Architecture", lambda m: e(m["architecture"])),
+    ("Refroidissement", lambda m: e(m["refroidissement"])),
+    ("Puissance", lambda m: (num(m["puissance_ch"], "ch", 1)
+                             + (" (%s)" % num(m["puissance_kw"], "kW", 1) if m["puissance_kw"] else "")
+                             + (" à %s tr/min" % num(m["puissance_tr_min"]) if m["puissance_tr_min"] else ""))),
+    ("Couple", lambda m: (num(m["couple_nm"], "Nm", 1)
+                          + (" à %s tr/min" % num(m["couple_tr_min"]) if m["couple_tr_min"] else ""))),
+    ("Poids", lambda m: (num(m["poids_kg"], "kg", 0)
+                         + (" (%s)" % e(m["poids_type"]) if m["poids_type"] else ""))),
+    ("Hauteur de selle", lambda m: num(m["hauteur_selle_mm"], "mm", 0)),
+    ("Empattement", lambda m: num(m["empattement_mm"], "mm", 0)),
+    ("Réservoir", lambda m: num(m["reservoir_l"], "L", 1)),
+    ("Vitesse maximale", lambda m: num(m["vitesse_max_kmh"], "km/h", 0)),
+    ("Alésage × course", lambda m: e(m["alesage_course"])),
+    ("Compression", lambda m: e(fr_tech(m["compression"]))),
+    ("Transmission", lambda m: e(fr_tech(m["transmission"]))),
+    ("Cadre", lambda m: e(fr_tech(m["cadre"]))),
+    ("Suspensions", lambda m: e(fr_tech(m["suspension"]))),
+    ("Freins", lambda m: e(fr_tech(m["freins"]))),
+    ("Pneus", lambda m: e(fr_tech(m["pneus"]))),
+    ("Prix au lancement", lambda m: (num(m["prix_lancement_eur"], "€", 0)
+                                     if m["prix_lancement_eur"] else "")),
+]
+
+
+# ----------------------------------------------------------------- pages
+def page_modele(m):
+    nom = m["nom_affichage"]
+    marque = m["marque"]
+    titre = "%s : fiche technique et caractéristiques" % nom
+    bits = [x for x in (num(m["cylindree_cc"], "cm³"),
+                        num(m["puissance_ch"], "ch", 0),
+                        num(m["poids_kg"], "kg", 0)) if x]
+    desc = "%s : %s. Fiche technique complète, %s." % (
+        nom, ", ".join(bits) if bits else "caractéristiques détaillées",
+        "compatible permis A2" if m["a2_compatible"] == "oui" else "spécifications vérifiées")
+
+    # photo + credit
+    photo = ""
+    if (m.get("image_vignette") or m["image_url"]) and m["image_utilisable"] == "oui":
+        cred = []
+        if m["image_auteur"]:
+            cred.append("© %s" % e(m["image_auteur"]))
+        if m["image_licence"]:
+            cred.append(e(m["image_licence"]))
+        lien = (' — <a href="%s" rel="nofollow">source</a>' % e(m["image_page"])
+                if m["image_page"] else "")
+        photo = ('<figure class="fiche-photo"><img src="%s" alt="%s" width="900">'
+                 '<figcaption class="credit">%s%s</figcaption></figure>'
+                 % (e(m.get("image_vignette") or m["image_url"]), e(nom),
+                    " · ".join(cred) or "Wikimedia Commons", lien))
+
+    lignes = []
+    for lib, fn in LIGNES_SPECS:
+        v = fn(m)
+        if v and v.strip():
+            lignes.append("<tr><th scope=\"row\">%s</th><td>%s</td></tr>" % (lib, v))
+    tableau = ('<table class="specs"><caption>Caractéristiques techniques</caption>'
+               '<tbody>%s</tbody></table>' % "".join(lignes))
+
+    # A2
+    a2 = ""
+    if m["a2_compatible"] == "oui":
+        a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
+              '<p><strong>Compatible.</strong> %s — sous les 35 kW et un rapport '
+              'poids/puissance inférieur à 0,2 kW/kg. Vérifiez l\'existence d\'une '
+              'version bridée homologuée auprès du concessionnaire.</p></div>'
+              % e(m["a2_detail"]))
+    elif m["a2_compatible"] == "non":
+        a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
+              '<p><strong>Non compatible</strong> en l\'état : %s. Un kit de bridage '
+              'homologué existe parfois — renseignez-vous auprès du constructeur.</p></div>'
+              % e(m["a2_detail"]))
+
+    # identite
+    ident = []
+    if m["ecole"]:
+        ident.append('<a class="etiq ecole" href="%s/ecoles/%s.html">école %s</a>'
+                     % (RACINE, slug(m["ecole"]), e(m["ecole"])))
+    if m["categorie"]:
+        ident.append('<a class="etiq" href="%s/categories/%s.html">%s</a>'
+                     % (RACINE, slug(m["categorie"]), e(m["categorie"])))
+    periode = ""
+    if m["annee_debut"]:
+        periode = ("Produite depuis %s" % e(m["annee_debut"]) if not m["annee_fin"]
+                   else "Produite de %s à %s" % (e(m["annee_debut"]), e(m["annee_fin"])))
+
+    # resume : on ne recopie pas, on renvoie
+    resume = ""
+    if m["url_wikipedia_fr"]:
+        resume = ('<p class="chapo">%s. Pour l\'historique détaillé du modèle, '
+                  'consultez <a href="%s" rel="nofollow">l\'article Wikipédia</a>.</p>'
+                  % (e(periode or "Modèle de la marque " + marque), e(m["url_wikipedia_fr"])))
+    elif periode:
+        resume = '<p class="chapo">%s.</p>' % e(periode)
+
+    # duels lies
+    liens_duels = [d for d in duels_ok
+                   if m["modele_id"] in (d["modele_a_id"], d["modele_b_id"])][:6]
+    bloc_duels = ""
+    if liens_duels:
+        li = []
+        for d in liens_duels:
+            autre = (d["modele_b"] if d["modele_a_id"] == m["modele_id"] else d["modele_a"])
+            li.append('<li><a href="%s%s"><span>%s ou %s</span></a></li>'
+                      % (RACINE, e(d["url"]), e(nom), e(autre)))
+        bloc_duels = ('<h2>Comparer la %s</h2><ul class="liste-liens">%s</ul>'
+                      % (e(nom), "".join(li)))
+
+    # modeles proches
+    proches = [x for x in par_marque.get(marque, [])
+               if x["modele_id"] != m["modele_id"]][:8]
+    bloc_proches = ""
+    if proches:
+        bloc_proches = ("<h2>Autres %s</h2>%s" % (e(marque), grille(proches)))
+
+    # donnees structurees
+    ld = {"@context": "https://schema.org", "@type": "Product",
+          "name": nom, "category": m["categorie"] or "Motocyclette",
+          "brand": {"@type": "Brand", "name": marque},
+          "url": SITE_URL + m["url"]}
+    if m["image_url"] and m["image_utilisable"] == "oui":
+        ld["image"] = m["image_url"]
+    props = []
+    for lib, champ, unite in (("Cylindrée", "cylindree_cc", "cm3"),
+                              ("Puissance", "puissance_ch", "ch"),
+                              ("Poids", "poids_kg", "kg"),
+                              ("Hauteur de selle", "hauteur_selle_mm", "mm")):
+        if m[champ]:
+            props.append({"@type": "PropertyValue", "name": lib,
+                          "value": m[champ], "unitText": unite})
+    if props:
+        ld["additionalProperty"] = props
+    extra = ('<script type="application/ld+json">%s</script>'
+             % json.dumps(ld, ensure_ascii=False))
+
+    corps = """<div class="conteneur section">
+<p>%(ident)s</p>
+<h1>%(nom)s</h1>
+%(resume)s
+<div class="fiche">
+  <div>%(photo)s%(a2)s</div>
+  <div class="tableau-large">%(tab)s</div>
+</div>
+%(duels)s
+%(proches)s
+<div class="encart"><p class="encart-titre">Source</p>
+<p>Caractéristiques extraites de <a href="%(wen)s" rel="nofollow">Wikipédia</a>
+(CC BY-SA 4.0). Complétude de cette fiche : %(comp)s %%.
+Les valeurs absentes ne figurent pas dans la source.</p></div>
+</div>""" % {"ident": " ".join(ident), "nom": e(nom), "resume": resume,
+             "photo": photo, "a2": a2, "tab": tableau,
+             "duels": bloc_duels, "proches": bloc_proches,
+             "wen": e(m["url_wikipedia"]), "comp": e(m["completude_pct"])}
+
+    fil = [("Accueil", "/"), ("Marques", "/marques/"),
+           (marque, "/marques/%s.html" % slug(marque)), (nom, None)]
+    ecrire(m["url"].lstrip("/"), page(titre, desc, corps, SITE_URL + m["url"],
+                                      extra, fil))
+    enregistrer(m["url"], "0.8")
+
+
+MAX_LISTE = 120   # au-dela, la page devient trop lourde : on renvoie au comparateur
+
+def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps=""):
+    total = len(liste)
+    montres = liste[:MAX_LISTE]
+    suite = ""
+    if total > MAX_LISTE:
+        suite = ('<p class="compteur">%d modèles au total. Les %d plus consultés sont '
+                 'affichés ci-dessous — utilisez le <a href="/comparateur.html">comparateur</a> '
+                 "pour filtrer l'ensemble.</p>" % (total, MAX_LISTE))
+    else:
+        suite = ('<p class="compteur">%d modèle%s</p>'
+                 % (total, "s" if total > 1 else ""))
+    corps = ('<div class="conteneur section"><h1>%s</h1><p class="chapo">%s</p>'
+             '%s%s%s</div>'
+             % (e(h1), intro, extra_corps, suite, grille(montres, 6)))
+    desc = re.sub(r"<[^>]+>", "", intro)[:158]
+    ecrire(chemin.lstrip("/"), page(titre, desc, corps, SITE_URL + chemin, "", fil))
+    enregistrer(chemin, prio)
+
+
+def page_duel(d):
+    a, b = par_id[d["modele_a_id"]], par_id[d["modele_b_id"]]
+    na, nb = a["nom_affichage"], b["nom_affichage"]
+    titre = "%s ou %s : lequel choisir ?" % (na, nb)
+    desc = ("Comparatif %s contre %s : cylindree, puissance, poids, hauteur de "
+            "selle et compatibilite permis A2." % (na, nb))
+
+    CRIT = [("Cylindrée", "cylindree_cc", "cm³", 0, None),
+            ("Puissance", "puissance_ch", "ch", 1, "haut"),
+            ("Couple", "couple_nm", "Nm", 1, "haut"),
+            ("Poids", "poids_kg", "kg", 0, "bas"),
+            ("Hauteur de selle", "hauteur_selle_mm", "mm", 0, None),
+            ("Réservoir", "reservoir_l", "L", 1, "haut"),
+            ("Vitesse maximale", "vitesse_max_kmh", "km/h", 0, "haut"),
+            ("Empattement", "empattement_mm", "mm", 0, None),
+            ("Année", "annee_debut", "", 0, "brut"),
+            ("Prix au lancement", "prix_lancement_eur", "€", 0, "bas")]
+    lignes = []
+    for lib, champ, unite, dec, sens in CRIT:
+        va, vb = a[champ], b[champ]
+        if not va and not vb:
+            continue
+        ca = cb = ""
+        if sens and va and vb:
+            try:
+                fa, fb = float(va), float(vb)
+                if fa != fb:
+                    gagnant_a = (fa > fb) if sens == "haut" else (fa < fb)
+                    ca, cb = ("gagne", "") if gagnant_a else ("", "gagne")
+            except ValueError:
+                pass
+        fmt = (lambda v: e(v) if v else "") if sens == "brut" else               (lambda v: num(v, unite, dec))
+        if sens == "brut":
+            ca = cb = ""
+        lignes.append('<tr><th scope="row">%s</th><td class="%s">%s</td>'
+                      '<td class="%s">%s</td></tr>'
+                      % (lib, ca, fmt(va) or "—", cb, fmt(vb) or "—"))
+    tab = ('<div class="tableau-large"><table class="tab-duel"><thead><tr>'
+           '<th>Critère</th><th>%s</th><th>%s</th></tr></thead><tbody>%s</tbody>'
+           '</table></div>' % (e(na), e(nb), "".join(lignes)))
+
+    # synthese calculee, sans superlatif invente
+    pts = []
+
+    def cmp_num(champ, lib, sens):
+        try:
+            fa, fb = float(a[champ]), float(b[champ])
+        except (ValueError, TypeError):
+            return
+        if fa == fb or max(fa, fb) == 0:
+            return
+        gagne_a = (fa > fb) if sens == "haut" else (fa < fb)
+        if abs(fa - fb) / max(fa, fb) * 100 < 4:
+            return
+        pts.append("la <strong>%s</strong> %s (%s contre %s)"
+                   % (e(na if gagne_a else nb), lib,
+                      num(a[champ] if gagne_a else b[champ], "", 0),
+                      num(b[champ] if gagne_a else a[champ], "", 0)))
+
+    cmp_num("puissance_ch", "annonce plus de chevaux", "haut")
+    cmp_num("poids_kg", "est plus légère", "bas")
+    cmp_num("couple_nm", "offre plus de couple", "haut")
+    cmp_num("hauteur_selle_mm", "a une selle plus basse", "bas")
+    synth = ("<p>Sur le papier : %s.</p>" % " ; ".join(pts[:4])) if pts else ""
+
+    duo = ('<div class="duel"><div>%s</div><div class="duel-vs">contre</div>'
+           '<div>%s</div></div>' % (vignette(a, True), vignette(b, True)))
+
+    autres = [x for x in duels_ok if x["categorie"] == d["categorie"]
+              and x["duel_id"] != d["duel_id"]][:8]
+    bloc = ""
+    if autres:
+        bloc = ('<h2>Autres duels en %s</h2><ul class="liste-liens">%s</ul>'
+                % (e(d["categorie"]),
+                   "".join('<li><a href="%s%s"><span>%s ou %s</span></a></li>'
+                           % (RACINE, e(x["url"]), e(x["modele_a"]), e(x["modele_b"]))
+                           for x in autres)))
+
+    corps = """<div class="conteneur section">
+<h1>%(t)s</h1>
+<p class="chapo">Comparaison des caractéristiques constructeur. Les deux modèles
+appartiennent à la catégorie %(cat)s%(a2)s.</p>
+%(duo)s
+%(tab)s
+%(synth)s
+<div class="encart"><p class="encart-titre">Comment lire ce comparatif</p>
+<p>Seules les valeurs mesurables sont confrontées ici : elles ne disent rien du
+comportement réel, du confort ou du plaisir de conduite. Un essai reste
+indispensable avant de choisir. Un tiret signifie que la donnée est absente de
+nos sources, pas qu'elle vaut zéro.</p></div>
+%(bloc)s
+</div>""" % {"t": e(titre), "cat": e(d["categorie"]),
+             "a2": (", toutes deux compatibles permis A2" if d["a2"] == "oui" else ""),
+             "duo": duo, "tab": tab, "synth": synth, "bloc": bloc}
+
+    fil = [("Accueil", "/"), ("Duels", "/duels/"), ("%s / %s" % (na, nb), None)]
+    ecrire(d["url"].lstrip("/"), page(titre, desc, corps, SITE_URL + d["url"], "", fil))
+    enregistrer(d["url"], "0.7")
+
+
+def page_comparateur():
+    ecoles = sorted({m["ecole"] for m in pub if m["ecole"]})
+    cats = sorted({m["categorie"] for m in pub if m["categorie"]})
+    marques = sorted({m["marque"] for m in pub})
+
+    def opts(vals, tout):
+        return ('<option value="">%s</option>' % tout
+                + "".join('<option value="%s">%s</option>' % (e(v), e(v)) for v in vals))
+
+    filtres = """<div class="filtres">
+<div class="champ"><label for="f-q">Recherche</label>
+  <input id="f-q" type="search" placeholder="MT-07, Africa Twin…" autocomplete="off"></div>
+<div class="champ"><label for="f-ecole">École</label><select id="f-ecole">%s</select></div>
+<div class="champ"><label for="f-cat">Catégorie</label><select id="f-cat">%s</select></div>
+<div class="champ"><label for="f-marque">Marque</label><select id="f-marque">%s</select></div>
+<div class="champ"><label for="f-a2">Permis A2</label><select id="f-a2">
+  <option value="">Indifférent</option><option value="oui">Compatible A2</option></select></div>
+<div class="champ"><label for="f-cyl">Cylindrée maximale</label><select id="f-cyl">
+  <option value="">Indifférente</option><option value="125">125 cm³</option>
+  <option value="400">400 cm³</option><option value="700">700 cm³</option>
+  <option value="1000">1000 cm³</option></select></div>
+<div class="champ"><label for="f-selle">Hauteur de selle max.</label><select id="f-selle">
+  <option value="">Indifférente</option><option value="780">780 mm</option>
+  <option value="810">810 mm</option><option value="840">840 mm</option></select></div>
+<div class="champ"><label for="f-tri">Trier par</label><select id="f-tri">
+  <option value="pr">Pertinence</option><option value="p">Puissance</option>
+  <option value="kg">Poids</option><option value="cy">Cylindrée</option>
+  <option value="s">Hauteur de selle</option></select></div>
+</div>""" % (opts(ecoles, "Toutes"), opts(cats, "Toutes"), opts(marques, "Toutes"))
+
+    corps = """<div class="conteneur section">
+<h1>Comparateur de motos</h1>
+<p class="chapo">Filtrez %d modèles par école, catégorie, cylindrée, hauteur de selle
+et compatibilité permis A2. Le filtrage est instantané et ne demande aucun compte.</p>
+%s
+<p class="compteur" id="compteur" role="status"></p>
+<div class="grille" id="resultats"></div>
+<p class="vide" id="vide" hidden>Aucun modèle ne correspond à ces critères.
+Élargissez la sélection.</p>
+</div>""" % (len(pub), filtres)
+
+    ecrire("comparateur.html",
+           page("Comparateur de motos : filtrer par école, cylindrée et permis A2",
+                "Comparez %d motos par école, catégorie, cylindrée, hauteur de selle "
+                "et compatibilité permis A2." % len(pub),
+                corps, SITE_URL + "/comparateur.html", "",
+                [("Accueil", "/"), ("Comparateur", None)],
+                '<script src="/assets/comparateur.js" defer></script>'))
+    enregistrer("/comparateur.html", "0.9")
+
+    slim = [{"n": m["nom_affichage"], "m": m["marque"], "e": m["ecole"],
+             "c": m["categorie"], "a2": m["a2_compatible"],
+             "cy": float(m["cylindree_cc"] or 0), "p": float(m["puissance_ch"] or 0),
+             "kg": float(m["poids_kg"] or 0), "s": float(m["hauteur_selle_mm"] or 0),
+             "pr": float(m["priorite"] or 0), "u": m["url"],
+             "i": m["image_url"] if m["image_utilisable"] == "oui" else ""}
+            for m in pub]
+    ecrire("assets/data.json",
+           json.dumps(slim, ensure_ascii=False, separators=(",", ":")))
+
+
+JS = r"""
+(function(){
+  var D=[],res=document.getElementById('resultats'),cpt=document.getElementById('compteur'),
+      vide=document.getElementById('vide');
+  var F={q:'f-q',ecole:'f-ecole',cat:'f-cat',marque:'f-marque',a2:'f-a2',
+         cyl:'f-cyl',selle:'f-selle',tri:'f-tri'},E={};
+  for(var k in F){E[k]=document.getElementById(F[k]);}
+
+  function norm(s){return (s||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'');}
+
+  function carte(m){
+    var img=m.i?'<div class="carte-img"><img src="'+m.i+'" alt="'+m.n+
+      '" loading="lazy" decoding="async"></div>':'<div class="carte-img"></div>';
+    var b=[];
+    if(m.cy)b.push(Math.round(m.cy)+' cm³');
+    if(m.p)b.push(Math.round(m.p)+' ch');
+    if(m.kg)b.push(Math.round(m.kg)+' kg');
+    var a2=m.a2==='oui'?'<span class="etiq a2">A2</span>':'';
+    return '<a class="carte" href="'+m.u+'">'+img+'<div class="carte-corps">'+
+      '<span class="carte-marque">'+m.m+'</span>'+
+      '<span class="carte-nom">'+m.n+'</span>'+
+      '<span class="carte-specs">'+b.join(' · ')+' '+a2+'</span></div></a>';
+  }
+
+  function filtrer(){
+    var q=norm(E.q.value.trim()),tri=E.tri.value;
+    var out=D.filter(function(m){
+      if(q && norm(m.n+' '+m.m).indexOf(q)<0) return false;
+      if(E.ecole.value && m.e!==E.ecole.value) return false;
+      if(E.cat.value && m.c!==E.cat.value) return false;
+      if(E.marque.value && m.m!==E.marque.value) return false;
+      if(E.a2.value==='oui' && m.a2!=='oui') return false;
+      if(E.cyl.value && (!m.cy || m.cy>+E.cyl.value)) return false;
+      if(E.selle.value && (!m.s || m.s>+E.selle.value)) return false;
+      return true;
+    });
+    out.sort(function(x,y){
+      if(tri==='kg'||tri==='s'){
+        var a=x[tri]||1e9,b=y[tri]||1e9; return a-b;
+      }
+      return (y[tri]||0)-(x[tri]||0);
+    });
+    cpt.textContent=out.length+(out.length>1?' modèles trouvés':' modèle trouvé');
+    vide.hidden=out.length>0;
+    res.innerHTML=out.slice(0,180).map(carte).join('');
+    if(out.length>180){
+      cpt.textContent=out.length+' modèles trouvés — les 180 premiers sont affichés';
+    }
+  }
+
+  for(var k2 in E){
+    E[k2].addEventListener(E[k2].tagName==='INPUT'?'input':'change',filtrer);
+  }
+
+  fetch('/assets/data.json').then(function(r){return r.json();}).then(function(j){
+    D=j; filtrer();
+  }).catch(function(){
+    cpt.textContent='Impossible de charger les données. Rechargez la page.';
+  });
+})();
+"""
+
+
+def page_accueil():
+    top = sorted(pub, key=lambda x: -float(x["priorite"] or 0))[:12]
+    a2 = [m for m in pub if m["a2_compatible"] == "oui"][:8]
+    duels_top = duels_ok[:9]
+
+    ecoles_html = "".join(
+        '<li><a href="/ecoles/%s.html"><span>École %s</span>'
+        '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
+        for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1]))[:8])
+    cats_html = "".join(
+        '<li><a href="/categories/%s.html"><span>%s</span>'
+        '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
+        for k, v in sorted(par_cat.items(), key=lambda x: -len(x[1])))
+    duels_html = "".join(
+        '<li><a href="%s"><span>%s ou %s</span></a></li>'
+        % (e(d["url"]), e(d["modele_a"]), e(d["modele_b"])) for d in duels_top)
+
+    corps = """<section class="heros"><div class="conteneur">
+<h1>Les fiches techniques moto, sans le bruit</h1>
+<p class="chapo">%(n)d modèles documentés, un comparateur qui filtre vraiment, et des
+duels chiffrés pour trancher entre deux motos. Compatibilité permis A2 calculée
+pour chaque machine.</p>
+<div class="chiffres">
+  <div class="chiffre"><span class="v">%(n)d</span><span class="l">modèles</span></div>
+  <div class="chiffre"><span class="v">%(m)d</span><span class="l">marques</span></div>
+  <div class="chiffre"><span class="v">%(a2)d</span><span class="l">compatibles A2</span></div>
+  <div class="chiffre"><span class="v">%(d)d</span><span class="l">duels</span></div>
+</div>
+</div></section>
+
+<div class="conteneur section">
+<h2>Guides d&rsquo;achat</h2>
+<p class="chapo">Des sélections argumentées, croisant caractéristiques
+constructeur et retours de motards qui roulent ces machines.</p>
+<div class="grille-guides-index">%(guides)s</div>
+
+<h2>Les modèles les plus consultés</h2>
+%(top)s
+
+<h2>Trancher entre deux motos</h2>
+<ul class="liste-liens">%(duels)s</ul>
+
+<h2>Par école</h2>
+<p class="chapo">Chaque pays a sa façon de concevoir une moto. La fiabilité
+japonaise, le caractère italien, le twin américain : trois philosophies, trois
+manières de rouler.</p>
+<ul class="liste-liens">%(ecoles)s</ul>
+
+<h2>Par catégorie</h2>
+<ul class="liste-liens">%(cats)s</ul>
+
+<h2>Accessibles au permis A2</h2>
+<p class="chapo">Moins de 35 kW et un rapport poids/puissance sous 0,2 kW/kg :
+le calcul est fait pour chaque modèle à partir des données constructeur.</p>
+%(bloca2)s
+</div>""" % {"n": len(pub), "m": len(par_marque), "d": len(duels_ok),
+             "a2": sum(1 for m in pub if m["a2_compatible"] == "oui"),
+             "top": grille(top, 6), "duels": duels_html,
+             "guides": "".join(
+                 '<a class="carte-guide-lien" href="/guides/%s.html">'
+                 '<span class="cgl-titre">%s</span>'
+                 '<span class="cgl-desc">%s</span></a>'
+                 % (e(x["slug"]), e(x["h1"]), e(x["desc"])) for x in GUIDES),
+             "ecoles": ecoles_html, "cats": cats_html, "bloca2": grille(a2)}
+
+    ecrire("index.html", page("%s — fiches techniques, comparateur et duels moto"
+                              % SITE_NOM, SITE_DESC, corps, SITE_URL + "/"))
+    enregistrer("/", "1.0")
+
+
+def pages_hubs():
+    # marques
+    li = "".join('<li><a href="/marques/%s.html"><span>%s</span>'
+                 '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
+                 for k, v in sorted(par_marque.items()))
+    corps = ('<div class="conteneur section"><h1>Toutes les marques</h1>'
+             '<p class="chapo">%d constructeurs représentés.</p>'
+             '<ul class="liste-liens">%s</ul></div>' % (len(par_marque), li))
+    ecrire("marques/index.html",
+           page("Marques de motos : %d constructeurs" % len(par_marque),
+                "Toutes les marques de motos documentées, du Japon à l'Italie.",
+                corps, SITE_URL + "/marques/", "",
+                [("Accueil", "/"), ("Marques", None)]))
+    enregistrer("/marques/", "0.8")
+
+    for marque, liste in par_marque.items():
+        s = slug(marque)
+        ecole = liste[0]["ecole"]
+        intro = ("Les %d modèles %s documentés, avec leurs caractéristiques "
+                 "techniques et leur compatibilité permis A2."
+                 % (len(liste), e(marque)))
+        if ecole:
+            intro += " Marque de l'école %s." % e(ecole)
+        page_liste("/marques/%s.html" % s,
+                   "Motos %s : tous les modèles et fiches techniques" % marque,
+                   "Motos %s" % marque, intro, liste,
+                   [("Accueil", "/"), ("Marques", "/marques/"), (marque, None)], "0.8")
+
+    # ecoles
+    li = "".join('<li><a href="/ecoles/%s.html"><span>École %s</span>'
+                 '<span class="n">%d</span></a></li>' % (slug(k), e(k), len(v))
+                 for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1])))
+    corps = ('<div class="conteneur section"><h1>Les écoles de la moto</h1>'
+             '<p class="chapo">Japonaise, italienne, américaine, britannique : '
+             'chaque tradition industrielle a façonné une manière de concevoir '
+             'une machine. Un classement que personne d\'autre ne propose.</p>'
+             '<ul class="liste-liens">%s</ul></div>' % li)
+    ecrire("ecoles/index.html",
+           page("Les écoles de la moto : japonaise, italienne, américaine",
+                "Classement des motos par école nationale : japonaise, italienne, "
+                "américaine, britannique, allemande.",
+                corps, SITE_URL + "/ecoles/", "",
+                [("Accueil", "/"), ("Écoles", None)]))
+    enregistrer("/ecoles/", "0.9")
+
+    TEXTES = {
+     "japonaise": "Fiabilité, production de masse et polyvalence. Les quatre grands "
+                  "constructeurs nippons ont imposé un standard de robustesse que le "
+                  "reste du monde a dû rattraper.",
+     "italienne": "Le caractère avant la raison. Châssis affûtés, moteurs typés et "
+                  "un dessin qui n'a jamais cherché le consensus.",
+     "americaine": "Le gros twin, le couple à bas régime et la ligne droite. Une "
+                   "conception née de routes larges et de longues distances.",
+     "britannique": "L'école historique. Twins verticaux, esthétique intemporelle et "
+                    "une influence qui dépasse largement les volumes produits.",
+     "allemande": "Ingénierie et longévité. Le flat-twin BMW a défini la moto de "
+                  "voyage moderne.",
+     "autrichienne": "Le tout-terrain comme point de départ. Des machines légères, "
+                     "nerveuses, orientées performance.",
+    }
+    for ecole, liste in par_ecole.items():
+        s = slug(ecole)
+        intro = TEXTES.get(s, "Les modèles de l'école %s." % e(ecole))
+        intro += (" %d modèles répertoriés, de %s." %
+                  (len(liste), ", ".join(sorted({m["marque"] for m in liste})[:6])))
+        page_liste("/ecoles/%s.html" % s,
+                   "Motos de l'école %s : modèles et caractéristiques" % ecole,
+                   "L'école %s" % ecole, intro, liste,
+                   [("Accueil", "/"), ("Écoles", "/ecoles/"), (ecole.capitalize(), None)],
+                   "0.85")
+
+    # categories
+    for cat, liste in par_cat.items():
+        s = slug(cat)
+        intro = ("Les %d modèles de la catégorie %s, classés par pertinence. "
+                 "Filtrez par cylindrée et hauteur de selle dans le "
+                 "<a href=\"/comparateur.html\">comparateur</a>."
+                 % (len(liste), e(cat)))
+        page_liste("/categories/%s.html" % s,
+                   "%s : tous les modèles et fiches techniques" % cat,
+                   cat, intro, liste,
+                   [("Accueil", "/"), (cat, None)], "0.8")
+
+    # duels : entree par modele
+    impliques = {}
+    for d in duels_ok:
+        for cle in ("modele_a_id", "modele_b_id"):
+            m = par_id[d[cle]]
+            impliques[m["modele_id"]] = m
+
+    par_marque_sel = defaultdict(list)
+    for m in impliques.values():
+        par_marque_sel[m["marque"]].append(m)
+    groupes = []
+    for marque in sorted(par_marque_sel):
+        opts = "".join('<option value="%s">%s</option>'
+                       % (e(m["modele_id"]), e(m["nom_affichage"]))
+                       for m in sorted(par_marque_sel[marque],
+                                       key=lambda x: x["nom_affichage"]))
+        groupes.append('<optgroup label="%s">%s</optgroup>' % (e(marque), opts))
+
+    selecteur = """<div class="selecteur">
+  <label for="d-modele">Quelle moto vous intéresse ?</label>
+  <select id="d-modele">
+    <option value="">— Choisissez un modèle —</option>
+    %s
+  </select>
+  <p class="selecteur-aide">%d modèles ont au moins un duel.
+     Sélectionnez-en un pour voir uniquement ses comparatifs.</p>
+</div>""" % ("".join(groupes), len(impliques))
+
+    # rendu statique : lisible sans JavaScript et indexable
+    defaut = "".join(carte_duel(d) for d in duels_ok[:24])
+
+    corps = """<div class="conteneur section">
+<h1>Duels</h1>
+<p class="chapo">%(n)d comparaisons chiffrées entre deux motos de même catégorie et
+de cylindrée voisine. Choisissez la moto qui vous intéresse pour voir directement
+les machines auxquelles elle se mesure.</p>
+%(sel)s
+<h2 id="titre-res">Les duels les plus consultés</h2>
+<div class="grille-duels" id="res-duels">%(def)s</div>
+<p class="vide" id="d-vide" hidden>Aucun duel pour ce modèle.</p>
+<div class="encart"><p class="encart-titre">Comment sont formés les duels</p>
+<p>Deux motos ne sont confrontées que si elles partagent la catégorie, une cylindrée
+proche à 25 %% près et le même statut permis A2. Chaque modèle est limité à six
+duels pour éviter les comparaisons redondantes.</p></div>
+</div>""" % {"n": len(duels_ok), "sel": selecteur, "def": defaut}
+
+    ecrire("duels/index.html",
+           page("Duels moto : comparer deux modèles face à face",
+                "Choisissez votre moto et découvrez à quelles machines elle se "
+                "compare : puissance, poids, hauteur de selle, permis A2.",
+                corps, SITE_URL + "/duels/", "",
+                [("Accueil", "/"), ("Duels", None)],
+                '<script src="/assets/duels.js" defer></script>'))
+    enregistrer("/duels/", "0.9")
+
+    # donnees pour le filtrage cote navigateur
+    charge = []
+    for d in duels_ok:
+        a, b = par_id[d["modele_a_id"]], par_id[d["modele_b_id"]]
+        charge.append({
+            "u": d["url"], "c": d["categorie"], "a2": d["a2"],
+            "ia": a["modele_id"], "ib": b["modele_id"],
+            "a": _cote(a), "b": _cote(b)})
+    ecrire("assets/duels.json",
+           json.dumps(charge, ensure_ascii=False, separators=(",", ":")))
+
+
+JS_DUELS = r"""
+(function(){
+  var sel=document.getElementById('d-modele'),
+      res=document.getElementById('res-duels'),
+      titre=document.getElementById('titre-res'),
+      vide=document.getElementById('d-vide'),
+      D=null;
+
+  function cote(c){
+    var img=c.i?'<img src="'+c.i+'" alt="'+c.n+'" loading="lazy" decoding="async">':'';
+    var b=[];
+    if(c.cy)b.push(Math.round(c.cy)+' cm³');
+    if(c.p)b.push(Math.round(c.p)+' ch');
+    if(c.kg)b.push(Math.round(c.kg)+' kg');
+    return '<div class="cd-cote"><div class="cd-img">'+img+'</div>'+
+      '<span class="cd-marque">'+c.m+'</span>'+
+      '<span class="cd-nom">'+c.n+'</span>'+
+      '<span class="cd-spec">'+b.join(' · ')+'</span></div>';
+  }
+  function carte(d){
+    var t='<span class="etiq">'+d.c+'</span>';
+    if(d.a2==='oui')t+=' <span class="etiq a2">A2</span>';
+    return '<a class="carte-duel" href="'+d.u+'">'+
+      '<div class="cd-cotes">'+cote(d.a)+'<span class="cd-vs">contre</span>'+
+      cote(d.b)+'</div><div class="cd-pied">'+t+'</div></a>';
+  }
+  function afficher(id){
+    if(!D)return;
+    if(!id){
+      titre.textContent='Les duels les plus consultés';
+      res.innerHTML=D.slice(0,24).map(carte).join('');
+      vide.hidden=true;
+      return;
+    }
+    var lot=D.filter(function(d){return d.ia===id||d.ib===id;});
+    // la moto choisie toujours a gauche
+    lot=lot.map(function(d){
+      return d.ib===id?{u:d.u,c:d.c,a2:d.a2,ia:d.ib,ib:d.ia,a:d.b,b:d.a}:d;
+    });
+    var nom=lot.length?lot[0].a.n:sel.options[sel.selectedIndex].text;
+    titre.textContent=lot.length+(lot.length>1?' duels pour la ':' duel pour la ')+nom;
+    res.innerHTML=lot.map(carte).join('');
+    vide.hidden=lot.length>0;
+    if(history.replaceState){
+      history.replaceState(null,'',id?('#'+id):location.pathname);
+    }
+  }
+  sel.addEventListener('change',function(){afficher(sel.value);});
+
+  fetch('/assets/duels.json').then(function(r){return r.json();}).then(function(j){
+    D=j;
+    var h=location.hash.slice(1);
+    if(h){sel.value=h;}
+    if(sel.value){afficher(sel.value);}
+  });
+})();
+"""
+
+
+def fichiers_techniques():
+    ecrire("assets/style.css", CSS)
+    ecrire("assets/duels.js", JS_DUELS)
+    ecrire("assets/comparateur.js", JS)
+    ecrire("robots.txt", "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
+    items = "".join(
+        "<url><loc>%s%s</loc><priority>%s</priority></url>"
+        % (SITE_URL, html.escape(u), p) for u, p in urls)
+    ecrire("sitemap.xml",
+           '<?xml version="1.0" encoding="UTF-8"?>'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">%s</urlset>'
+           % items)
+
+
+
+
+# ================================================================= GUIDES
+def _fiche_lien(modele_id):
+    """Fiche liee a un modele cite dans un guide.
+
+    Appariement STRICT par identifiant. Une correspondance approximative sur le
+    nom renverrait vers la mauvaise machine : 'Honda CB500 Hornet' (2023) avait
+    ainsi ete lie a la CB500 Four de 1971.
+    """
+    if not modele_id:
+        return None
+    m = par_id.get(modele_id)
+    if not m:
+        print("  ! guide : identifiant inconnu '%s'" % modele_id)
+        return None
+    # un guide d'achat 2026 ne doit jamais pointer vers une machine ancienne
+    # homonyme (la Z650 de 1977, la CB500 Four de 1971...)
+    try:
+        an = int(m["annee_debut"]) if m["annee_debut"] else 0
+    except ValueError:
+        an = 0
+    if an and an < 2005:
+        print("  ! guide : lien refuse vers '%s' (%d), trop ancien"
+              % (m["nom_affichage"], an))
+        return None
+    return m
+
+
+def carte_guide(c, rang):
+    m = _fiche_lien(c.get("modele"))
+    img = ""
+    if m and (m.get("image_vignette") or m["image_url"]) and m["image_utilisable"] == "oui":
+        img = ('<div class="cg-img"><img src="%s" alt="%s" loading="lazy" '
+               'decoding="async"></div>'
+               % (e(m.get("image_vignette") or m["image_url"]), e(c["nom"])))
+    chiffres = "".join(
+        '<div><span class="cg-l">%s</span><span class="cg-v">%s</span></div>' % (lib, e(val))
+        for lib, val in (("Prix", c.get("prix")), ("Puissance", c.get("puissance")),
+                         ("Poids", c.get("poids"))) if val)
+    forts = "".join("<li>%s</li>" % x for x in c.get("forts", []))
+    res = "".join("<li>%s</li>" % x for x in c.get("reserves", []))
+    if m:
+        lien = ('<a class="cg-lien" href="%s%s">Voir la fiche technique complète</a>'
+                % (RACINE, e(m["url"])))
+    else:
+        lien = ('<span class="cg-absent">Fiche technique pas encore disponible '
+                'sur le site</span>')
+    return """<article class="carte-guide" id="%(id)s">
+  <div class="cg-tete"><span class="cg-rang">%(rang)02d</span>
+    <h3>%(nom)s</h3></div>
+  %(img)s
+  <p class="cg-pour"><strong>Pour qui :</strong> %(pour)s</p>
+  <div class="cg-chiffres">%(chiffres)s</div>
+  <div class="cg-listes">
+    <div><p class="cg-sl">Ce qui plaît</p><ul class="cg-plus">%(forts)s</ul></div>
+    <div><p class="cg-sl">Ce qui coince</p><ul class="cg-moins">%(res)s</ul></div>
+  </div>
+  <p class="cg-verdict">%(verdict)s</p>
+  %(lien)s
+</article>""" % {"id": slug(c["nom"]), "rang": rang, "nom": e(c["nom"]),
+                 "img": img, "pour": c.get("pour", ""), "chiffres": chiffres,
+                 "forts": forts, "res": res,
+                 "verdict": e(c.get("verdict", "")), "lien": lien}
+
+
+def page_guide(g):
+    corps = []
+    sommaire = []
+    for s in g["sections"]:
+        aid = slug(s["h2"])
+        sommaire.append('<li><a href="#%s">%s</a></li>' % (aid, e(s["h2"])))
+        corps.append('<h2 id="%s">%s</h2>' % (aid, e(s["h2"])))
+        if s.get("html"):
+            corps.append(s["html"])
+        if s.get("cartes"):
+            corps.append('<div class="grille-guide">%s</div>'
+                         % "".join(carte_guide(c, i + 1)
+                                   for i, c in enumerate(s["cartes"])))
+
+    faq_html = ""
+    if g.get("faq"):
+        items = "".join(
+            '<details class="faq"><summary>%s</summary><p>%s</p></details>'
+            % (e(q), e(r)) for q, r in g["faq"])
+        faq_html = '<h2 id="questions-frequentes">Questions fréquentes</h2>%s' % items
+        sommaire.append('<li><a href="#questions-frequentes">Questions fréquentes</a></li>')
+
+    src = "".join('<li><a href="%s" rel="nofollow">%s</a></li>' % (e(u), e(t))
+                  for t, u in g.get("sources", []))
+    sources_html = ('<h2 id="sources">Sources</h2>'
+                    '<p class="mention">Les impressions de conduite citées dans ce '
+                    'guide proviennent des essais et retours de propriétaires '
+                    'ci-dessous. Elles sont résumées, jamais recopiées.</p>'
+                    '<ol class="sources">%s</ol>' % src)
+
+    ld = {"@context": "https://schema.org", "@type": "Article",
+          "headline": g["titre"], "description": g["desc"],
+          "inLanguage": "fr-FR", "dateModified": "2026-08-25",
+          "author": {"@type": "Organization", "name": SITE_NOM},
+          "publisher": {"@type": "Organization", "name": SITE_NOM}}
+    extra = ('<script type="application/ld+json">%s</script>'
+             % json.dumps(ld, ensure_ascii=False))
+    if g.get("faq"):
+        fq = {"@context": "https://schema.org", "@type": "FAQPage",
+              "mainEntity": [{"@type": "Question", "name": q,
+                              "acceptedAnswer": {"@type": "Answer", "text": r}}
+                             for q, r in g["faq"]]}
+        extra += ('<script type="application/ld+json">%s</script>'
+                  % json.dumps(fq, ensure_ascii=False))
+
+    html_corps = """<div class="conteneur section guide">
+<p class="guide-meta">Guide d'achat · Mis à jour le %(maj)s</p>
+<h1>%(h1)s</h1>
+<p class="chapo">%(chapo)s</p>
+<div class="encart"><p class="encart-titre">Notre méthode</p>%(methode)s</div>
+<nav class="sommaire" aria-label="Sommaire"><p class="sommaire-t">Au sommaire</p>
+<ol>%(sommaire)s</ol></nav>
+%(corps)s
+%(faq)s
+%(sources)s
+</div>""" % {"maj": DATE_MAJ, "h1": e(g["h1"]), "chapo": e(g["chapo"]),
+             "methode": METHODE, "sommaire": "".join(sommaire),
+             "corps": "".join(corps), "faq": faq_html, "sources": sources_html}
+
+    url = "/guides/%s.html" % g["slug"]
+    ecrire(url.lstrip("/"),
+           page(g["titre"], g["desc"], html_corps, SITE_URL + url, extra,
+                [("Accueil", "/"), ("Guides d'achat", "/guides/"), (g["h1"], None)]))
+    enregistrer(url, "0.95")
+
+
+def page_guides_index():
+    li = []
+    for g in GUIDES:
+        li.append('<a class="carte-guide-lien" href="/guides/%s.html">'
+                  '<span class="cgl-titre">%s</span>'
+                  '<span class="cgl-desc">%s</span></a>'
+                  % (e(g["slug"]), e(g["h1"]), e(g["desc"])))
+    corps = ('<div class="conteneur section"><h1>Guides d&rsquo;achat</h1>'
+             '<p class="chapo">Des sélections argumentées, croisant les '
+             'caractéristiques constructeur et les retours de motards qui '
+             'roulent ces machines. Sans essai maison : nous le disons '
+             'clairement sur chaque page.</p>'
+             '<div class="grille-guides-index">%s</div></div>' % "".join(li))
+    ecrire("guides/index.html",
+           page("Guides d'achat moto : bien choisir sa machine",
+                "Guides d'achat moto : permis A2, première moto, routière de "
+                "voyage. Sélections argumentées et retours de propriétaires.",
+                corps, SITE_URL + "/guides/", "",
+                [("Accueil", "/"), ("Guides d'achat", None)]))
+    enregistrer("/guides/", "0.95")
+
+
+# ----------------------------------------------------------------- execution
+if os.path.isdir(SITE):
+    shutil.rmtree(SITE)
+
+print("Generation des fiches modeles...")
+for m in pub:
+    page_modele(m)
+print("Generation des hubs...")
+pages_hubs()
+print("Generation des duels...")
+for d in duels_ok:
+    page_duel(d)
+print("Generation du comparateur...")
+page_comparateur()
+print("Generation des guides...")
+page_guides_index()
+for _g in GUIDES:
+    page_guide(_g)
+page_accueil()
+fichiers_techniques()
+
+n_fic = sum(len(files) for _, _, files in os.walk(SITE))
+taille = sum(os.path.getsize(os.path.join(r, f))
+             for r, _, fs in os.walk(SITE) for f in fs)
+print("\n=== SITE GENERE ===")
+print("  %d pages HTML" % len(urls))
+print("  %d fichiers, %.1f Mo" % (n_fic, taille / 1e6))
+print("  dossier : %s" % os.path.abspath(SITE))

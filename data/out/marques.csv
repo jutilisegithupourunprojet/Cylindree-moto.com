@@ -1,0 +1,66 @@
+﻿marque_id,marque,pays_origine,ecole,nb_modeles,categorie_dominante,premiere_annee,derniere_annee
+honda,Honda,Japon,japonaise,301,Roadster,1949,2025
+yamaha,Yamaha,Japon,japonaise,210,Roadster,1955,2025
+suzuki,Suzuki,Japon,japonaise,133,Roadster,1960,2024
+bmw,BMW,Allemagne,allemande,121,Roadster,1923,2025
+kawasaki,Kawasaki,Japon,japonaise,113,Roadster,1962,2025
+ducati,Ducati,Italie,italienne,107,Sportive,1946,2022
+bimota,Bimota,Italie,italienne,54,Sportive,1972,2025
+ktm,KTM,Autriche,autrichienne,49,Trail / Aventure,1984,2021
+triumph-motorcycles-ltd,Triumph Motorcycles Ltd,Royaume-Uni,britannique,45,Roadster,1991,2025
+bsa,BSA,Royaume-Uni,britannique,40,Roadster,1919,1971
+aprilia,Aprilia,Italie,italienne,36,Sportive,1985,2023
+mv-agusta,MV Agusta,Italie,italienne,35,Sportive,1950,2020
+norton,Norton,Royaume-Uni,britannique,34,Compétition,1907,2006
+peugeot,Peugeot,France,francaise,34,Scooter / Cyclomoteur,1913,2013
+harley-davidson,Harley-Davidson,États-Unis,américaine,29,Custom / Cruiser,1903,2023
+piaggio,Piaggio,Italie,italienne,27,Scooter / Cyclomoteur,1956,2021
+triumph-engineering,Triumph Engineering,Royaume-Uni,britannique,25,Roadster,1915,1983
+moto-guzzi,Moto Guzzi,Italie,italienne,20,Custom / Cruiser,1954,2022
+bajaj,Bajaj,Inde,indienne,18,Roadster,1972,2021
+royal-enfield,Royal Enfield,Inde,indienne,14,Roadster,1931,2024
+mz,MZ,Allemagne,allemande,13,Sportive,1934,2010
+hero-honda,Hero Honda,Inde,indienne,13,Roadster,1994,2023
+cagiva,Cagiva,Italie,italienne,12,Trail / Aventure,1983,2000
+benelli,Benelli,Italie,italienne,12,Roadster,1970,2019
+velocette,Velocette,Royaume-Uni,britannique,11,Scooter / Cyclomoteur,1925,1965
+vincent,Vincent,Royaume-Uni,britannique,10,Roadster,1935,1954
+tvs,TVS,Inde,indienne,9,Scooter / Cyclomoteur,1996,2020
+amc,AMC,Royaume-Uni,britannique,9,Roadster,1912,1958
+husqvarna,Husqvarna,Suède,suédoise,8,Trail / Aventure,1930,2024
+ajs,AJS,Royaume-Uni,britannique,8,,1931,1958
+laverda,Laverda,Italie,italienne,8,Roadster,1962,1977
+indian-motorcycles,Indian Motorcycles,États-Unis,américaine,8,Roadster,1916,2019
+ariel,Ariel,Royaume-Uni,britannique,7,Roadster,1931,2014
+gilera,Gilera,Italie,italienne,7,Scooter / Cyclomoteur,1975,2006
+hyosung,Hyosung,Corée du Sud,coréenne,6,Custom / Cruiser,2001,2006
+kymco,Kymco,Taiwan,taiwanaise,6,Scooter / Cyclomoteur,1997,2017
+malaguti,Malaguti,Italie,italienne,5,Scooter / Cyclomoteur,1992,2005
+panther,Panther,Royaume-Uni,britannique,5,,1901,1959
+brough-superior,Brough Superior,Royaume-Uni,britannique,4,Roadster,1922,1938
+buell,Buell,États-Unis,américaine,3,Sportive,2000,2008
+douglas,Douglas,Royaume-Uni,britannique,3,,1907,1955
+excelsior,Excelsior,États-Unis,américaine,3,,1925,1942
+nsu,NSU,Allemagne,allemande,3,Scooter / Cyclomoteur,1953,1962
+zero-motorcycles,Zero Motorcycles,États-Unis,américaine,2,Supermotard,2009,2009
+scott,Scott,Royaume-Uni,britannique,2,,1926,1938
+derbi,Derbi,Espagne,espagnole,2,Trail / Aventure,1990,1994
+maico,Maico,Allemagne,allemande,2,Scooter / Cyclomoteur,1950,1954
+campagna,Campagna,Canada,autre,2,,1988,2008
+jawa,Jawa,Tchéquie,tchèque,2,Roadster,1962,1969
+amazonas-motos-especiais,Amazonas Motos Especiais,Brésil,autre,2,Custom / Cruiser,1978,2006
+escorts,Escorts,Inde,indienne,2,Roadster,1962,1983
+dnepr,Dnepr,Ukraine,autre,1,,1942,1942
+mtt,MTT,États-Unis,américaine,1,Sportive,2000,2000
+ideal-jawa,Ideal Jawa,Inde,indienne,1,Roadster,1978,1978
+sok,Sokół,,,1,,1933,1933
+mondial,Mondial,Italie,italienne,1,Sportive,2002,2002
+bombardier-recreational-products,Bombardier Recreational Products,Canada,autre,1,Roadster,2007,2007
+sunbeam,Sunbeam,Royaume-Uni,britannique,1,,1949,1949
+sachs,Sachs,Allemagne,allemande,1,Roadster,2004,2004
+puch,Puch,Autriche,autrichienne,1,Sportive,1953,1953
+mitsubishi-motors,Mitsubishi Motors,Japon,japonaise,1,Scooter / Cyclomoteur,1946,1946
+modenas,Modenas,Malaisie,autre,1,Scooter / Cyclomoteur,2009,2009
+shl,SHL,Pologne,polonaise,1,,1961,1961
+mahindra-mahindra,Mahindra & Mahindra,Inde,indienne,1,Compétition,2012,2012
+condor,Condor,Suisse,autre,1,,1973,1973
