@@ -194,6 +194,7 @@ CSS = FONT_FACE_CSS + """
   --trait:#ded6c4; --trait-fort:#c4b9a0;
   --accent:#b93f0a; --accent-clair:#f8ded0;
   --petrole:#0e3b3d; --vert:#2c6a4e; --rouge:#8f2a1f;
+  --cta:#b93f0a; --cta-survol:#963309;
   --ombre:0 1px 2px rgba(26,23,20,.06),0 8px 22px -14px rgba(26,23,20,.24);
   --police:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --police-titre:"Oswald",Impact,"Arial Narrow",var(--police);
@@ -304,6 +305,17 @@ p{margin:0 0 1rem}
 .encart-titre{font-family:var(--police-titre);font-size:.78rem;text-transform:uppercase;
   letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.35rem}
 .encart p{margin:0;font-size:.94rem}
+
+.encart-achat{background:var(--carte)}
+.liens-affilies{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.2rem}
+.lien-affilie{display:inline-flex;align-items:center;gap:.4rem;
+  background:var(--cta);color:#fff;font-family:var(--police-titre);
+  font-weight:600;font-size:.88rem;letter-spacing:.02em;
+  padding:.55rem 1.1rem;border-radius:4px;text-decoration:none;
+  transition:transform .12s,background .12s}
+.lien-affilie:hover{background:var(--cta-survol);transform:translateY(-1px)}
+.mention-affilie{margin-top:.7rem !important;font-size:.76rem !important;
+  color:var(--pale)}
 
 .duel{display:grid;gap:1rem;grid-template-columns:1fr}
 @media(min-width:760px){.duel{grid-template-columns:1fr auto 1fr;align-items:start}}

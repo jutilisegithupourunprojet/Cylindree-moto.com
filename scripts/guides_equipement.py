@@ -5,6 +5,7 @@ Guides equipement et assurance (10 a 12).
 Meme regle de redaction que guides_contenu.py : rien d'invente, tout est
 source. On ne recommande aucun produit precis qu'on ne pourrait pas justifier.
 """
+from affiliation import bloc_achat
 
 GUIDES_EQUIPEMENT = [
 
@@ -134,7 +135,7 @@ haut de gamme, pas nécessairement plus de protection.</td></tr>
 <p>Un accessoire mérite d'être budgété d'emblée : l'<strong>écran Pinlock</strong>
 anti-buée. Sur beaucoup de casques de gamme intermédiaire il est fourni ; sinon
 comptez une trentaine d'euros. En hiver, il fait une différence de sécurité
-réelle.</p>"""},
+réelle.</p>""" + bloc_achat(["casque", "casque-amazon"])},
 
   {"h2": "Quand remplacer son casque",
    "html": """<ul class="tick">
@@ -255,7 +256,8 @@ que les protections sont bien incluses, sinon ajoutez-les au budget.</p>"""},
 <p>Un repère qui revient dans les retours du secteur : un motard dépense en
 moyenne <strong>30 % du prix de sa moto en équipement la première année</strong>.
 Et l'arbitrage le plus souvent recommandé : mieux vaut une moto à 3 000 € avec
-1 500 € d'équipement que l'inverse.</p>"""},
+1 500 € d'équipement que l'inverse.</p>""" + bloc_achat(
+       ["blouson", "gants", "bottes", "pantalon"])},
 
   {"h2": "Le gilet airbag : faut-il franchir le pas ?",
    "html": """<p>C'est l'équipement dont l'apport en protection est le plus
@@ -285,7 +287,7 @@ Le filaire convient bien aux longues étapes : pas de batterie à gérer, et la
 cartouche se change soi-même en quelques minutes.</p>
 
 <p class="mention">À noter : le gilet airbag n'est obligatoire pour aucun usage
-routier en France.</p>"""},
+routier en France.</p>""" + bloc_achat(["airbag"])},
 
   {"h2": "Par quoi commencer avec un budget serré",
    "html": """<p>Si vous ne pouvez pas tout acheter d'un coup, cet ordre limite
@@ -372,7 +374,8 @@ Vous ne pouvez pas savoir ce qu'ils ont déjà encaissé.</p>"""},
 <p>Elle s'applique par paliers dégressifs : <strong>100 % la première année,
 50 % la deuxième, 25 % la troisième</strong>, puis disparaît. Votre première
 année coûte donc le double du tarif de référence, un point à intégrer au budget
-avant l'achat, pas après.</p></div>"""},
+avant l'achat, pas après.</p></div>""" + bloc_achat(
+       ["assurance"], "Comparer les tarifs")},
 
   {"h2": "Les leviers qui marchent, et de combien",
    "html": """<p>Chaque levier ci-dessous a un effet mesurable. Cumulés, ils

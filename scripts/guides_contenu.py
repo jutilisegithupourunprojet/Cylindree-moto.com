@@ -13,6 +13,8 @@ Regle de redaction appliquee :
   - quand une donnee manque, on l'ecrit.
 """
 
+from affiliation import bloc_achat
+
 DATE_MAJ = "25 août 2026"
 
 # --- briques reutilisables ------------------------------------------------
@@ -193,7 +195,8 @@ première année d'assurance coûte le double du tarif de référence.</p>
 <p>Conséquence concrète sur le choix du modèle : une moto premium ou puissante
 peut vous coûter plusieurs centaines d'euros de plus par an que sa rivale
 japonaise, à usage identique. <strong>Demandez trois devis avant de signer le
-bon de commande</strong>, pas après.</p>"""},
+bon de commande</strong>, pas après.</p>""" + bloc_achat(
+       ["assurance"], "Demander vos devis")},
 
   {"h2": "Notre lecture",
    "html": """<p>Il n'y a pas de meilleure moto A2 dans l'absolu, mais il y a
@@ -294,7 +297,8 @@ dorsale, gants CE, bottes, pantalon renforcé : 800 à 1 500 €.</li>
 </ul>
 <p>La tentation de rouler « juste pour cinq minutes » en jean et baskets est le
 piège classique des premiers mois. À basse vitesse comme à haute, l'équipement
-est la seule barrière entre vous et le bitume.</p>"""},
+est la seule barrière entre vous et le bitume.</p>""" + bloc_achat(
+       ["casque", "blouson", "gants", "bottes"])},
 
   {"h2": "Neuve ou d'occasion : la réponse est assez nette",
    "html": """<p>Pour une première moto, l'occasion s'impose pour deux raisons

@@ -335,6 +335,29 @@ démarrage, mais déconseillé à l'échelle : pour un site en production il fau
 télécharger et les servir soi-même. Toutes les URL sont dans la colonne
 `image_vignette`, le téléchargement est donc trivial à automatiser.
 
+## Liens d'affiliation
+
+Tout se pilote depuis `scripts/affiliation.py` : un dictionnaire `LIENS` (une
+entrée par catégorie de produit : casque, blouson, gants, bottes, airbag,
+pneus, assurance) et un dictionnaire `PROGRAMMES` (les réseaux à rejoindre,
+avec leur lien d'inscription).
+
+**Tant qu'une entrée a `"url": None`, elle ne s'affiche nulle part.** Aucun
+lien mort, aucun encart vide ne part en production. Pour activer un lien :
+
+1. S'inscrire au programme concerné (lien dans `PROGRAMMES`).
+2. Récupérer l'URL trackée fournie par le programme.
+3. La coller dans le champ `"url"` de l'entrée dans `LIENS`.
+4. Relancer `python scripts/20_site.py`.
+
+Les encarts sont déjà en place dans 4 guides sur 6 : casque (guide casque),
+blouson/gants/bottes/pantalon (guide équipement et guide première moto),
+airbag (guide équipement), assurance (guide assurance et guide A2). Chaque
+lien porte `rel="sponsored noopener"` et une mention de transparence
+(« Liens affiliés : nous touchons une commission... »), conforme aux
+règles de Google sur les liens sponsorisés et à l'obligation française
+de signaler tout contenu rémunéré.
+
 ## Identité visuelle
 
 Palette réchauffée façon atelier (papier brut, sable, oil-black) plutôt que le
