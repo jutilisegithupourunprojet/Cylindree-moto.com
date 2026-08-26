@@ -1397,10 +1397,19 @@ def menu_perso(id_sel, options, libelle, valeur_defaut=""):
                    "opts_liste": opts_liste, "opts_select": opts_select}
 
 
+CYL_BANDES = [
+    ("0-50", "50 cm³ et moins"), ("51-125", "51 à 125 cm³"),
+    ("126-250", "126 à 250 cm³"), ("251-500", "251 à 500 cm³"),
+    ("501-750", "501 à 750 cm³"), ("751-1000", "751 à 1000 cm³"),
+    ("1001-1300", "1001 à 1300 cm³"), ("1301-999999", "Plus de 1300 cm³"),
+]
+
+
 def page_comparateur():
     ecoles = sorted({m["ecole"] for m in pub if m["ecole"]})
     cats = sorted({m["categorie"] for m in pub if m["categorie"]})
     marques = sorted({m["marque"] for m in pub})
+    annees = sorted({int(m["annee_debut"]) for m in pub if m["annee_debut"]}, reverse=True)
 
     filtres = """<div class="filtres">
 <div class="champ"><label for="f-q">Recherche</label>
@@ -1408,6 +1417,7 @@ def page_comparateur():
 %(md_ecole)s
 %(md_cat)s
 %(md_marque)s
+%(md_annee)s
 %(md_a2)s
 %(md_cyl)s
 %(md_selle)s
@@ -1416,23 +1426,24 @@ def page_comparateur():
         "md_ecole": menu_perso("f-ecole", [("", "Toutes")] + [(v, v) for v in ecoles], "École"),
         "md_cat": menu_perso("f-cat", [("", "Toutes")] + [(v, v) for v in cats], "Catégorie"),
         "md_marque": menu_perso("f-marque", [("", "Toutes")] + [(v, v) for v in marques], "Marque"),
+        "md_annee": menu_perso("f-annee", [("", "Indifférente")]
+                               + [(str(a), str(a)) for a in annees], "Année"),
         "md_a2": menu_perso("f-a2", [("", "Indifférent"), ("oui", "Compatible A2")], "Permis A2"),
-        "md_cyl": menu_perso("f-cyl", [("", "Indifférente"), ("125", "125 cm³"),
-                                       ("400", "400 cm³"), ("700", "700 cm³"),
-                                       ("1000", "1000 cm³")], "Cylindrée maximale"),
+        "md_cyl": menu_perso("f-cyl", [("", "Indifférente")] + CYL_BANDES, "Cylindrée"),
         "md_selle": menu_perso("f-selle", [("", "Indifférente"), ("780", "780 mm"),
                                            ("810", "810 mm"), ("840", "840 mm")],
                                "Hauteur de selle max."),
-        "md_tri": menu_perso("f-tri", [("pr", "Pertinence"), ("p", "Puissance"),
-                                       ("kg", "Poids"), ("cy", "Cylindrée"),
-                                       ("s", "Hauteur de selle")],
+        "md_tri": menu_perso("f-tri", [("pr", "Pertinence"), ("an", "Derniers modèles"),
+                                       ("p", "Puissance"), ("kg", "Poids"),
+                                       ("cy", "Cylindrée"), ("s", "Hauteur de selle")],
                              "Trier par", valeur_defaut="pr"),
     }
 
     corps = """<div class="conteneur section">
 <h1>Comparateur de motos</h1>
-<p class="chapo">Filtrez %d modèles par école, catégorie, cylindrée, hauteur de selle
-et compatibilité permis A2. Le filtrage est instantané et ne demande aucun compte.</p>
+<p class="chapo">Filtrez %d modèles par école, catégorie, année, cylindrée, hauteur
+de selle et compatibilité permis A2. Le filtrage est instantané et ne demande
+aucun compte.</p>
 %s
 <p class="compteur" id="compteur" role="status"></p>
 <div class="grille" id="resultats"></div>
@@ -1442,8 +1453,8 @@ et compatibilité permis A2. Le filtrage est instantané et ne demande aucun com
 
     ecrire("comparateur.html",
            page("Comparateur de motos : filtrer par école, cylindrée et permis A2",
-                "Comparez %d motos par école, catégorie, cylindrée, hauteur de selle "
-                "et compatibilité permis A2." % len(pub),
+                "Comparez %d motos par école, catégorie, année, cylindrée, hauteur "
+                "de selle et compatibilité permis A2." % len(pub),
                 corps, SITE_URL + "/comparateur.html", "",
                 [("Accueil", "/"), ("Comparateur", None)],
                 '<script src="/assets/comparateur.js" defer></script>'))
@@ -1454,6 +1465,8 @@ et compatibilité permis A2. Le filtrage est instantané et ne demande aucun com
              "cy": float(m["cylindree_cc"] or 0), "p": float(m["puissance_ch"] or 0),
              "kg": float(m["poids_kg"] or 0), "s": float(m["hauteur_selle_mm"] or 0),
              "pr": float(m["priorite"] or 0), "u": m["url"],
+             "an": int(m["annee_debut"]) if m["annee_debut"] else 0,
+             "af": int(m["annee_fin"]) if m["annee_fin"] else 0,
              "i": m["image_url"] if m["image_utilisable"] == "oui" else ""}
             for m in pub]
     ecrire("assets/data.json",
@@ -1532,8 +1545,8 @@ JS = r"""
 
   var D=[],res=document.getElementById('resultats'),cpt=document.getElementById('compteur'),
       vide=document.getElementById('vide');
-  var F={q:'f-q',ecole:'f-ecole',cat:'f-cat',marque:'f-marque',a2:'f-a2',
-         cyl:'f-cyl',selle:'f-selle',tri:'f-tri'},E={};
+  var F={q:'f-q',ecole:'f-ecole',cat:'f-cat',marque:'f-marque',annee:'f-annee',
+         a2:'f-a2',cyl:'f-cyl',selle:'f-selle',tri:'f-tri'},E={};
   for(var k in F){E[k]=document.getElementById(F[k]);}
 
   function norm(s){return (s||'').toLowerCase()
@@ -1561,7 +1574,15 @@ JS = r"""
       if(E.cat.value && m.c!==E.cat.value) return false;
       if(E.marque.value && m.m!==E.marque.value) return false;
       if(E.a2.value==='oui' && m.a2!=='oui') return false;
-      if(E.cyl.value && (!m.cy || m.cy>+E.cyl.value)) return false;
+      if(E.annee.value){
+        var an=+E.annee.value;
+        if(!m.an || m.an>an) return false;
+        if(m.af && m.af<an) return false;
+      }
+      if(E.cyl.value){
+        var bornes=E.cyl.value.split('-'),cmin=+bornes[0],cmax=+bornes[1];
+        if(!m.cy || m.cy<cmin || m.cy>cmax) return false;
+      }
       if(E.selle.value && (!m.s || m.s>+E.selle.value)) return false;
       return true;
     });
