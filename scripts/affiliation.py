@@ -46,6 +46,8 @@ LIENS = {
  "pantalon":        {"label": "Voir les pantalons renforcés", "programme": "motoblouz","url": None},
  "airbag":          {"label": "Voir les gilets airbag",       "programme": "motoblouz","url": None},
  "pneus":           {"label": "Comparer les pneus",           "programme": "allopneus","url": None},
+ "bouchons":        {"label": "Voir les bouchons filtrants",  "programme": "motoblouz","url": None},
+ "bouchons-amazon": {"label": "Voir les bouchons sur Amazon", "programme": "amazon",   "url": None},
  "assurance":       {"label": "Comparer les assurances moto", "programme": "lelynx",   "url": None},
 }
 

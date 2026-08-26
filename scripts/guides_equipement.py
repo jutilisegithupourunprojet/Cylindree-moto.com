@@ -186,6 +186,184 @@ encaissé un choc.</p>"""},
 
 # =====================================================================
 {
+ "slug": "protection-auditive-moto",
+ "titre": "Protection auditive à moto : bouchons d'oreille, le guide complet",
+ "h1": "Quelle protection auditive choisir à moto ?",
+ "desc": ("Bruit du vent, seuils de danger, types de bouchons et prix : comment "
+          "protéger son audition à moto sans perdre en sécurité."),
+ "chapo": ("Ce n'est pas le moteur qui abîme l'audition d'un motard, c'est le "
+           "vent. Passé 100 km/h, le niveau sonore sous un casque dépasse "
+           "largement les seuils de danger, et les dégâts sont irréversibles. "
+           "C'est aussi l'équipement le plus simple à s'offrir : quelques "
+           "euros suffisent pour une vraie protection."),
+ "sections": [
+
+  {"h2": "Le bruit qui abîme vraiment l'audition",
+   "html": """<p>Le réflexe est de penser au bruit du moteur. C'est une erreur :
+à vitesse d'autoroute, le bruit qui endommage l'audition vient des
+<strong>turbulences aérodynamiques</strong>, le flux d'air qui frappe la
+coque du casque, contourne l'écran et entre en résonance à l'intérieur.</p>
+
+<div class="tableau-large"><table class="specs">
+<caption>Niveau sonore mesuré sous un casque, selon la vitesse</caption>
+<tbody>
+<tr><th scope="row">90 km/h</th><td>≈ 90 dB</td></tr>
+<tr><th scope="row">100 km/h</th><td>95 à 105 dB</td></tr>
+<tr><th scope="row">110 km/h</th><td>≈ 98 dB</td></tr>
+<tr><th scope="row">120 à 130 km/h</th><td>95 à 100 dB</td></tr>
+</tbody></table></div>
+
+<p>Le seuil de danger reconnu pour une exposition quotidienne est fixé à
+<strong>80 à 85 dB</strong>. Au-delà, le risque de lésion augmente avec la
+durée d'exposition : à 100 dB, la tolérance tombe à environ 8 minutes. Une
+heure d'autoroute sans protection peut suffire à causer des dommages
+permanents.</p>
+
+<div class="encart"><p class="encart-titre">Le signal qu'il ne faut pas ignorer</p>
+<p>Des oreilles qui sifflent ou bourdonnent après un trajet ne sont pas
+normales : ce sont des <strong>acouphènes</strong>, le symptôme d'une
+oreille déjà abîmée. Si cela vous arrive régulièrement, l'exposition est
+trop forte, pas seulement inconfortable.</p></div>"""},
+
+  {"h2": "Ce que le code de la route autorise",
+   "html": """<p>Deux catégories d'objets se ressemblent mais n'ont rien à
+voir juridiquement, et la confusion est fréquente.</p>
+
+<div class="encart"><p class="encart-titre">Autorisés</p>
+<p>Les <strong>bouchons d'oreille</strong>, passifs ou filtrants, sont
+parfaitement légaux à moto. Ils n'émettent aucun son : ce sont des
+protections auditives, pas des dispositifs de diffusion. Klaxons, sirènes
+et bruit de la circulation restent perceptibles au travers.</p></div>
+
+<div class="encart"><p class="encart-titre">Interdits</p>
+<p>Le code de la route interdit au conducteur d'un véhicule motorisé l'usage
+d'<strong>écouteurs, oreillettes ou casques audio</strong> diffusant du son
+(musique, appels). Une oreillette Bluetooth de téléphone tombe sous le coup
+de cette interdiction ; un bouchon filtrant, non.</p></div>
+
+<p>Les bouchons destinés à un usage routier doivent répondre à la norme
+<strong>EN 352-2</strong>, qui encadre les équipements de protection
+auditive individuels. Leur efficacité se lit sur l'indice <strong>SNR</strong>
+(Signal to Noise Ratio), exprimé en décibels : plus il est élevé, plus
+l'atténuation est forte.</p>"""},
+
+  {"h2": "Les quatre types de protection, et ce qu'ils valent",
+   "html": """<div class="tableau-large"><table class="tab-duel">
+<thead><tr><th>Type</th><th>Atténuation</th><th>Prix indicatif</th>
+<th>Limite</th></tr></thead>
+<tbody>
+<tr><th scope="row">Mousse jetable</th><td>30 à 40 dB</td>
+<td class="gagne">Quelques centimes à 1 €</td>
+<td>Bloque tout uniformément, y compris les sons utiles à la sécurité</td></tr>
+<tr><th scope="row">Silicone plein réutilisable</th><td>jusqu'à 90 dB</td>
+<td>Quelques euros</td>
+<td>Isole trop : on n'entend plus la circulation</td></tr>
+<tr><th scope="row">Filtrant spécialisé moto</th><td class="gagne">15 à 30 dB</td>
+<td>15 à 28 €</td>
+<td>Aucune, c'est le compromis recherché</td></tr>
+<tr><th scope="row">Sur-mesure (audioprothésiste)</th><td>18 à 25 dB</td>
+<td>100 à 150 €</td>
+<td>Prix, délai de fabrication</td></tr>
+</tbody></table></div>
+
+<p>Le point contre-intuitif : <strong>un bouchon qui bloque tout n'est pas le
+plus sûr.</strong> Un silicone plein à 90 dB d'atténuation supprime aussi le
+bruit des voitures autour de vous. Les bouchons filtrants sont conçus
+spécifiquement pour couper les basses fréquences du moteur et le sifflement
+aérodynamique, tout en laissant passer les médiums, la parole et la
+circulation.</p>
+
+<p>Les bouchons sur-mesure, moulés sur votre conduit auditif chez un
+audioprothésiste, offrent le meilleur confort sur de longues durées. Certains
+motards en rapportent <strong>moins de fatigue et une disparition des
+sifflements</strong> en fin de journée par rapport aux modèles filtrants du
+commerce. Le prix inclut la prise d'empreinte, et l'équipement peut être
+partiellement remboursé par certaines mutuelles sur ordonnance.</p>""" +
+   bloc_achat(["bouchons", "bouchons-amazon"])},
+
+  {"h2": "Bien les mettre, et les entretenir",
+   "html": """<ul class="tick">
+<li><strong>Mousse jetable</strong> : se roule entre les doigts avant
+insertion, se laisse quelques secondes pour reprendre sa forme dans le
+conduit. À usage limité, une paire ne se réutilise pas indéfiniment.</li>
+<li><strong>Filtrants réutilisables</strong> : se nettoient à l'eau tiède et
+au savon doux entre les sorties ; remplacez-les dès que le silicone durcit
+ou se fissure.</li>
+<li><strong>Sur-mesure</strong> : entretien identique aux appareils auditifs,
+suivez les consignes de l'audioprothésiste.</li>
+</ul>
+<div class="encart"><p class="encart-titre">Une précaution avant de rouler</p>
+<p>Certaines personnes ressentent des vertiges à l'insertion de bouchons
+occlusifs. Testez-les chez vous, à l'arrêt, avant votre première sortie
+avec.</p></div>"""},
+
+  {"h2": "Et avec un intercom Bluetooth ?",
+   "html": """<p>Les bouchons filtrants et sur-mesure sont compatibles avec la
+plupart des systèmes d'intercom (Sena, Cardo) : le son des haut-parleurs du
+casque traverse la mousse du casque et reste audible par-dessus
+l'atténuation. En pratique, beaucoup d'utilisateurs remontent légèrement le
+volume de leur intercom une fois équipés.</p>
+<p>Les bouchons sur-mesure avec embout creux (permettant le passage du son)
+existent chez certains audioprothésistes spécialisés moto : à préciser
+explicitement lors de la prise d'empreinte si vous utilisez un intercom au
+quotidien.</p>"""},
+
+  {"h2": "Notre lecture",
+   "html": """<ul class="tick">
+<li><strong>Trajets urbains occasionnels</strong> : la mousse jetable suffit,
+pour quelques centimes.</li>
+<li><strong>Utilisation régulière, route et autoroute</strong> : un
+filtrant spécialisé moto. C'est le meilleur rapport protection/prix pour la
+majorité des motards.</li>
+<li><strong>Gros rouleurs, longues distances, tous les jours</strong> : le
+sur-mesure amortit vite son prix en confort, surtout si une mutuelle en
+prend une partie en charge.</li>
+<li><strong>Jamais de silicone plein en usage routier</strong> : la sécurité
+passe par le fait d'entendre la circulation, pas par l'isolation totale.</li>
+</ul>"""},
+ ],
+
+ "faq": [
+  ("Porter des bouchons d'oreille à moto est-il légal en France ?",
+   "Oui, sans restriction. Le code de la route interdit les écouteurs et "
+   "oreillettes qui diffusent du son, pas les protections auditives passives "
+   "ou filtrantes, qui n'émettent rien."),
+  ("Les bouchons d'oreille empêchent-ils d'entendre les sirènes et klaxons ?",
+   "Non, pas avec un modèle filtrant correctement dimensionné : ils atténuent "
+   "le bruit du vent et du moteur tout en laissant passer les fréquences de "
+   "la voix et de la circulation. Un silicone plein très occlusif peut en "
+   "revanche trop isoler, ce qui n'est pas recherché sur route."),
+  ("Quelle différence entre bouchons filtrants et bouchons classiques ?",
+   "Un bouchon classique (mousse ou silicone) atténue toutes les fréquences "
+   "de la même manière. Un bouchon filtrant est conçu pour couper "
+   "sélectivement les basses fréquences du moteur et le sifflement "
+   "aérodynamique, tout en laissant passer la parole et les bruits utiles."),
+  ("Le sur-mesure vaut-il vraiment 100 à 150 € par rapport à un modèle à 20 € ?",
+   "Le gain se joue sur le confort en usage prolongé et sur l'ajustement "
+   "parfait au conduit auditif. Pour un usage occasionnel, un filtrant du "
+   "commerce à 15-28 € couvre l'essentiel du besoin ; le sur-mesure se "
+   "justifie surtout pour un usage quotidien ou de longues distances "
+   "régulières."),
+ ],
+
+ "sources": [
+  ("Le Repaire des Motards, dossier protection auditive et bruit à moto",
+   "https://www.lerepairedesmotards.com/dossiers/protection-auditive-bruit-moto-bouchon-oreille-epi-picb.php"),
+  ("Passion Moto Sécurité, se protéger du bruit à moto",
+   "https://moto-securite.fr/silence/"),
+  ("Moto-Net, comment et pourquoi se protéger du bruit à moto",
+   "https://www.moto-net.com/article/comment-et-pourquoi-se-proteger-du-bruit-a-moto.html"),
+  ("Nousmotards.com, protection auditive en moto : lois et options disponibles",
+   "https://nousmotards.com/protection-auditive-en-moto-lois-et-options-disponibles-sur-le-marche"),
+  ("hear-it.org, les motos sont dangereuses pour votre audition",
+   "https://www.hear-it.org/fr/les-motos-sont-dangereuses-pour-votre-audition"),
+  ("Meilleurtaux, remboursement mutuelle du bouchon d'oreille sur mesure",
+   "https://www.meilleurtaux.com/comparateur-assurance/mutuelle-sante/remboursement-mutuelle/remboursement-mutuelle-bouchon-oreille-mesure.html"),
+ ],
+},
+
+# =====================================================================
+{
  "slug": "equipement-moto-budget-complet",
  "titre": "S'équiper à moto : le budget complet en 2026",
  "h1": "S'équiper à moto : combien ça coûte vraiment",
