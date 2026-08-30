@@ -273,6 +273,58 @@ for nom, lot in _homonymes.items():
         if r.get("annee_debut"):
             r["nom_affichage"] = "%s (%s)" % (nom, r["annee_debut"])
 
+# --- prix : saisie manuelle verifiee (aout 2026) ------------------------
+# Wikipedia FR ne documente quasi jamais le prix (94% des fiches vides), et
+# le champ automatique rejette tout ce qui n'est pas certainement en euros.
+# Verifie a la main, site constructeur France en priorite sinon presse moto
+# serieuse (URL en source) : uniquement des modeles encore reellement en
+# vente aujourd'hui, jamais un prix de generation remplacee attribue par
+# erreur a un nom homonyme plus ancien. Ne comble que les trous : n'ecrase
+# jamais un prix Wikipedia deja present.
+PRIX_MANUELS = {
+    "Aprilia RS125": (5699, "https://moto-net.com/live/l-aprilia-rs-125-gp-replica-au-prix-de-5899-euros.html"),
+    "Aprilia RSV Tuono": (20999, "https://www.aprilia.com/be_FR/models/tuono-v4/tuono-v4-factory-1100-4s4v-2026/"),
+    "Aprilia Tuareg": (12199, "https://www.motoplanete.us/aprilia/11871/Tuareg-660-2026/contact.html"),
+    "Aprilia RS 660": (11900, "https://fr.moto-conti.be/fiche/951/moto-aprilia-rs-660-2025"),
+    "Aprilia RS457": (7199, "https://www.lerepairedesmotards.com/actualites/2024/sportive-aprilia-rs-457-prix-reservation.php"),
+    "BMW C600 Sport and C650GT": (10995, "https://www.motofan.fr/bmw-c-650-gt-2026-prix-performances-et-caracteristiques-detaillees-dun-scooter-maxi-premium/"),
+    "Ducati Panigale V4": (27990, "https://www.moto-net.com/live/la-nouvelle-ducati-panigale-v4-2025-a-partir-de-27-990-euros.html"),
+    "Ducati DesertX": (17490, "https://www.motofan.fr/ducati-desertx-2026-prix-et-performances-de-la-moto-trail-italienne/"),
+    "Ducati Panigale V2": (16490, "https://www.motofan.fr/ducati-panigale-v2-2026-prix-et-performances-dune-moto-sportive-accessible/"),
+    "Honda CBR600RR": (11699, "https://www.moto-net.com/live/la-nouvelle-honda-cbr600rr-2024-au-prix-de-11-699-euros.html"),
+    "Honda MSX 125": (4199, "https://www.moto-net.com/article/honda-msx125-grom-mini-moto-maxi-succes-et-gros-taro.html"),
+    "Honda CL500": (6199, "https://moto.honda.fr/motorcycles/range/street/cl500/specifications-and-price.html"),
+    "Kawasaki W230": (5199, "https://www.kawasaki.fr/fr_fr/Motorcycles/Classic/W230_2026.html"),
+    "Kawasaki Z900": (9999, "https://www.kawasaki.fr/fr_fr/Motorcycles/Supernaked/Z900_2026.html"),
+    "Kawasaki Ninja H2": (29610, "https://occabike.fr/kawasaki-ninja-h2-bike/"),
+    "MV Agusta Brutale series": (12850, "https://www.motomag.com/mv-agusta-brutale-800-serie-oro-2026-le-roadster-gagne-du-muscle/"),
+    "Moto Guzzi V100 Mandello": (15499, "https://www.moto-net.com/article/les-nouvelles-moto-guzzi-v100-mandello-a-partir-de-15-499-euros.html"),
+    "Peugeot Kisbee": (1899, "https://motocenter.fr/peugeot-kisbee-scooter-urbain/"),
+    "Peugeot Metropolis 400": (10699, "https://www.largus.fr/fiche-technique/Peugeot/Metropolis/I/2025/Scoot/400+Gt-2782362.html"),
+    "Royal Enfield Interceptor 650": (7690, "https://www.motoplanete.us/royal-enfield/12136/Interceptor-650-2026/contact.html"),
+    "Suzuki SV 650": (6999, "https://moto.suzuki.fr/gamme/roadsters/sv650/"),
+    "Triumph Speedmaster": (16695, "https://www.triumphmotorcycles.fr/triumph-website/bikes/classic/bonneville/bonneville-speedmaster"),
+    "Triumph Tiger Sport 800": (12395, "https://www.moto-net.com/article/nouveaux-tarifs-2026-des-motos-triumph-en-france-vs-2025.html"),
+    "Triumph Speed Twin 900": (10295, "https://www.moto-net.com/article/nouveaux-tarifs-2026-des-motos-triumph-en-france-vs-2025.html"),
+    "Triumph Tiger Sport 660": (9995, "https://www.moto-net.com/article/nouveaux-tarifs-2026-des-motos-triumph-en-france-vs-2025.html"),
+    "Yamaha YZF-R125": (5999, "https://www.moto-net.com/tarifs/yamaha"),
+    "Yamaha XSR700": (9199, "https://www.motofan.fr/yamaha-xsr700-2026-prix-et-performances-en-detail-de-ce-modele-de-moto-neo-classique/"),
+    "Yamaha YZF-R7 (2022)": (10499, "https://www.moto-net.com/tarifs/yamaha"),
+    "Yamaha TMAX": (13499, "https://www.moto-net.com/article/nouveaux-tarifs-2026-des-motos-et-scooters-yamaha-vs-2025.html"),
+    "Yamaha YZ250F": (9999, "https://www.planet-racing.fr/motos-off-road-neuves-yamaha/346948-yz250f-2026-3000335548847.html"),
+    "Yamaha YZF-R9": (13999, "https://www.moto-net.com/tarifs/yamaha"),
+    "Yamaha NMAX": (3599, "https://www.yamaha-motor.eu/fr/fr/scooters/sport/pdp/nmax-125/"),
+    "Yamaha YZF-R3": (6999, "https://www.moto-net.com/tarifs/yamaha"),
+}
+_prix_combles = 0
+for r in rows:
+    if r["nom_affichage"] in PRIX_MANUELS and not r.get("prix_lancement_eur"):
+        prix, source = PRIX_MANUELS[r["nom_affichage"]]
+        r["prix_lancement_eur"] = prix
+        r["prix_source"] = "Verifie manuellement, aout 2026 (%s)" % source
+        _prix_combles += 1
+print("prix : %d fiche(s) completee(s) par saisie manuelle verifiee" % _prix_combles)
+
 COLS = ["modele_id", "marque", "marque_id", "modele", "nom_complet",
         "nom_affichage", "nom_fr", "titre_fr", "type_fr",
         "prix_lancement_eur", "prix_source", "marche_fr",
