@@ -124,8 +124,14 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 <meta property="og:description" content="%(desc)s">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="%(og_image)s">
+<meta property="og:image:width" content="1000">
+<meta property="og:image:height" content="1000">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="%(og_image)s">
 <link rel="stylesheet" href="%(racine)s/assets/style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏍️</text></svg>">
+<link rel="icon" type="image/png" href="%(racine)s/assets/favicon.png">
+<link rel="apple-touch-icon" href="%(racine)s/assets/favicon.png">
 %(extra)s
 </head>
 <body>
@@ -162,7 +168,8 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 </body>
 </html>""" % {"titre": e(titre), "desc": e(desc), "canon": e(canon),
               "extra": extra_head, "corps": corps, "fil": fil_html,
-              "site": e(SITE_NOM), "racine": RACINE, "script": script}
+              "site": e(SITE_NOM), "racine": RACINE, "script": script,
+              "og_image": e(SITE_URL + "/assets/og-image.jpg")}
 
 
 # ----------------------------------------------------------------- polices
@@ -2080,6 +2087,11 @@ def page_guides_index():
 # ----------------------------------------------------------------- execution
 if os.path.isdir(SITE):
     shutil.rmtree(SITE)
+
+os.makedirs(os.path.join(SITE, "assets"), exist_ok=True)
+for _f in ("favicon.png", "og-image.jpg"):
+    shutil.copy(os.path.join(BASE, "scripts", "assets_source", _f),
+                os.path.join(SITE, "assets", _f))
 
 print("Generation des fiches modeles...")
 for m in pub:
