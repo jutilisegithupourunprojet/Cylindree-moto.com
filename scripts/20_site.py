@@ -27,7 +27,7 @@ OUT = os.path.join(BASE, "data", "out")
 SITE = os.path.join(BASE, "site")
 
 SITE_NOM = "Cylindrée"
-SITE_URL = "https://example.com"          # a remplacer par le domaine reel
+SITE_URL = "https://cylindree-moto.com"
 SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
              "Caractéristiques vérifiées, compatibilité permis A2, "
              "écoles japonaise, italienne et américaine.")
