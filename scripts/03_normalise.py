@@ -242,7 +242,11 @@ def years(prod):
     if not ys:
         return (None, None, t)
     deb = min(ys)
-    ouvert = re.search(r"present|current|onwards?|[–—-]\s*$", t, re.I)
+    # "Since 2019" / "depuis 2019" : production ouverte au meme titre que
+    # "2019-present". Sans ce marqueur, un seul millesime trouve se refermait
+    # a tort la meme annee (bug touchant 28 modeles bien vivants, dont la
+    # Yamaha Tenere 700 et le Ducati DesertX).
+    ouvert = re.search(r"present|current|onwards?|since|depuis|[–—-]\s*$", t, re.I)
     fin = None if ouvert else max(ys)
     return (deb, fin, t)
 

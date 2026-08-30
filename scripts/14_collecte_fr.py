@@ -239,7 +239,8 @@ for i in range(0, len(noms), 20):
         ys = [int(y) for y in re.findall(r"\b(1[89]\d{2}|20[0-2]\d)\b", prod)]
         if ys:
             r["annee_debut"] = min(ys)
-            r["annee_fin"] = (None if re.search(r"aujourd|présent|en cours|[–—-]\s*$", prod, re.I)
+            r["annee_fin"] = (None if re.search(
+                r"aujourd|présent|en cours|depuis|since|[–—-]\s*$", prod, re.I)
                               else max(ys))
         r["production_raw"] = prod
 

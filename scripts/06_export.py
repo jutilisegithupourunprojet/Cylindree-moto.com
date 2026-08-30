@@ -341,7 +341,7 @@ elig = [r for r in rows
         and r["marque"] and (r["annee_debut"] or 0) >= 1990
         and r["marche_fr"] == "oui"
         and r["vues_60j"] >= 150
-        and r["categorie"] not in ("Competition", "Minibike", "Trois-roues")]
+        and r["categorie"] not in ("Compétition", "Minibike", "Trois-roues")]
 print("duels : %d modeles eligibles" % len(elig))
 
 duels = []
@@ -394,6 +394,25 @@ for i, a in enumerate(elig):
                     pass
         if a["a2_compatible"] == "oui":
             score += 18          # trafic permis A2 = fort volume FR
+
+        # --- duels phares : intemporels et du moment, mis en tete ------
+        # "intemporel" : deux nameplates toujours au catalogue et deja tres
+        # notoires (rapport rivalites reconnues, ex. MT-07 / Z650, R1 / V4).
+        # "du moment" : les deux encore vendus ET l'un des deux lance tres
+        # recemment (2023+) - ce que les gens comparent reellement aujourd'hui.
+        # deux_encore exige les DEUX cotes encore au catalogue : sans ca, un
+        # modele recent associe a un modele arrete des annees plus tot
+        # (ex. Honda CL500 x Buell Blast, arretee en 2009) se faisait passer
+        # a tort pour un duel "du moment".
+        deux_encore = encore == 2
+        priorite_haute = a["priorite"] >= 130 and b["priorite"] >= 130
+        phare_intemporel = deux_encore and priorite_haute
+        phare_du_moment = deux_encore and rec >= 2023
+        if phare_intemporel:
+            score += 150
+        if phare_du_moment:
+            score += 180
+
         na, nb = a["nom_affichage"], b["nom_affichage"]
         duels.append({
             "duel_id": "%s-vs-%s" % key,
@@ -407,8 +426,21 @@ for i, a in enumerate(elig):
             "puissance_ch_a": a["puissance_ch"] or "", "puissance_ch_b": b["puissance_ch"] or "",
             "poids_a": a["poids_kg"] or "", "poids_b": b["poids_kg"] or "",
             "a2": a["a2_compatible"],
+            "phare_intemporel": "oui" if phare_intemporel else "non",
+            "phare_du_moment": "oui" if phare_du_moment else "non",
             "score_priorite": round(score, 1),
         })
+
+# --- seuil de credibilite -------------------------------------------------
+# 18 % des duels generes associaient des modeles trop anciens ou trop
+# confidentiels pour qu'un acheteur les compare vraiment (ex. Triumph Sprint
+# 900 contre Kawasaki GPZ 1100, score 77.9). En dessous de ce seuil, la
+# cylindree/categorie communes ne suffisent pas a faire un duel pertinent.
+MIN_SCORE_DUEL = 150
+avant_seuil = len(duels)
+duels = [d for d in duels if d["score_priorite"] >= MIN_SCORE_DUEL]
+print("duels : %d generes -> %d apres seuil de credibilite (score >= %d)"
+      % (avant_seuil, len(duels), MIN_SCORE_DUEL))
 
 duels.sort(key=lambda d: -d["score_priorite"])
 

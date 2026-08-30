@@ -282,6 +282,8 @@ p{margin:0 0 1rem}
 .etiq.a2{color:var(--vert)}
 .etiq.a2non{color:var(--doux)}
 .etiq.ecole{color:var(--accent)}
+.etiq.nouveau{color:#fff;background:var(--cta);border-color:var(--cta)}
+.etiq.reference{color:var(--petrole);border-color:var(--petrole)}
 
 .fiche{display:grid;gap:2rem;grid-template-columns:1fr}
 @media(min-width:900px){.fiche{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
@@ -673,7 +675,12 @@ def _cote_html(c, lazy=True):
 
 def carte_duel(d, lazy=True):
     a, b = _cote(par_id[d["modele_a_id"]]), _cote(par_id[d["modele_b_id"]])
-    etiqs = ['<span class="etiq">%s</span>' % e(d["categorie"])]
+    etiqs = []
+    if d.get("phare_du_moment") == "oui":
+        etiqs.append('<span class="etiq nouveau">Duel du moment</span>')
+    elif d.get("phare_intemporel") == "oui":
+        etiqs.append('<span class="etiq reference">Grand classique</span>')
+    etiqs.append('<span class="etiq">%s</span>' % e(d["categorie"]))
     if d["a2"] == "oui":
         etiqs.append('<span class="etiq a2">A2</span>')
     if d["inter_ecoles"] == "oui":
