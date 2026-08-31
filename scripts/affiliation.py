@@ -39,7 +39,8 @@ PROGRAMMES = {
 # cle -> {"label", "programme" (cle de PROGRAMMES), "url" (None = inactif)}
 LIENS = {
  "casque":          {"label": "Comparer les casques",        "programme": "icasque",  "url": None},
- "casque-amazon":   {"label": "Voir les casques sur Amazon",  "programme": "amazon",   "url": None},
+ "casque-amazon":   {"label": "Casque LS2 Advant Carbon modulable sur Amazon", "programme": "amazon",
+                     "url": "https://www.amazon.fr/dp/B0BRQ828ZC?tag=66996600-20&linkCode=ll2&linkId=ea928c9e3f9620cfa29e5cf76e8c19b9"},
  "blouson":         {"label": "Voir les blousons",            "programme": "motoblouz","url": None},
  "gants":           {"label": "Voir les gants homologués",    "programme": "motoblouz","url": None},
  "bottes":          {"label": "Voir les bottes moto",         "programme": "motoblouz","url": None},
@@ -47,7 +48,10 @@ LIENS = {
  "airbag":          {"label": "Voir les gilets airbag",       "programme": "motoblouz","url": None},
  "pneus":           {"label": "Comparer les pneus",           "programme": "allopneus","url": None},
  "bouchons":        {"label": "Voir les bouchons filtrants",  "programme": "motoblouz","url": None},
- "bouchons-amazon": {"label": "Voir les bouchons sur Amazon", "programme": "amazon",   "url": None},
+ "bouchons-amazon": {"label": "Bouchons EarPeace sur Amazon", "programme": "amazon",
+                     "url": "https://www.amazon.fr/dp/B076VVV5WJ?tag=66996600-20&linkCode=ll2&linkId=918e9aeb67aec6622399acc4f98c49f2"},
+ "bouchons-amazon-2": {"label": "Bouchons Naiicute sur Amazon", "programme": "amazon",
+                     "url": "https://www.amazon.fr/dp/B0CJ7BZWKS?tag=66996600-20&linkCode=ll2&linkId=92c5b9960aa07beba7aeca6273d97f35"},
  "assurance":       {"label": "Comparer les assurances moto", "programme": "lelynx",   "url": None},
 }
 

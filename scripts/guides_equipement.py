@@ -279,7 +279,7 @@ motards en rapportent <strong>moins de fatigue et une disparition des
 sifflements</strong> en fin de journée par rapport aux modèles filtrants du
 commerce. Le prix inclut la prise d'empreinte, et l'équipement peut être
 partiellement remboursé par certaines mutuelles sur ordonnance.</p>""" +
-   bloc_achat(["bouchons", "bouchons-amazon"])},
+   bloc_achat(["bouchons", "bouchons-amazon", "bouchons-amazon-2"])},
 
   {"h2": "Bien les mettre, et les entretenir",
    "html": """<ul class="tick">
