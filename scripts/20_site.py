@@ -16,6 +16,7 @@ Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
   site/sitemap.xml, site/robots.txt
 """
 import csv, io, json, os, re, html, unicodedata, shutil, sys, base64
+from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
 from guides_equipement import GUIDES_EQUIPEMENT as _G2
@@ -174,6 +175,13 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
       la licence et l'auteur indiqués sur la fiche.</p>
     <p class="mention">Les caractéristiques sont fournies à titre indicatif et
       peuvent comporter des erreurs. Vérifiez auprès du constructeur avant tout achat.</p>
+    <nav class="pied-liens" aria-label="Informations légales">
+      <a href="%(racine)s/mentions-legales.html">Mentions légales</a>
+      <a href="%(racine)s/politique-de-confidentialite.html">Politique de confidentialité</a>
+    </nav>
+    <p class="mention">&copy; %(annee)s %(site)s. Tous droits réservés sur le
+      contenu éditorial ; les données techniques restent sous licence
+      CC&nbsp;BY-SA&nbsp;4.0 (Wikipédia).</p>
   </div>
 </footer>
 %(script)s
@@ -182,7 +190,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
               "extra": extra_head, "corps": corps, "fil": fil_html,
               "site": e(SITE_NOM), "racine": RACINE, "script": script,
               "og_image": e(SITE_URL + "/assets/og-image.jpg"), "ga_id": GA_ID,
-              "adsense": ADSENSE_CLIENT}
+              "adsense": ADSENSE_CLIENT, "annee": date.today().year}
 
 
 # ----------------------------------------------------------------- polices
@@ -597,6 +605,9 @@ p{margin:0 0 1rem}
   padding:2rem 0;font-size:.9rem;color:var(--doux)}
 .pied-titre{font-weight:700;color:var(--texte);margin-bottom:.3rem}
 .mention{font-size:.8rem;color:var(--pale);max-width:75ch}
+.pied-liens{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin:.8rem 0}
+.pied-liens a{color:var(--doux);font-size:.85rem;text-decoration:underline}
+.pied-liens a:hover{color:var(--accent)}
 .tableau-large{overflow-x:auto}
 """
 
@@ -2070,6 +2081,117 @@ def page_guide(g):
     enregistrer(url, "0.95")
 
 
+EDITEUR_NOM = "Daniel Krisha"
+EDITEUR_EMAIL = "cylindree.moto.comparateur@gmail.com"
+
+
+def page_legal():
+    corps_ml = """<div class="conteneur section article">
+<h1>Mentions légales</h1>
+
+<h2>Éditeur du site</h2>
+<p>Le site %(site)s est édité à titre personnel, non professionnel, par :</p>
+<p>%(nom)s<br>
+Contact : <a href="mailto:%(email)s">%(email)s</a></p>
+<p>S'agissant d'un particulier (personne physique) et non d'une activité
+commerciale immatriculée, l'adresse postale n'est pas publiée ici,
+conformément à la loi n°2004-575 du 21 juin 2004 pour la confiance dans
+l'économie numérique (LCEN) ; elle peut être communiquée à l'hébergeur sur
+demande d'une autorité judiciaire compétente.</p>
+<p>Directeur de la publication : %(nom)s.</p>
+
+<h2>Hébergement</h2>
+<p>Le site est hébergé par Vercel Inc. (États-Unis) — <a href="https://vercel.com"
+rel="nofollow">vercel.com</a>. Le nom de domaine est enregistré chez IONOS.</p>
+
+<h2>Propriété intellectuelle et contenu</h2>
+<p>Les fiches techniques du site s'appuient sur des données issues de
+Wikipédia, publiées sous licence
+<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr" rel="license nofollow">CC&nbsp;BY-SA&nbsp;4.0</a>.
+Chaque fiche renvoie vers son ou ses articles sources. Les photographies
+conservent la licence et l'auteur indiqués sur la fiche concernée.</p>
+<p>Le reste du contenu éditorial (guides d'achat, mise en forme, comparateur,
+duels) est la production propre du site et ne peut être reproduit sans
+autorisation, hors citation courte avec lien vers la source.</p>
+
+<h2>Liens affiliés et publicité</h2>
+<p>Le site contient des liens affiliés (notamment le programme Amazon
+Partenaires) : un achat réalisé via ces liens peut générer une commission,
+sans surcoût pour l'acheteur. Le site diffuse également des publicités via
+Google AdSense. Voir la <a href="/politique-de-confidentialite.html">politique
+de confidentialité</a> pour le détail des cookies utilisés.</p>
+
+<h2>Responsabilité</h2>
+<p>Les caractéristiques techniques, prix et informations présentés sont
+fournis à titre indicatif et peuvent comporter des erreurs ou être obsolètes.
+Vérifiez toute information auprès du constructeur ou d'un concessionnaire
+avant un achat. L'éditeur ne saurait être tenu responsable des décisions
+prises sur la seule base du contenu de ce site.</p>
+
+<h2>Contact</h2>
+<p>Pour toute question, signalement d'erreur ou demande relative aux données
+personnelles : <a href="mailto:%(email)s">%(email)s</a>.</p>
+</div>""" % {"site": e(SITE_NOM), "nom": e(EDITEUR_NOM), "email": e(EDITEUR_EMAIL)}
+
+    ecrire("mentions-legales.html",
+           page("Mentions légales", "Mentions légales du site %s : éditeur, "
+                "hébergement, propriété intellectuelle et contact." % SITE_NOM,
+                corps_ml, SITE_URL + "/mentions-legales.html", "",
+                [("Accueil", "/"), ("Mentions légales", None)]))
+    enregistrer("/mentions-legales.html", "0.2")
+
+    corps_pc = """<div class="conteneur section article">
+<h1>Politique de confidentialité</h1>
+<p class="chapo">Mise à jour : %(maj)s.</p>
+
+<h2>Qui traite vos données ?</h2>
+<p>%(nom)s, éditeur du site %(site)s (voir les
+<a href="/mentions-legales.html">mentions légales</a>). Pour toute question :
+<a href="mailto:%(email)s">%(email)s</a>.</p>
+
+<h2>Données collectées et cookies</h2>
+<p><strong>Mesure d'audience — Google Analytics (GA4).</strong> Utilisé pour
+savoir combien de pages sont consultées et par où arrivent les visiteurs.
+Dépose des cookies et traite votre adresse IP (traitée par Google).</p>
+<p><strong>Publicité — Google AdSense.</strong> Diffuse des annonces sur le
+site et peut déposer des cookies publicitaires, y compris pour proposer des
+annonces personnalisées selon votre navigation, sur ce site et d'autres.</p>
+<p><strong>Liens affiliés — Amazon Partenaires.</strong> Les liens vers des
+produits Amazon contiennent un identifiant d'affiliation permettant de
+tracer qu'un achat provient de ce site ; Amazon peut déposer un cookie de
+suivi lors du clic.</p>
+<p>Aucun compte utilisateur, formulaire ou newsletter n'existe sur ce site à
+ce jour : il n'y a pas d'autre collecte de données personnelles que celle
+décrite ci-dessus.</p>
+
+<h2>Base légale et durée de conservation</h2>
+<p>Les cookies de mesure d'audience et de publicité sont soumis à votre
+consentement. Les paramètres de votre navigateur permettent de refuser ou
+supprimer ces cookies à tout moment ; les outils de gestion des annonces de
+Google (<a href="https://myadcenter.google.com/" rel="nofollow">Ad Center
+Google</a>) permettent également de limiter la personnalisation
+publicitaire. Les données conservées par Google le sont selon la durée
+définie par leurs propres politiques.</p>
+
+<h2>Vos droits</h2>
+<p>Conformément au Règlement général sur la protection des données (RGPD)
+et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de
+rectification, d'opposition et de suppression des données vous concernant.
+Pour l'exercer : <a href="mailto:%(email)s">%(email)s</a>. Vous pouvez
+également introduire une réclamation auprès de la CNIL
+(<a href="https://www.cnil.fr" rel="nofollow">cnil.fr</a>).</p>
+</div>""" % {"maj": DATE_MAJ, "nom": e(EDITEUR_NOM), "site": e(SITE_NOM),
+             "email": e(EDITEUR_EMAIL)}
+
+    ecrire("politique-de-confidentialite.html",
+           page("Politique de confidentialité", "Politique de confidentialité "
+                "du site %s : cookies, mesure d'audience, publicité et droits "
+                "RGPD." % SITE_NOM, corps_pc,
+                SITE_URL + "/politique-de-confidentialite.html", "",
+                [("Accueil", "/"), ("Politique de confidentialité", None)]))
+    enregistrer("/politique-de-confidentialite.html", "0.2")
+
+
 def page_guides_index():
     li = []
     for g in GUIDES:
@@ -2112,6 +2234,7 @@ for d in duels_ok:
 print("Generation du comparateur...")
 page_comparateur()
 print("Generation des guides...")
+page_legal()
 page_guides_index()
 for _g in GUIDES:
     page_guide(_g)
