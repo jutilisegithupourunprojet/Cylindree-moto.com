@@ -29,6 +29,7 @@ SITE = os.path.join(BASE, "site")
 SITE_NOM = "Cylindrée"
 SITE_URL = "https://cylindree-moto.com"
 GA_ID = "G-MNFQ3GT2YM"
+ADSENSE_CLIENT = "ca-pub-6448509444467784"
 SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
              "Caractéristiques vérifiées, compatibilité permis A2, "
              "écoles japonaise, italienne et américaine.")
@@ -141,6 +142,8 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
   gtag('js', new Date());
   gtag('config', '%(ga_id)s');
 </script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=%(adsense)s"
+     crossorigin="anonymous"></script>
 %(extra)s
 </head>
 <body>
@@ -178,7 +181,8 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 </html>""" % {"titre": e(titre), "desc": e(desc), "canon": e(canon),
               "extra": extra_head, "corps": corps, "fil": fil_html,
               "site": e(SITE_NOM), "racine": RACINE, "script": script,
-              "og_image": e(SITE_URL + "/assets/og-image.jpg"), "ga_id": GA_ID}
+              "og_image": e(SITE_URL + "/assets/og-image.jpg"), "ga_id": GA_ID,
+              "adsense": ADSENSE_CLIENT}
 
 
 # ----------------------------------------------------------------- polices
