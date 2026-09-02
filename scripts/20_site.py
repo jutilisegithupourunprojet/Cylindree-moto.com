@@ -914,18 +914,13 @@ def page_modele(m):
     tableau = ('<table class="specs"><caption>Caractéristiques techniques</caption>'
                '<tbody>%s</tbody></table>' % "".join(lignes))
 
-    # A2
+    # A2 : on n'affiche l'encart que dans le cas positif, jamais "non compatible"
     a2 = ""
     if m["a2_compatible"] == "oui":
         a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
               '<p><strong>Compatible.</strong> %s, sous les 35 kW et un rapport '
               'poids/puissance inférieur à 0,2 kW/kg. Vérifiez l\'existence d\'une '
               'version bridée homologuée auprès du concessionnaire.</p></div>'
-              % e(m["a2_detail"]))
-    elif m["a2_compatible"] == "non":
-        a2 = ('<div class="encart"><p class="encart-titre">Permis A2</p>'
-              '<p><strong>Non compatible</strong> en l\'état : %s. Un kit de bridage '
-              'homologué existe parfois. Renseignez-vous auprès du constructeur.</p></div>'
               % e(m["a2_detail"]))
 
     # identite
