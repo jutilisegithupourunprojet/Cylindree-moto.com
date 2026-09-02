@@ -28,7 +28,7 @@ OUT = os.path.join(BASE, "data", "out")
 SITE = os.path.join(BASE, "site")
 
 SITE_NOM = "Cylindrée"
-SITE_URL = "https://cylindree-moto.com"
+SITE_URL = "https://www.cylindree-moto.com"       # cylindree-moto.com redirige (308) vers www, jamais l'inverse
 GA_ID = "G-MNFQ3GT2YM"
 ADSENSE_CLIENT = "ca-pub-6448509444467784"
 SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
