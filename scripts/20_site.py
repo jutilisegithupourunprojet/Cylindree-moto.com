@@ -28,6 +28,7 @@ SITE = os.path.join(BASE, "site")
 
 SITE_NOM = "Cylindrée"
 SITE_URL = "https://cylindree-moto.com"
+GA_ID = "G-MNFQ3GT2YM"
 SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
              "Caractéristiques vérifiées, compatibilité permis A2, "
              "écoles japonaise, italienne et américaine.")
@@ -132,6 +133,14 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 <link rel="stylesheet" href="%(racine)s/assets/style.css">
 <link rel="icon" type="image/png" href="%(racine)s/assets/favicon.png">
 <link rel="apple-touch-icon" href="%(racine)s/assets/favicon.png">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=%(ga_id)s"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '%(ga_id)s');
+</script>
 %(extra)s
 </head>
 <body>
@@ -169,7 +178,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 </html>""" % {"titre": e(titre), "desc": e(desc), "canon": e(canon),
               "extra": extra_head, "corps": corps, "fil": fil_html,
               "site": e(SITE_NOM), "racine": RACINE, "script": script,
-              "og_image": e(SITE_URL + "/assets/og-image.jpg")}
+              "og_image": e(SITE_URL + "/assets/og-image.jpg"), "ga_id": GA_ID}
 
 
 # ----------------------------------------------------------------- polices
