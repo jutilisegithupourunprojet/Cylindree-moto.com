@@ -304,6 +304,8 @@ p{margin:0 0 1rem}
   line-height:1.22;letter-spacing:.001em}
 .carte-specs{margin-top:auto;padding-top:.5rem;font-size:.83rem;color:var(--doux);
   font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:.15rem .7rem}
+.carte-prix{margin-top:.35rem;font-weight:700;color:var(--cta);
+  font-variant-numeric:tabular-nums;font-size:.95rem}
 
 .etiq{display:inline-block;font-size:.7rem;font-weight:650;text-transform:uppercase;
   letter-spacing:.07em;padding:.16rem .45rem;border-radius:3px;border:1px solid currentColor}
@@ -1468,7 +1470,8 @@ def page_comparateur():
                                "Hauteur de selle max."),
         "md_tri": menu_perso("f-tri", [("pr", "Pertinence"), ("an", "Derniers modèles"),
                                        ("p", "Puissance"), ("kg", "Poids"),
-                                       ("cy", "Cylindrée"), ("s", "Hauteur de selle")],
+                                       ("cy", "Cylindrée"), ("s", "Hauteur de selle"),
+                                       ("pz", "Prix croissant")],
                              "Trier par", valeur_defaut="pr"),
     }
 
@@ -1500,6 +1503,7 @@ aucun compte.</p>
              "pr": float(m["priorite"] or 0), "u": m["url"],
              "an": int(m["annee_debut"]) if m["annee_debut"] else 0,
              "af": int(m["annee_fin"]) if m["annee_fin"] else 0,
+             "pz": float(m["prix_lancement_eur"] or 0),
              "i": m["image_url"] if m["image_utilisable"] == "oui" else ""}
             for m in pub]
     ecrire("assets/data.json",
@@ -1593,10 +1597,11 @@ JS = r"""
     if(m.p)b.push(Math.round(m.p)+' ch');
     if(m.kg)b.push(Math.round(m.kg)+' kg');
     var a2=m.a2==='oui'?'<span class="etiq a2">A2</span>':'';
+    var prix=m.pz?'<span class="carte-prix">'+Math.round(m.pz).toLocaleString('fr-FR')+' €</span>':'';
     return '<a class="carte" href="'+m.u+'">'+img+'<div class="carte-corps">'+
       '<span class="carte-marque">'+m.m+'</span>'+
       '<span class="carte-nom">'+m.n+'</span>'+
-      '<span class="carte-specs">'+b.join(' · ')+' '+a2+'</span></div></a>';
+      '<span class="carte-specs">'+b.join(' · ')+' '+a2+'</span>'+prix+'</div></a>';
   }
 
   function filtrer(){
@@ -1620,7 +1625,7 @@ JS = r"""
       return true;
     });
     out.sort(function(x,y){
-      if(tri==='kg'||tri==='s'){
+      if(tri==='kg'||tri==='s'||tri==='pz'){
         var a=x[tri]||1e9,b=y[tri]||1e9; return a-b;
       }
       return (y[tri]||0)-(x[tri]||0);
