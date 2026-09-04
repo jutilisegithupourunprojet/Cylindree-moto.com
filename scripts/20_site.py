@@ -588,10 +588,29 @@ p{margin:0 0 1rem}
   padding:1.2rem 1.3rem;margin:1.5rem 0 2rem;max-width:640px}
 .selecteur label{display:block;font-size:.74rem;text-transform:uppercase;
   letter-spacing:.1em;color:var(--accent);font-weight:650;margin-bottom:.5rem}
-.selecteur select{width:100%;padding:.65rem .7rem;border:1px solid var(--trait-fort);
-  border-radius:6px;background:var(--fond);color:var(--texte);
-  font-size:1rem;font-family:inherit}
 .selecteur-aide{margin:.6rem 0 0;font-size:.86rem;color:var(--doux)}
+
+.recherche-modele{position:relative}
+.recherche-modele input{width:100%;padding:.65rem 2.4rem .65rem .7rem;
+  border:1px solid var(--trait-fort);border-radius:6px;background:var(--fond);
+  color:var(--texte);font-size:1rem;font-family:inherit}
+.recherche-modele input:focus{border-color:var(--accent);outline:none}
+.rm-effacer{position:absolute;top:50%;right:.5rem;transform:translateY(-50%);
+  width:26px;height:26px;border:0;border-radius:50%;background:transparent;
+  color:var(--pale);font-size:1.2rem;line-height:1;cursor:pointer}
+.rm-effacer:hover{background:var(--creux);color:var(--texte)}
+.rm-suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;
+  margin:0;padding:.3rem;list-style:none;max-height:340px;overflow-y:auto;
+  background:var(--carte);border:1px solid var(--trait-fort);border-radius:7px;
+  box-shadow:var(--ombre)}
+.rm-suggestions[hidden]{display:none}
+.rm-suggestions li{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;
+  border-radius:5px;cursor:pointer;font-size:.92rem;color:var(--texte)}
+.rm-suggestions li.rm-surlignee{background:var(--creux)}
+.rm-suggestions li img{width:36px;height:36px;object-fit:cover;border-radius:4px;
+  flex:none;background:var(--creux)}
+.rm-suggestions .rm-marque{color:var(--pale);font-size:.78rem;display:block}
+.rm-suggestions .rm-vide{color:var(--doux);cursor:default;font-size:.88rem;padding:.6rem .5rem}
 
 .grille-duels{display:grid;gap:1rem;
   grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
@@ -1834,26 +1853,18 @@ def pages_hubs():
             m = par_id[d[cle]]
             impliques[m["modele_id"]] = m
 
-    par_marque_sel = defaultdict(list)
-    for m in impliques.values():
-        par_marque_sel[m["marque"]].append(m)
-    groupes = []
-    for marque in sorted(par_marque_sel):
-        opts = "".join('<option value="%s">%s</option>'
-                       % (e(m["modele_id"]), e(m["nom_affichage"]))
-                       for m in sorted(par_marque_sel[marque],
-                                       key=lambda x: x["nom_affichage"]))
-        groupes.append('<optgroup label="%s">%s</optgroup>' % (e(marque), opts))
-
     selecteur = """<div class="selecteur">
-  <label for="d-modele">Quelle moto vous intéresse ?</label>
-  <select id="d-modele">
-    <option value="">Choisissez un modèle</option>
-    %s
-  </select>
+  <label for="d-recherche">Quelle moto vous intéresse ?</label>
+  <div class="recherche-modele">
+    <input type="text" id="d-recherche" autocomplete="off"
+      placeholder="Tapez une marque ou un modèle : MT-07, Africa Twin…"
+      role="combobox" aria-expanded="false" aria-controls="d-suggestions" aria-autocomplete="list">
+    <button type="button" id="d-effacer" class="rm-effacer" hidden aria-label="Effacer la sélection">&times;</button>
+    <ul id="d-suggestions" class="rm-suggestions" role="listbox" hidden></ul>
+  </div>
   <p class="selecteur-aide">%d modèles ont au moins un duel.
-     Sélectionnez-en un pour voir uniquement ses comparatifs.</p>
-</div>""" % ("".join(groupes), len(impliques))
+     Tapez pour chercher, ou laissez vide pour voir les duels les plus consultés.</p>
+</div>""" % len(impliques)
 
     # rendu statique : lisible sans JavaScript et indexable
     defaut = "".join(carte_duel(d) for d in duels_ok[:24])
@@ -1896,11 +1907,92 @@ duels pour éviter les comparaisons redondantes.</p></div>
 
 JS_DUELS = r"""
 (function(){
-  var sel=document.getElementById('d-modele'),
+  var champ=document.getElementById('d-recherche'),
+      effacer=document.getElementById('d-effacer'),
+      liste=document.getElementById('d-suggestions'),
       res=document.getElementById('res-duels'),
       titre=document.getElementById('titre-res'),
       vide=document.getElementById('d-vide'),
-      D=null;
+      D=null, MODELES=null, actif=-1, options=[];
+
+  function norm(s){return (s||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'');}
+
+  function construireModeles(){
+    var m={};
+    D.forEach(function(d){
+      if(!m[d.ia])m[d.ia]={id:d.ia,n:d.a.n,m:d.a.m,i:d.a.i};
+      if(!m[d.ib])m[d.ib]={id:d.ib,n:d.b.n,m:d.b.m,i:d.b.i};
+    });
+    return Object.keys(m).map(function(k){return m[k];})
+      .sort(function(a,b){return a.n.localeCompare(b.n);});
+  }
+
+  function fermer(){
+    liste.hidden=true; actif=-1;
+    champ.setAttribute('aria-expanded','false');
+  }
+
+  function surligner(){
+    var lis=liste.querySelectorAll('li[data-id]');
+    lis.forEach(function(li,i){
+      li.classList.toggle('rm-surlignee',i===actif);
+      if(i===actif){
+        li.scrollIntoView({block:'nearest'});
+        champ.setAttribute('aria-activedescendant',li.id);
+      }
+    });
+  }
+
+  function suggerer(texte){
+    var q=norm(texte.trim());
+    options=!q?[]:MODELES.filter(function(m){
+      return norm(m.n+' '+m.m).indexOf(q)>=0;
+    }).slice(0,8);
+    actif=-1;
+    if(!q){fermer();return;}
+    if(!options.length){
+      liste.innerHTML='<li class="rm-vide">Aucun modèle ne correspond.</li>';
+      liste.hidden=false; champ.setAttribute('aria-expanded','true');
+      return;
+    }
+    liste.innerHTML=options.map(function(m,i){
+      var img=m.i?'<img src="'+m.i+'" alt="" loading="lazy" decoding="async">':'';
+      return '<li role="option" data-id="'+m.id+'" id="d-opt-'+i+'">'+img+
+        '<span>'+m.n+'<span class="rm-marque">'+m.m+'</span></span></li>';
+    }).join('');
+    liste.hidden=false; champ.setAttribute('aria-expanded','true');
+  }
+
+  function choisir(id){
+    var m=MODELES.filter(function(x){return x.id===id;})[0];
+    champ.value=m?m.n:'';
+    effacer.hidden=false;
+    fermer();
+    afficher(id);
+  }
+
+  champ.addEventListener('input',function(){
+    effacer.hidden=!champ.value;
+    suggerer(champ.value);
+  });
+  champ.addEventListener('keydown',function(ev){
+    if(liste.hidden||!options.length)return;
+    if(ev.key==='ArrowDown'){ev.preventDefault();actif=Math.min(actif+1,options.length-1);surligner();}
+    else if(ev.key==='ArrowUp'){ev.preventDefault();actif=Math.max(actif-1,0);surligner();}
+    else if(ev.key==='Enter'){if(actif>=0){ev.preventDefault();choisir(options[actif].id);}}
+    else if(ev.key==='Escape'){fermer();}
+  });
+  liste.addEventListener('click',function(ev){
+    var li=ev.target.closest('li[data-id]');
+    if(li)choisir(li.getAttribute('data-id'));
+  });
+  document.addEventListener('click',function(ev){
+    if(!ev.target.closest('.recherche-modele'))fermer();
+  });
+  effacer.addEventListener('click',function(){
+    champ.value=''; effacer.hidden=true; fermer(); afficher(''); champ.focus();
+  });
 
   function cote(c){
     var img=c.i?'<img src="'+c.i+'" alt="'+c.n+'" loading="lazy" decoding="async">':'';
@@ -1933,7 +2025,8 @@ JS_DUELS = r"""
     lot=lot.map(function(d){
       return d.ib===id?{u:d.u,c:d.c,a2:d.a2,ia:d.ib,ib:d.ia,a:d.b,b:d.a}:d;
     });
-    var nom=lot.length?lot[0].a.n:sel.options[sel.selectedIndex].text;
+    var ref=MODELES.filter(function(m){return m.id===id;})[0];
+    var nom=lot.length?lot[0].a.n:(ref?ref.n:'');
     titre.textContent=lot.length+(lot.length>1?' duels pour la ':' duel pour la ')+nom;
     res.innerHTML=lot.map(carte).join('');
     vide.hidden=lot.length>0;
@@ -1941,13 +2034,12 @@ JS_DUELS = r"""
       history.replaceState(null,'',id?('#'+id):location.pathname);
     }
   }
-  sel.addEventListener('change',function(){afficher(sel.value);});
 
   fetch('/assets/duels.json').then(function(r){return r.json();}).then(function(j){
     D=j;
+    MODELES=construireModeles();
     var h=location.hash.slice(1);
-    if(h){sel.value=h;}
-    if(sel.value){afficher(sel.value);}
+    if(h && MODELES.some(function(m){return m.id===h;})){choisir(h);}
   });
 })();
 """
