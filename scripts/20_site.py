@@ -374,7 +374,7 @@ p{margin:0 0 1rem}
   color:var(--doux);border-bottom:1px solid var(--trait-fort)}
 .tab-duel td{text-align:center;font-variant-numeric:tabular-nums}
 .tab-duel th[scope=row]{text-align:left;font-weight:500;color:var(--doux)}
-.gagne{color:var(--vert);font-weight:650}
+.gagne{color:var(--rouge);font-weight:650}
 
 .filtres{background:var(--carte);border:1px solid var(--trait);border-radius:8px;
   padding:1.1rem;display:grid;gap:.9rem;
