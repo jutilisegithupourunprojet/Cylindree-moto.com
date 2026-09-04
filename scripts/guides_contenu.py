@@ -298,7 +298,8 @@ dorsale, gants CE, bottes, pantalon renforcé : 800 à 1 500 €.</li>
 <p>La tentation de rouler « juste pour cinq minutes » en jean et baskets est le
 piège classique des premiers mois. À basse vitesse comme à haute, l'équipement
 est la seule barrière entre vous et le bitume.</p>""" + bloc_achat(
-       ["casque", "blouson", "gants", "bottes"])},
+       ["casque", "casque-amazon", "blouson", "blouson-amazon", "gants",
+        "gants-amazon", "bottes", "bottes-amazon"])},
 
   {"h2": "Neuve ou d'occasion : la réponse est assez nette",
    "html": """<p>Pour une première moto, l'occasion s'impose pour deux raisons

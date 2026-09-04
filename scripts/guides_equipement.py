@@ -279,7 +279,8 @@ motards en rapportent <strong>moins de fatigue et une disparition des
 sifflements</strong> en fin de journée par rapport aux modèles filtrants du
 commerce. Le prix inclut la prise d'empreinte, et l'équipement peut être
 partiellement remboursé par certaines mutuelles sur ordonnance.</p>""" +
-   bloc_achat(["bouchons", "bouchons-amazon", "bouchons-amazon-2"])},
+   bloc_achat(["bouchons", "bouchons-amazon", "bouchons-amazon-2",
+               "bouchons-amazon-3"])},
 
   {"h2": "Bien les mettre, et les entretenir",
    "html": """<ul class="tick">
@@ -435,7 +436,9 @@ que les protections sont bien incluses, sinon ajoutez-les au budget.</p>"""},
 moyenne <strong>30 % du prix de sa moto en équipement la première année</strong>.
 Et l'arbitrage le plus souvent recommandé : mieux vaut une moto à 3 000 € avec
 1 500 € d'équipement que l'inverse.</p>""" + bloc_achat(
-       ["blouson", "gants", "bottes", "pantalon"])},
+       ["blouson", "blouson-amazon", "blouson-amazon-2", "gants",
+        "gants-amazon", "gants-amazon-2", "bottes", "bottes-amazon",
+        "pantalon", "pantalon-amazon", "pantalon-amazon-2"])},
 
   {"h2": "Le gilet airbag : faut-il franchir le pas ?",
    "html": """<p>C'est l'équipement dont l'apport en protection est le plus
@@ -465,7 +468,7 @@ Le filaire convient bien aux longues étapes : pas de batterie à gérer, et la
 cartouche se change soi-même en quelques minutes.</p>
 
 <p class="mention">À noter : le gilet airbag n'est obligatoire pour aucun usage
-routier en France.</p>""" + bloc_achat(["airbag"])},
+routier en France.</p>""" + bloc_achat(["airbag", "airbag-amazon"])},
 
   {"h2": "Par quoi commencer avec un budget serré",
    "html": """<p>Si vous ne pouvez pas tout acheter d'un coup, cet ordre limite
