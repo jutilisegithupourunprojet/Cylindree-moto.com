@@ -1945,6 +1945,8 @@ def fichiers_techniques():
     ecrire("assets/duels.js", JS_DUELS)
     ecrire("assets/comparateur.js", JS)
     ecrire("robots.txt", "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
+    ecrire("ads.txt", "google.com, %s, DIRECT, f08c47fec0942fa0\n"
+           % ADSENSE_CLIENT.replace("ca-pub-", "pub-"))
     items = "".join(
         "<url><loc>%s%s</loc><priority>%s</priority></url>"
         % (SITE_URL, html.escape(u), p) for u, p in urls)
