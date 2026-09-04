@@ -338,6 +338,19 @@ p{margin:0 0 1rem}
   letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:.35rem}
 .encart p{margin:0;font-size:.94rem}
 
+.schema-pneu{display:flex;flex-wrap:wrap;align-items:stretch;gap:.4rem;
+  margin:1.3rem 0;background:var(--creux);border-radius:8px;padding:1.1rem}
+.sp-bloc{flex:1 1 90px;display:flex;flex-direction:column;gap:.3rem;
+  background:var(--carte);border:1px solid var(--trait);border-radius:6px;
+  padding:.6rem .5rem;text-align:center}
+.sp-val{font-family:var(--police-titre);font-weight:700;font-size:1.25rem;color:var(--accent)}
+.sp-legende{font-size:.72rem;color:var(--doux);line-height:1.3}
+.sp-sep{display:flex;align-items:center;font-size:1.4rem;color:var(--pale);font-weight:700}
+
+.schema-fig{margin:1.5rem 0;background:var(--creux);border-radius:8px;padding:1.2rem}
+.schema-fig svg{width:100%;height:auto;display:block}
+.schema-fig figcaption{font-size:.8rem;color:var(--doux);margin-top:.6rem;max-width:70ch}
+
 .encart-achat{background:var(--carte)}
 .liens-affilies{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.2rem}
 .lien-affilie{display:inline-flex;align-items:center;gap:.4rem;

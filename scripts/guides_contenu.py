@@ -599,4 +599,156 @@ selle confort d'un spécialiste comme faisant partie du prix d'achat.</p>"""},
  ],
 },
 
+# =====================================================================
+{
+ "slug": "cylindree-couple-puissance",
+ "titre": "Cylindrée, couple et puissance : comprendre les chiffres d'une fiche moto",
+ "h1": "Cylindrée, couple et puissance : ce que disent vraiment les chiffres",
+ "desc": ("Cylindrée, chevaux, Newton-mètres : à quoi correspond chaque chiffre "
+          "d'une fiche technique moto, et pourquoi ils ne mesurent pas la même chose."),
+ "chapo": ("Trois chiffres reviennent sur toutes les fiches techniques : la "
+           "cylindrée, la puissance et le couple. Ce ne sont pas trois façons de "
+           "dire la même chose. Une fois qu'on sait ce que chacun mesure, une "
+           "fiche technique devient beaucoup plus lisible."),
+ "sections": [
+
+  {"h2": "La cylindrée : un volume, pas une performance",
+   "html": """<p>La cylindrée est le volume total balayé par les pistons à
+l'intérieur des cylindres, mesuré en centimètres cubes (cm³). Un bicylindre de
+649 cm³ correspond, grosso modo, à deux cylindres d'environ 325 cm³ chacun.</p>
+<p>C'est une mesure de <strong>volume</strong>, pas de puissance : elle donne une
+idée du potentiel du moteur, mais deux motos de même cylindrée peuvent avoir des
+puissances très différentes selon l'architecture, le taux de compression ou la
+gestion électronique. À l'inverse, un petit moteur très poussé peut dépasser un
+plus gros moteur réglé pour la souplesse.</p>"""},
+
+  {"h2": "La puissance : la vitesse à laquelle le travail est fait",
+   "html": """<p>La puissance, exprimée en chevaux (ch) ou en kilowatts (kW),
+mesure la quantité de travail que le moteur peut fournir par unité de temps.
+C'est elle qui conditionne surtout la <strong>vitesse de pointe</strong> et les
+relances à haut régime.</p>
+<p>Sur une fiche technique, la puissance est presque toujours donnée avec le
+régime auquel elle est atteinte (par exemple « 74 ch à 8&nbsp;500 tr/min ») : au
+régime maximal du moteur, pas à n'importe quel moment. En dessous de ce régime,
+la moto ne délivre pas ce chiffre.</p>"""},
+
+  {"h2": "Le couple : la force qui fait la reprise",
+   "html": """<p>Le couple, exprimé en Newton-mètres (Nm), mesure la force de
+rotation disponible sur le vilebrequin. C'est lui qui donne la sensation de
+« pousser dans le dos » à l'accélération, et qui permet de reprendre sans
+rétrograder.</p>
+<p>Contrairement à la puissance, le couple maximal est en général atteint à un
+régime <strong>bas ou moyen</strong>. Une moto au couple généreux dès les bas
+régimes se conduit sans avoir besoin de faire hurler le moteur ; c'est souvent
+le cas des gros roadsters et des trails routiers.</p>"""},
+
+  {"h2": "Comment les deux se rejoignent : la courbe moteur",
+   "html": """<p>Couple et puissance ne sont pas deux mesures indépendantes : la
+puissance se déduit du couple et du régime moteur, selon une relation directe.
+Convertie en kilowatts et en Newton-mètres, cette relation a une conséquence
+visuelle très pratique : <strong>quand les deux courbes sont tracées sur le
+même graphique, avec les mêmes graduations, elles se croisent toujours au même
+régime : 9&nbsp;550 tr/min</strong>, quel que soit le moteur.</p>
+
+<figure class="schema-fig">
+<svg viewBox="0 0 640 380" role="img" aria-labelledby="titre-schema-cp desc-schema-cp" xmlns="http://www.w3.org/2000/svg">
+  <title id="titre-schema-cp">Courbes schématiques de couple et de puissance en fonction du régime moteur</title>
+  <desc id="desc-schema-cp">Le couple culmine vers 6 000 tr/min puis redescend. La puissance monte progressivement, dépasse le couple après leur croisement à 9 550 tr/min, puis plafonne avant de retomber en fin de plage.</desc>
+
+  <line x1="60" y1="320" x2="600" y2="320" stroke="var(--trait-fort)" stroke-width="1.5"/>
+  <line x1="60" y1="40" x2="60" y2="320" stroke="var(--trait-fort)" stroke-width="1.5"/>
+
+  <g stroke="var(--trait)" stroke-width="1">
+    <line x1="150" y1="40" x2="150" y2="320"/>
+    <line x1="240" y1="40" x2="240" y2="320"/>
+    <line x1="330" y1="40" x2="330" y2="320"/>
+    <line x1="420" y1="40" x2="420" y2="320"/>
+    <line x1="510" y1="40" x2="510" y2="320"/>
+  </g>
+
+  <g fill="var(--doux)" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="60" y="338">0</text>
+    <text x="150" y="338">2 000</text>
+    <text x="240" y="338">4 000</text>
+    <text x="330" y="338">6 000</text>
+    <text x="420" y="338">8 000</text>
+    <text x="510" y="338">10 000</text>
+    <text x="600" y="338">12 000</text>
+    <text x="330" y="362" font-size="12.5">Régime moteur (tr/min)</text>
+  </g>
+
+  <polyline points="60,301.8 105,232.5 150,175.8 195,131.7 240,100.2 285,81.3 330,75 375,81.3 420,100.2 465,131.7 489.75,154.38 510,175.8 555,232.5 600,301.8"
+    fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="60,320 105,310.8 150,289.8 195,260.85 240,227.95 285,195.05 330,166.07 375,145.03 420,135.9 465,142.55 489.75,154.38 510,169.01 555,219.2 600,297.14"
+    fill="none" stroke="var(--petrole)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <line x1="489.75" y1="154.38" x2="489.75" y2="320" stroke="var(--doux)" stroke-width="1" stroke-dasharray="4 4"/>
+  <circle cx="489.75" cy="154.38" r="5" fill="var(--texte)"/>
+  <text x="489.75" y="130" text-anchor="middle" font-size="12.5" fill="var(--texte)" font-weight="600">9 550 tr/min</text>
+
+  <g font-size="13" font-weight="600">
+    <line x1="330" y1="55" x2="352" y2="55" stroke="var(--accent)" stroke-width="3"/>
+    <text x="358" y="59" fill="var(--texte)">Couple (Nm)</text>
+    <line x1="330" y1="75" x2="352" y2="75" stroke="var(--petrole)" stroke-width="3"/>
+    <text x="358" y="79" fill="var(--texte)">Puissance (kW)</text>
+  </g>
+</svg>
+<figcaption>Schéma illustratif (pas une courbe réelle d'un modèle précis) :
+avant 9&nbsp;550 tr/min le couple est au-dessus de la puissance sur ce graphique,
+après il repasse en dessous. C'est une propriété mathématique de la conversion
+Nm/kW, valable pour n'importe quel moteur.</figcaption>
+</figure>
+
+<p class="mention">Sur une fiche technique en chevaux plutôt qu'en kilowatts, le
+croisement ne tombe plus pile sur un chiffre rond (le ch et le kW n'ont pas la
+même valeur), mais le principe reste identique : le couple domine en dessous
+d'un certain régime, la puissance au-dessus.</p>"""},
+
+  {"h2": "Ce que ça change pour choisir sa moto",
+   "html": """<ul class="tick">
+<li><strong>Beaucoup de couple bas et médian</strong> : moto agréable en usage
+courant, qui reprend sans avoir besoin de rétrograder ni de monter dans les
+tours. Typique des roadsters et trails routiers de moyenne cylindrée.</li>
+<li><strong>Pic de puissance à haut régime</strong> : moto qui demande de « faire
+tourner » le moteur pour exploiter son potentiel. Gratifiant sur route sportive
+ou circuit, moins reposant en usage quotidien ou en ville.</li>
+<li><strong>La cylindrée seule ne prédit ni l'un ni l'autre</strong> : elle donne
+une idée du potentiel global, mais c'est la courbe couple/puissance, pas le
+chiffre de cylindrée, qui dit comment la moto se comporte réellement sur la
+route.</li>
+</ul>"""},
+ ],
+
+ "faq": [
+  ("Une grosse cylindrée a-t-elle toujours plus de couple ?",
+   "En général oui à architecture égale, mais pas systématiquement : un moteur "
+   "de plus petite cylindrée mais bien préparé peut dépasser en couple un plus "
+   "gros moteur réglé pour la douceur ou la sobriété."),
+  ("Pourquoi le couple et la puissance se croisent-ils à 9 550 tr/min ?",
+   "C'est une conséquence directe de la conversion entre Newton-mètres et "
+   "kilowatts : la formule qui relie les deux fait apparaître ce nombre comme "
+   "point de croisement, quel que soit le moteur, dès lors que le couple est "
+   "en Nm et la puissance en kW sur le même graphique."),
+  ("Le croisement tombe-t-il aussi à 9 550 tr/min en chevaux (ch) ?",
+   "Non. Le ch et le kW n'ont pas la même valeur (1 kW ≈ 1,36 ch), donc le "
+   "croisement en Nm/ch se produit à un régime différent. Le principe reste "
+   "le même : le couple domine en dessous, la puissance au-dessus."),
+  ("Faut-il regarder la puissance max ou le couple max pour choisir une moto ?",
+   "Le couple, et surtout le régime auquel il est disponible, renseigne mieux "
+   "sur l'agrément au quotidien. La puissance max renseigne surtout sur la "
+   "vitesse de pointe et le potentiel à haut régime."),
+ ],
+
+ "sources": [
+  ("Blog Automobile, puissance et couple : des courbes",
+   "https://blogautomobile.fr/puissance-couple-courbes-137910"),
+  ("Blog Automobile, puissance et couple, du côté du moteur",
+   "https://blogautomobile.fr/puissance-couple-cote-moteur-137052"),
+  ("Astuces Pratiques, courbe de couple et de puissance moteur",
+   "https://www.astuces-pratiques.fr/auto-moto/courbe-couple-puissance-moteur"),
+  ("CBpower, la différence entre couple et puissance",
+   "https://www.cbpower.be/blog/difference-entre-couple-et-puissance/"),
+ ],
+},
+
 ]

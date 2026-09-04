@@ -655,4 +655,121 @@ formule.</p>"""},
  ],
 },
 
+# =====================================================================
+{
+ "slug": "choisir-ses-pneus-moto",
+ "titre": "Comment choisir ses pneus moto : taille, usure, durée de vie",
+ "h1": "Comment choisir ses pneus moto ?",
+ "desc": ("Lire une taille de pneu, repérer l'usure et l'âge, choisir entre "
+          "route, sport ou trail : le guide complet pour ne pas se tromper."),
+ "chapo": ("Sur une moto, toute l'adhérence passe par deux bandes de contact "
+           "grandes chacune comme une carte de crédit posée au sol. Contrairement "
+           "à une voiture, il n'y a pas de quatrième roue pour compenser une erreur "
+           "de choix ou un pneu fatigué. Voici comment lire, choisir et surveiller "
+           "les vôtres."),
+ "sections": [
+
+  {"h2": "Décoder une taille de pneu",
+   "html": """<p>Une taille de pneu moto s'écrit toujours dans le même ordre, par
+exemple <strong>120/70 ZR17 58W</strong>. Chaque bloc a un sens précis :</p>
+<div class="schema-pneu" role="img" aria-label="Décomposition de la taille de pneu 120/70 ZR17 58W">
+  <div class="sp-bloc"><span class="sp-val">120</span><span class="sp-legende">Largeur du pneu en mm</span></div>
+  <div class="sp-sep">/</div>
+  <div class="sp-bloc"><span class="sp-val">70</span><span class="sp-legende">Hauteur du flanc, en % de la largeur (ici 70 % de 120&nbsp;mm = 84&nbsp;mm)</span></div>
+  <div class="sp-bloc"><span class="sp-val">ZR</span><span class="sp-legende">Z = conçu pour la haute vitesse, R = structure radiale</span></div>
+  <div class="sp-bloc"><span class="sp-val">17</span><span class="sp-legende">Diamètre de la jante, en pouces</span></div>
+  <div class="sp-bloc"><span class="sp-val">58</span><span class="sp-legende">Indice de charge (charge maximale admissible)</span></div>
+  <div class="sp-bloc"><span class="sp-val">W</span><span class="sp-legende">Indice de vitesse (W = 270&nbsp;km/h maximum)</span></div>
+</div>
+<p class="mention">La taille exacte à monter est toujours celle indiquée par le
+constructeur dans le manuel ou sur l'étiquette du bras oscillant/de la fourche :
+elle n'est pas négociable, contrairement à la marque ou au modèle de pneu.</p>"""},
+
+  {"h2": "Route, sport ou trail : quatre familles, un usage chacune",
+   "html": """<ul class="tick">
+<li><strong>Sport-touring / route</strong> : le choix par défaut pour un usage
+quotidien ou routier. Bon compromis adhérence, longévité et tenue sous la pluie.</li>
+<li><strong>Sportif / hypersport</strong> : gomme plus tendre, meilleure accroche
+à chaud et à l'angle, mais usure plus rapide et adhérence à froid moins bonne.
+Pensé pour la route sportive ou la piste, pas pour les longs trajets utilitaires.</li>
+<li><strong>Trail mixte (80/20 ou 50/50)</strong> : sculpture plus prononcée pour
+le mixte route/chemin. Un pneu très routier sur un trail utilisé uniquement sur
+bitume gagne en confort et en durée de vie ; un pneu très tout-terrain sur un
+trail resté sur route perd en tenue et en silence.</li>
+<li><strong>Hiver / toutes saisons</strong> : gomme qui reste souple à basse
+température, utile pour qui roule toute l'année dans une région froide.</li>
+</ul>"""},
+
+  {"h2": "Repérer l'usure : le témoin TWI",
+   "html": """<p>Un repère « <strong>TWI</strong> » (Tread Wear Indicator) est
+marqué sur le flanc du pneu, en face d'une petite barre de gomme surélevée d'environ
+1,6&nbsp;mm au fond des rainures principales. Quand la sculpture arrive au niveau
+de cette barre, le pneu est légalement et pratiquement usé : la profondeur minimale
+tolérée est de 1,6&nbsp;mm sur toute la bande de roulement.</p>
+<p class="mention">En pratique, beaucoup de motards changent avant cette limite :
+l'évacuation de l'eau et l'accroche se dégradent progressivement bien avant le
+seuil légal.</p>"""},
+
+  {"h2": "L'âge compte autant que l'usure",
+   "html": """<div class="encart"><p class="encart-titre">Un pneu vieillit même sans rouler</p>
+<p>La gomme durcit avec le temps, indépendamment des kilomètres parcourus. Un
+pneu ne devrait jamais dépasser <strong>5 ans</strong> d'âge en usage régulier,
+et <strong>10 ans</strong> dans l'absolu, même si la sculpture semble intacte.</p></div>
+<p>La date de fabrication est gravée sur le flanc dans un encadré DOT, sous la
+forme de 4 chiffres : les deux premiers donnent la semaine, les deux derniers
+l'année. Par exemple, <strong>« 3523 »</strong> signifie 35<sup>e</sup> semaine de
+2023. Un pneu neuf en magasin peut donc déjà avoir plusieurs mois, voire plus
+d'un an : vérifiez ce code avant l'achat, surtout en fin de série ou en promotion."""},
+
+  {"h2": "Faut-il changer les deux pneus en même temps",
+   "html": """<p>Pas obligatoirement, mais c'est souvent recommandé quand l'écart
+d'usure ou d'âge devient important : un pneu avant et un pneu arrière de générations
+différentes n'ont pas le même comportement à l'accroche ni le même profil d'usure,
+ce qui peut déséquilibrer la tenue de route, en particulier à l'angle. Un
+changement à l'unité reste raisonnable si l'autre pneu est récent et encore bien
+dans ses cotes.</p>"""},
+
+  {"h2": "Budget indicatif",
+   "html": """<p>Comptez, pour une cylindrée moyenne (600 à 900 cm³) et une gamme
+sport-touring grand public : environ <strong>90 à 160 € le pneu avant</strong> et
+<strong>120 à 220 € le pneu arrière</strong>, hors montage et équilibrage. Les
+tailles de gros trails et de grosses cylindrées coûtent generalement plus cher,
+les petites cylindrées et les scooters moins.</p>""" +
+   bloc_achat(["pneus", "pneus-amazon", "pneus-amazon-2"], "Où trouver ses pneus")},
+ ],
+
+ "faq": [
+  ("Peut-on monter n'importe quelle marque de pneu sur sa moto ?",
+   "Oui pour la marque, mais pas pour la taille : c'est toujours la dimension "
+   "indiquée par le constructeur qui fait foi, jamais une taille approchante."),
+  ("Un pneu qui a l'air neuf mais qui a 6 ans est-il dangereux ?",
+   "Potentiellement, oui. La gomme durcit avec le temps même sans rouler, ce qui "
+   "réduit l'adhérence indépendamment de l'état visuel de la sculpture. Vérifiez "
+   "toujours le code DOT avant d'acheter, y compris un pneu présenté comme neuf."),
+  ("Faut-il le même pneu avant et arrière ?",
+   "Pas nécessairement la même référence, mais idéalement la même gamme et une "
+   "usure ou un âge comparables, pour ne pas déséquilibrer le comportement de "
+   "la moto entre l'avant et l'arrière."),
+  ("La pression des pneus se vérifie à quelle fréquence ?",
+   "Au moins une fois par mois et avant tout trajet long, à froid. Une "
+   "sous-pression use le pneu de manière irrégulière et dégrade la tenue de "
+   "route ; elle se voit rarement à l'œil nu."),
+ ],
+
+ "sources": [
+  ("Michelin, comment lire la dimension d'un pneu moto",
+   "https://www.michelin.fr/motorbike/conseils-moto/regles-pneus/dimension-pneu-moto"),
+  ("Michelin, indices de vitesse et de charge des pneus moto",
+   "https://www.michelin.ch/fr/motorbike/conseils-moto/regles-pneus/indices-de-vitesse-et-de-charge-des-pneus-moto"),
+  ("1001pneus, comment lire un pneu moto : guide pour tout comprendre",
+   "https://www.1001pneus.fr/lire-pneu-moto"),
+  ("1001pneus, DOT pneu moto : bien déterminer la date de fabrication",
+   "https://www.1001pneus.fr/dot-pneu-moto"),
+  ("Michelin, usure des pneus : quand changer les pneus de sa moto",
+   "https://www.michelin.fr/motorbike/conseils-moto/changer-pneus/usure-des-pneus-quand-changer-les-pneus-de-ma-moto"),
+  ("AlloPneus, comment lire la dimension d'un pneu moto",
+   "https://www.allopneus.com/guide-pratique/moto/guide-achat/lire-un-pneu-moto/"),
+ ],
+},
+
 ]
