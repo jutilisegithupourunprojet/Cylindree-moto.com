@@ -237,4 +237,29 @@ MODELES = [
   "a2": "compatible A2 sans bridage (125 cm³, catégorie A1/permis B+7h)",
   "source": "https://www.moto125cc.fr/yamaha-mt-125-le-roadster-compact-de-reference/"},
 
+ {"nom": "Suzuki SV650", "marque": "Suzuki",
+  "annee_debut": 1999, "categorie": "Roadster",
+  "cylindree_cc": 645, "architecture": "V-twin", "refroidissement": "Liquide",
+  "puissance_ch": 73, "puissance_tr_min": 8500,
+  "couple_nm": 64, "couple_tr_min": 6800,
+  "poids_tous_pleins_kg": 197, "hauteur_selle_mm": 785,
+  "reservoir_l": 14.5, "consommation": "4,1 L/100 km",
+  "prix_lancement_eur": 7149,
+  "a2": "version A2 disponible (47,5 ch bridée)",
+  "note": "Fiche saisie manuellement : l'article Wikipédia source ne renseigne "
+          "pas la cylindrée.",
+  "source": "https://moto.suzuki.fr/gamme/roadsters/sv650/"},
+
+ {"nom": "Suzuki Bandit 650", "id": "suzuki-gsf650-bandit", "marque": "Suzuki",
+  "annee_debut": 2005, "annee_fin": 2016, "categorie": "Roadster",
+  "cylindree_cc": 656, "architecture": "4 cylindres en ligne", "refroidissement": "Liquide",
+  "puissance_ch": 85, "puissance_tr_min": 10500,
+  "couple_nm": 64, "couple_tr_min": 8900,
+  "poids_tous_pleins_kg": 243, "reservoir_l": 19,
+  "prix_lancement_eur": 6399,
+  "a2": "version A2 disponible (bridée)",
+  "note": "Gamme Bandit retirée du catalogue France vers 2016, remplacée par "
+          "la série GSX-S. Absente de Wikipédia, fiche sourcée presse.",
+  "source": "https://www.largus.fr/fiche-technique/Suzuki/Gsf+Bandit/I/2006/Roadster+0+Portes/GSF+650+N+Bandit+ABS+2006-912941.html"},
+
 ]

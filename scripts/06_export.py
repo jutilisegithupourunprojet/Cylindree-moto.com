@@ -269,7 +269,10 @@ def nom_fr_propre(r, ref):
     """
     def cle(x):
         return re.sub(r"[^a-z0-9]", "", (x or "").lower())
+    def nombres(x):
+        return set(re.findall(r"\d{2,4}", x or ""))
     kref = cle(ref)
+    nref = nombres(ref)
     for cand in (r.get("titre_fr"), r.get("nom_fr")):
         c = (cand or "").strip()
         if not c or not (3 <= len(c) <= 60):
@@ -277,6 +280,12 @@ def nom_fr_propre(r, ref):
         if c.lower().startswith(("liste ", "categorie", "catégorie")):
             continue
         kc = cle(c)
+        # candidat qui porte un numero de modele different (ex. "SV 650"
+        # propose a tort comme nom FR de "Suzuki SV1000") : un vrai nom FR
+        # garde le meme numero, juste reformate - jamais un autre modele.
+        nc = nombres(c)
+        if nc and nref and not (nc & nref):
+            continue
         # candidat strictement moins informatif que la reference : on refuse
         if kc and kref.startswith(kc) and len(kc) < len(kref):
             continue
@@ -586,7 +595,11 @@ duels.sort(key=lambda d: -d["score_priorite"])
 # Sans plafond, une poignee de modeles monopolise la page (jusqu'a 18 duels
 # pour la YZF-R7). On parcourt du meilleur au moins bon et on retient tant
 # qu'aucun des deux modeles n'a atteint son quota.
-MAX_PAR_MODELE = 6
+# Remonte de 6 a 10 : a 6, le biais de score vers les modeles recents
+# (bonus "rec >= 2018") evincait systematiquement les duels "entree de
+# gamme" classiques (ex. Z650 vs Suzuki Bandit 650) au profit de nouveautes,
+# meme quand ces duels passaient largement le seuil de credibilite.
+MAX_PAR_MODELE = 10
 compte = Counter()
 retenus = []
 for d in duels:
