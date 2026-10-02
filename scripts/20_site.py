@@ -1341,8 +1341,9 @@ def page_duel(d):
     a, b = par_id[d["modele_a_id"]], par_id[d["modele_b_id"]]
     na, nb = a["nom_affichage"], b["nom_affichage"]
     titre = "%s ou %s : lequel choisir ?" % (na, nb)
-    desc = ("Comparatif %s contre %s : cylindree, puissance, poids, hauteur de "
-            "selle et compatibilite permis A2." % (na, nb))
+    desc = ("Comparatif %s contre %s : cylindrée, puissance, couple, poids et "
+            "hauteur de selle%s." % (na, nb,
+            ", toutes deux compatibles permis A2" if d["a2"] == "oui" else ""))
 
     CRIT = [("Cylindrée", "cylindree_cc", "cm³", 0, None),
             ("Puissance", "puissance_ch", "ch", 1, "haut"),
@@ -1532,9 +1533,10 @@ aucun compte.</p>
 </div>""" % (len(pub), filtres)
 
     ecrire("comparateur.html",
-           page("Comparateur de motos : filtrer par école, cylindrée et permis A2",
-                "Comparez %d motos par école, catégorie, année, cylindrée, hauteur "
-                "de selle et compatibilité permis A2." % len(pub),
+           page("Comparateur de motos : cylindrée, puissance, poids, prix et permis A2",
+                "Comparez %d motos par cylindrée, puissance, poids, prix, école, "
+                "catégorie et compatibilité permis A2. Filtrage instantané, sans "
+                "compte." % len(pub),
                 corps, SITE_URL + "/comparateur.html", "",
                 [("Accueil", "/"), ("Comparateur", None)],
                 '<script src="/assets/comparateur.js" defer></script>'))
