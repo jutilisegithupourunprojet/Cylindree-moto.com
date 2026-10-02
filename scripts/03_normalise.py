@@ -66,9 +66,14 @@ CAT_ARTICLE = [
  ("Electric scooters", "Scooter / Cyclomoteur"),
  ("Three-wheeled motor scooters", "Trois-roues"),
  ("Mopeds", "Scooter / Cyclomoteur"),
+ # "Dual-sport motorcycles" avant "Standard motorcycles" : plusieurs
+ # routieres/trails crossover (Ducati Multistrada, Honda Crossrunner, BMW
+ # F650GS...) sont doublement categorisees par Wikipedia, et "Standard"
+ # etant un tag tres generique, il l'emportait a tort sur un signal plus
+ # specifique - creant des duels Roadster contre Trail/Aventure absurdes.
+ ("Dual-sport motorcycles", "Trail / Aventure"),
  ("Standard motorcycles", "Roadster"),
  ("Sport bikes", "Sportive"),
- ("Dual-sport motorcycles", "Trail / Aventure"),
  ("Cruiser motorcycles", "Custom / Cruiser"),
  ("Touring motorcycles", "Routière / GT"),
  ("Off-road motorcycles", "Tout-terrain"),
@@ -76,6 +81,16 @@ CAT_ARTICLE = [
  ("Cafe racers", "Café racer"),
  ("Custom motorcycles", "Custom / Cruiser"),
 ]
+
+# Exceptions a la regle ci-dessus : articles Wikipedia regroupant plusieurs
+# derives (ex. "KTM 390 series" couvre Duke/Adventure/Enduro) dont la
+# categorie "Dual-sport" vient d'une variante soeur, alors que CE modele
+# precis est sans ambiguite un roadster dans l'usage reel. Cle = titre exact
+# de l'article Wikipedia (titre_wikipedia), pas le nom affiche du modele.
+CATEGORIE_EXCEPTIONS = {
+    "KTM 390 series": "Roadster",
+    "Honda CB200 and CL200": "Roadster",
+}
 
 # --- signal 2 (secours) : champ 'class' de l'infobox
 CATEGORIES = [
@@ -252,6 +267,8 @@ def years(prod):
 
 def categorie(cls, name, cats_article=None):
     """Categories Wikipedia d'abord (fiables), champ 'class' ensuite, nom en dernier."""
+    if name in CATEGORIE_EXCEPTIONS:
+        return CATEGORIE_EXCEPTIONS[name]
     if cats_article:
         s = set(cats_article)
         for nom_cat, lab in CAT_ARTICLE:
