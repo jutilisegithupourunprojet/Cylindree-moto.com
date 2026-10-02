@@ -928,10 +928,22 @@ LIGNES_SPECS = [
 def page_modele(m):
     nom = m["nom_affichage"]
     marque = m["marque"]
-    titre = "%s : fiche technique et caractéristiques" % nom
-    bits = [x for x in (num(m["cylindree_cc"], "cm³"),
-                        num(m["puissance_ch"], "ch", 0),
-                        num(m["poids_kg"], "kg", 0)) if x]
+    # le chiffre de cylindree dans le titre repond visuellement, dans le
+    # resultat Google, a des recherches comme "tmax cylindree" avant meme
+    # le clic ; on raccourcit le suffixe pour ne pas faire deborder le titre
+    cyl_titre = num(m["cylindree_cc"], "cm³")
+    titre = ("%s (%s) : fiche technique" % (nom, cyl_titre) if cyl_titre
+              else "%s : fiche technique et caractéristiques" % nom)
+    # les libelles (pas seulement les chiffres) sont ecrits en toutes lettres
+    # pour que Google puisse les mettre en gras sur des recherches comme
+    # "poids mt07" ou "puissance mt09"
+    bits = []
+    if m["cylindree_cc"]:
+        bits.append("cylindrée " + num(m["cylindree_cc"], "cm³"))
+    if m["puissance_ch"]:
+        bits.append("puissance " + num(m["puissance_ch"], "ch", 0))
+    if m["poids_kg"]:
+        bits.append("poids " + num(m["poids_kg"], "kg", 0))
     desc = "%s : %s. Fiche technique complète, %s." % (
         nom, ", ".join(bits) if bits else "caractéristiques détaillées",
         "compatible permis A2" if m["a2_compatible"] == "oui" else "spécifications vérifiées")
