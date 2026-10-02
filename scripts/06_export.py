@@ -202,6 +202,52 @@ for r in rows:
     if r.get("ecole") in _ACCENTS:
         r["ecole"] = _ACCENTS[r["ecole"]]
 
+# --- fusion des fiches dupliquees : meme moto reelle, deux articles ------
+# Wikipedia distincts (orthographe/espacement different, ou article generique
+# recoupant plusieurs modeles). Verifie individuellement (marque, annee de
+# debut, coherence des caracteristiques) avant d'ajouter une paire ici :
+# deux motos qui partagent juste un nom (ex. Kawasaki Z650 1977 vintage vs
+# Z650 2017 moderne, deux machines sans rapport) ne doivent jamais fusionner.
+FUSIONS = [
+    ("Honda CBR650R", "Honda 650 standard and sport motorcycles"),
+    ("Honda NX 500", "Honda NX500"),
+    ("BMW F 850 GS", "BMW F850GS"),
+    ("Yamaha XT 125R", "Yamaha XT125R"),
+    ("Yamaha YZ 100", "Yamaha YZ100"),
+    ("Triumph Tiger 900 (T400)", "Triumph Tiger"),
+]
+_par_titre = {r["titre_wikipedia"]: r for r in rows}
+_fusionnes = set()
+for garder, supprimer in FUSIONS:
+    rg, rs = _par_titre.get(garder), _par_titre.get(supprimer)
+    if not rg or not rs or rg is rs:
+        continue
+    rg["vues_60j"] = max(rg.get("vues_60j") or 0, rs.get("vues_60j") or 0)
+    rg["nb_langues"] = max(rg.get("nb_langues") or 0, rs.get("nb_langues") or 0)
+    _fusionnes.add(id(rs))
+if _fusionnes:
+    rows = [r for r in rows if id(r) not in _fusionnes]
+    print("fusion de %d fiche(s) dupliquee(s)" % len(_fusionnes))
+
+# --- production encore en cours malgre une infobox non mise a jour -------
+# "annee_debut == annee_fin" ferme a tort la production quand l'infobox ne
+# porte qu'une seule annee brute sans marqueur "present"/"depuis" (cas laisse
+# volontairement ambigu par le correctif plus general sur les textes "since/
+# depuis" - trop risque a traiter en masse, cf. le cas de la BMW R65GS 1978-84
+# deja documente). Seuls les modeles ci-dessous sont verifies individuellement
+# comme toujours commercialises aujourd'hui (recherche ou prix verifie dans
+# cette session) avant d'etre rouverts.
+ENCORE_PRODUITS = {
+    "Ducati DesertX",             # prix verifie aout 2026 (motofan.fr)
+    "Triumph Trident 660",        # confirme comme modele actuel, recherches forums 2026
+    "Triumph Tiger 900 (2020)",   # idem, gamme Tiger 900 toujours au catalogue 2026
+    "Harley-Davidson Pan America",# modele phare toujours commercialise
+}
+for r in rows:
+    if r["titre_wikipedia"] in ENCORE_PRODUITS and r.get("annee_fin") == r.get("annee_debut"):
+        r["annee_fin"] = None
+
+
 def nom_affiche(r):
     """Evite 'BMW BMW G310R' : le champ 'modele' contient souvent deja la marque."""
     mo = (r.get("modele") or "").strip()
@@ -430,7 +476,11 @@ elig = [r for r in rows
         if r["categorie"] and r["cylindree_cc"] and r["completude_pct"] >= 50
         and r["marque"] and (r["annee_debut"] or 0) >= 1990
         and r["marche_fr"] == "oui"
-        and r["vues_60j"] >= 150
+        # notoriete : vues Wikipedia EN, OU fiche deja bien documentee (>=60%)
+        # - le trafic Wikipedia anglophone ne reflete pas la popularite reelle
+        # d'un modele en France (plusieurs best-sellers actuels, Honda CB750
+        # Hornet ou KTM 790 Duke par exemple, y sont a 0 vue).
+        and (r["vues_60j"] >= 150 or r["completude_pct"] >= 60)
         and r["categorie"] not in ("Compétition", "Minibike", "Trois-roues")]
 print("duels : %d modeles eligibles" % len(elig))
 
@@ -439,8 +489,6 @@ seen = set()
 for i, a in enumerate(elig):
     for b in elig[i+1:]:
         if a["categorie"] != b["categorie"]:
-            continue
-        if a["marque"] == b["marque"]:
             continue
         ca, cb = a["cylindree_cc"], b["cylindree_cc"]
         if min(ca, cb) / max(ca, cb) < 0.75:
