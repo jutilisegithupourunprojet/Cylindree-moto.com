@@ -411,6 +411,33 @@ PRIX_MANUELS = {
     "Honda NX500": (6799, "https://moto.honda.fr/motorcycles/range/adventure/nx500/specifications-and-price.html"),
     "Triumph Speed Triple": (20195, "https://wwws.moto-net.com/article/nouveaux-tarifs-2026-des-motos-triumph-en-france-vs-2025.html"),
 }
+# Tarifs relevés en octobre 2026 sur les grilles "prix maximum conseillés"
+# de moto-net.com (version de base). Troisième élément : date du relevé.
+_MN = "https://moto-net.com/tarifs/"
+PRIX_MANUELS.update({
+    "Suzuki V-Strom 1050": (14599, _MN + "suzuki", "octobre 2026"),
+    "Honda X-ADV 750": (13099, _MN + "honda", "octobre 2026"),
+    "Honda CMX1100 Rebel": (12099, _MN + "honda", "octobre 2026"),
+    "Yamaha XSR900": (11499, _MN + "yamaha", "octobre 2026"),
+    "Triumph Speed Twin": (15295, _MN + "triumph", "octobre 2026"),
+    "Suzuki V-Strom 800": (10299, _MN + "suzuki", "octobre 2026"),
+    "Harley-Davidson Pan America": (20250, _MN + "harley-davidson", "octobre 2026"),
+    "BMW F900GS": (14500, _MN + "bmw", "octobre 2026"),
+    "Piaggio 1": (2899, _MN + "piaggio", "octobre 2026"),
+    "Kawasaki Ninja 125": (5099, _MN + "kawasaki", "octobre 2026"),
+    "Triumph Bonneville Bobber": (16695, _MN + "triumph", "octobre 2026"),
+    "Triumph Bonneville T120 1200": (14595, _MN + "triumph", "octobre 2026"),
+    "Harley-Davidson Freewheeler": (36990, _MN + "harley-davidson", "octobre 2026"),
+    "BMW R1300GS": (21300, _MN + "bmw", "octobre 2026"),
+    "Ducati Scrambler": (9990, _MN + "ducati", "octobre 2026"),
+    "Suzuki GSX-S1000": (13599, _MN + "suzuki", "octobre 2026"),
+    "Aprilia RSV4": (22050, _MN + "aprilia", "octobre 2026"),
+    "Honda CMX500 Rebel": (6499, _MN + "honda", "octobre 2026"),
+    "Kawasaki W800": (10999, _MN + "kawasaki", "octobre 2026"),
+    "Triumph Trident 660": (8295, "https://www.caradisiac.com/triumph-frappe-fort-plus-de-puissance-plus-d-equipement-et-un-prix-en-baisse-pour-la-trident-660-222474.htm", "octobre 2026"),
+    "BMW R12": (15000, _MN + "bmw", "octobre 2026"),
+    "Honda NT1100": (14799, "https://moto.honda.fr/motorcycles.html", "octobre 2026"),
+})
 # --- consommation moyenne en L/100 km ------------------------------------
 # Le champ source est un texte libre en unites variees ("34.3 mpgus",
 # "40 km/L", "5,8 L/100 km or 17.2 km/L"). On le convertit, sans jamais
@@ -484,9 +511,9 @@ print("consommation : %d fiche(s) avec une valeur L/100 km" % _n_conso)
 _prix_combles = 0
 for r in rows:
     if r["nom_affichage"] in PRIX_MANUELS and not r.get("prix_lancement_eur"):
-        prix, source = PRIX_MANUELS[r["nom_affichage"]]
+        prix, source, *_d = PRIX_MANUELS[r["nom_affichage"]]
         r["prix_lancement_eur"] = prix
-        r["prix_source"] = "Verifie manuellement, aout 2026 (%s)" % source
+        r["prix_source"] = "Verifie manuellement, %s (%s)" % (_d[0] if _d else "aout 2026", source)
         _prix_combles += 1
 print("prix : %d fiche(s) completee(s) par saisie manuelle verifiee" % _prix_combles)
 

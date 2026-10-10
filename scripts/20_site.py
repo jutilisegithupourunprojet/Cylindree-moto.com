@@ -15,7 +15,7 @@ Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
   site/assets/{style.css, comparateur.js, data.json}
   site/sitemap.xml, site/robots.txt
 """
-import csv, io, json, os, re, html, unicodedata, shutil, sys, base64
+import csv, io, json, os, re, html, unicodedata, shutil, sys, base64, urllib.parse
 from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
@@ -1137,6 +1137,20 @@ def page_modele(m):
               'version bridée homologuée auprès du concessionnaire.</p></div>'
               % e(m["a2_detail"]))
 
+    # occasion : lien vers une recherche d'annonces (aucun prix invente)
+    q_occ = re.sub(r"\s*\((?:19|20)\d\d\)$", "", nom)
+    occasion = ""
+    if m["annee_debut"] and int(m["annee_debut"]) >= 1990:
+        occasion = ('<div class="encart encart-achat"><p class="encart-titre">Occasion</p>'
+                    '<div class="liens-affilies"><a class="lien-affilie" '
+                    'href="https://www.leboncoin.fr/recherche?text=%s" '
+                    'rel="nofollow noopener" target="_blank">Voir les annonces '
+                    'de %s</a></div>'
+                    '<p class="mention-affilie">Recherche sur Leboncoin. Le prix '
+                    'd&rsquo;occasion dépend de l&rsquo;année et du kilométrage : '
+                    'comparez plusieurs annonces.</p></div>'
+                    % (urllib.parse.quote_plus(q_occ), e(q_occ)))
+
     # identite
     ident = []
     if m["ecole"]:
@@ -1208,7 +1222,7 @@ def page_modele(m):
 <h1>%(nom)s</h1>
 %(resume)s
 <div class="fiche">
-  <div>%(photo)s%(a2)s</div>
+  <div>%(photo)s%(a2)s%(occasion)s</div>
   <div class="tableau-large">%(tab)s</div>
 </div>
 %(duels)s
@@ -1218,7 +1232,7 @@ def page_modele(m):
 (CC BY-SA 4.0). Complétude de cette fiche : %(comp)s %%.
 Les valeurs absentes ne figurent pas dans la source.</p></div>
 </div>""" % {"ident": " ".join(ident), "nom": e(nom), "resume": resume,
-             "photo": photo, "a2": a2, "tab": tableau,
+             "photo": photo, "a2": a2, "occasion": occasion, "tab": tableau,
              "duels": bloc_duels, "proches": bloc_proches,
              "wen": e(m["url_wikipedia"]), "comp": e(m["completude_pct"])}
 
@@ -2103,6 +2117,20 @@ def duel_live():
 
 # ----------------------------------------------------------------- outils
 EXCLUES_OUTILS = ("Compétition", "Trois-roues", "Minibike", "Moto militaire")
+# Modèles que les relevés d'octobre 2026 donnent comme absents du catalogue
+# France : arrêtés, remplacés par une autre génération, ou vendus ailleurs.
+HORS_CATALOGUE = {
+    "Yamaha MT-10", "Honda CRF 1000 L Africa Twin", "Honda NSF250R", "Yamaha MT-15",
+    "Honda CBR250RR", "KTM 1290 Super Duke R/GT", "Honda Winner", "Yamaha YZF-R25",
+    "Honda CRF150L", "BMW F 850 GS", "Honda Crosstourer", "KTM 1290 Super Adventure",
+    "Honda Crossrunner", "Honda CB500F", "Yamaha Tracer 700", "Ariel Ace",
+    "BMW G 310 GS", "Honda CB300R", "MZ Moto2", "Kawasaki Ninja 400",
+    "Kawasaki Ninja 300", "BMW F750GS", "Suzuki V-Strom 250", "Honda Fury",
+    "Honda CRF450L/CRF450RL", "Kawasaki Ninja 1000 SX", "Suzuki Gixxer FI150",
+    "Honda Livo", "Kawasaki Ninja ZX-25R", "Suzuki Boulevard C109R",
+    "Honda Dream Yuga", "Kawasaki Ninja 250SL", "Honda CB Twister",
+    "Kawasaki Versys 1000", "Yamaha FZ S Hybrid",
+}
 
 
 def pool_outils():
@@ -2114,6 +2142,8 @@ def pool_outils():
         if not m["annee_debut"] or int(m["annee_debut"]) < 2008:
             continue
         if not m["puissance_ch"] or m["categorie"] in EXCLUES_OUTILS:
+            continue
+        if m["nom_affichage"] in HORS_CATALOGUE:
             continue
         # un nom suivi d'une annee ancienne designe une generation remplacee
         # (ex. "Ducati Multistrada (2010)") : on ne la propose pas comme neuve
