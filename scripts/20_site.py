@@ -644,6 +644,38 @@ p{margin:0 0 1rem}
 .pied-liens a:hover{color:var(--accent)}
 .tableau-large{overflow-x:auto}
 
+/* --- bento : acces rapide sous le hero de l'accueil --- */
+.bento{display:grid;gap:1rem;grid-template-columns:repeat(4,1fr);
+  padding-top:2rem;padding-bottom:.5rem}
+.carte-bento{display:flex;flex-direction:column;gap:.35rem;min-width:0;
+  padding:1.2rem 1.3rem;background:var(--carte);border:1px solid var(--trait);
+  border-radius:10px;box-shadow:var(--ombre);text-decoration:none;color:inherit}
+.carte-bento:hover{border-color:var(--accent);transform:translateY(-2px)}
+.b-label{font-family:var(--police-titre);font-size:.74rem;text-transform:uppercase;
+  letter-spacing:.14em;font-weight:600;color:var(--doux)}
+.b-num{font-family:var(--police-titre);font-size:clamp(2.2rem,4vw,3.2rem);
+  font-weight:600;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.b-txt{font-size:.94rem;color:var(--doux);line-height:1.45}
+.b-ligne{font-size:.96rem;font-weight:550;padding:.15rem 0;
+  border-bottom:1px solid var(--trait)}
+.b-cta{margin-top:auto;padding-top:.6rem;font-family:var(--police-titre);
+  font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  color:var(--accent)}
+.b-cta::after{content:" \\2192"}
+.b-grand{grid-column:span 2;grid-row:span 2;background:#15100a;border-color:#3a3022;
+  color:#f3efe7;justify-content:flex-end;min-height:260px}
+.b-grand .b-label{color:#a79c89}
+.b-grand .b-num{color:#ff7a33;font-size:clamp(3.4rem,7vw,5.4rem)}
+.b-grand .b-txt{color:#d4cbba;max-width:30ch}
+.b-grand .b-cta{color:#ff7a33}
+.b-duels{grid-column:span 2}
+.b-large{grid-column:span 4}
+@media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}
+  .b-large{grid-column:span 2}}
+@media(max-width:560px){.bento{grid-template-columns:1fr}
+  .b-grand,.b-duels,.b-large{grid-column:auto;grid-row:auto}
+  .b-grand{min-height:200px}}
+
 /* --- couche mouvement : une duree, une courbe, partout --------------------
    Uniquement transform / opacity / couleurs : rien qui declenche un reflow. */
 :root{--ease:cubic-bezier(.2,.7,.2,1);--d-rapide:150ms;--d-normal:250ms;
@@ -1782,6 +1814,40 @@ def page_accueil():
                              if vedette.get("image_auteur") else ""))
 
     n_a2 = sum(1 for m in pub if m["a2_compatible"] == "oui")
+    lignes_duels = "".join(
+        '<span class="b-ligne">%s ou %s</span>' % (e(d["modele_a"]), e(d["modele_b"]))
+        for d in duels_top[:3])
+    noms_ecoles = ", ".join(e(k.capitalize()) for k, v in
+                            sorted(par_ecole.items(), key=lambda x: -len(x[1]))[:5])
+    bento = """<nav class="conteneur bento" aria-label="Accès rapide">
+<a class="carte-bento b-grand" href="%(racine)s/comparateur.html">
+  <span class="b-label">Comparateur</span>
+  <span class="b-num">%(nf)s</span>
+  <span class="b-txt">motos à filtrer par cylindrée, année, prix et permis A2.</span>
+  <span class="b-cta">Ouvrir le comparateur</span>
+</a>
+<a class="carte-bento b-duels" href="%(racine)s/duels/">
+  <span class="b-label">Duels</span>
+  %(lignes)s
+  <span class="b-cta">Voir les %(df)s duels</span>
+</a>
+<a class="carte-bento" href="%(racine)s/guides/">
+  <span class="b-label">Guides</span>
+  <span class="b-num">%(ng)d</span>
+  <span class="b-txt">guides d&rsquo;achat sourcés.</span>
+</a>
+<a class="carte-bento" href="%(racine)s/comparateur.html">
+  <span class="b-label">Permis A2</span>
+  <span class="b-num">%(a2f)s</span>
+  <span class="b-txt">motos compatibles.</span>
+</a>
+<a class="carte-bento b-large" href="%(racine)s/ecoles/">
+  <span class="b-label">Écoles</span>
+  <span class="b-txt">%(ecoles)s. Parcourez les motos par pays de conception.</span>
+</a>
+</nav>""" % {"racine": RACINE, "nf": num(len(pub)), "df": num(len(duels_ok)),
+             "ng": len(GUIDES), "a2f": num(n_a2), "lignes": lignes_duels,
+             "ecoles": noms_ecoles}
     corps = """<section class="hero-accueil">
 %(fond)s
 <div class="conteneur hero-corps">
@@ -1802,6 +1868,8 @@ permis A2, puis comparez deux motos côte à côte.</p>
 %(credit)s
 </div>
 </section>
+
+%(bento)s
 
 <div class="conteneur section">
 <h2>Guides d&rsquo;achat</h2>
@@ -1828,7 +1896,7 @@ limites pour chaque modèle.</p>
 %(bloca2)s
 </div>""" % {"n": len(pub), "m": len(par_marque), "d": len(duels_ok),
              "nf": num(len(pub)), "df": num(len(duels_ok)),
-             "a2": n_a2, "a2f": num(n_a2), "ng": len(GUIDES),
+             "a2": n_a2, "a2f": num(n_a2), "ng": len(GUIDES), "bento": bento,
              "top": grille(top, 6), "duels": duels_html,
              "guides": "".join(
                  '<a class="carte-guide-lien" href="/guides/%s.html">'
