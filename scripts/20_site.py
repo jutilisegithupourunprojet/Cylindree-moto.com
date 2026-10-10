@@ -677,6 +677,95 @@ p{margin:0 0 1rem}
   .b-grand,.b-duels,.b-large{grid-column:auto;grid-row:auto}
   .b-grand{min-height:200px}}
 
+/* --- hero : compte-tours --- */
+.tachy{position:relative;z-index:2;width:min(72vw,300px);margin:0 auto 2.4rem}
+.tachy svg{display:block;width:100%;height:auto}
+.tach-aiguille{transform-origin:200px 200px;transform-box:view-box;
+  filter:drop-shadow(0 0 6px rgba(255,122,51,.75))}
+.hero-accueil .hero-corps{margin-left:max(0px,calc((100% - var(--large)) / 2));
+  margin-right:auto}
+@media(max-width:899px){
+  .hero-accueil{display:flex;flex-direction:column}
+  .hero-accueil .hero-corps{width:100%;padding-top:1.2rem}
+  .tachy{order:-1;margin:1.6rem auto 0;width:min(58vw,230px)}
+}
+@media(min-width:900px){
+  .hero-accueil{min-height:500px}
+  .hero-accueil .hero-corps{max-width:min(700px,calc(100% - min(36vw,420px) - clamp(1rem,5vw,4.5rem) - 2rem))}
+  .tachy{position:absolute;right:clamp(1rem,5vw,4.5rem);top:50%;
+    transform:translateY(-50%);width:min(36vw,420px);margin:0}
+}
+
+/* --- duel du moment : carrousel --- */
+.duel-live{padding-top:2.2rem}
+.dl-tete{display:flex;justify-content:space-between;align-items:flex-end;
+  gap:1rem;flex-wrap:wrap}
+.dl-tete h2{margin:.2rem 0 0}
+.dl-eyebrow{font-family:var(--police-titre);font-size:.74rem;letter-spacing:.16em;
+  text-transform:uppercase;font-weight:600;color:var(--accent);margin:0}
+.dl-eyebrow::before{content:"";display:inline-block;width:8px;height:8px;
+  border-radius:50%;background:var(--accent);margin-right:.5rem;
+  animation:pouls 1.6s ease-in-out infinite}
+@keyframes pouls{0%,100%{opacity:1}50%{opacity:.25}}
+.dl-ctrl{display:flex;gap:.5rem}
+.dl-ctrl[hidden]{display:none}
+.dl-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--trait-fort);
+  background:var(--carte);color:var(--texte);display:grid;place-items:center;
+  cursor:pointer;padding:0;
+  transition:border-color var(--d-rapide) var(--ease),transform var(--d-rapide) var(--ease)}
+.dl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.dl-btn:active{transform:scale(.94)}
+.dl-btn svg{width:20px;height:20px}
+.dl-pause .ic-play{display:none}
+.dl-pause[aria-pressed="true"] .ic-play{display:block}
+.dl-pause[aria-pressed="true"] .ic-pause{display:none}
+.dl-scene{margin-top:1rem;background:var(--carte);border:1px solid var(--trait);
+  border-radius:14px;box-shadow:var(--ombre);padding:clamp(1rem,3vw,1.8rem)}
+.dl-panel[hidden]{display:none}
+.dl-motos{display:grid;grid-template-columns:1fr auto 1fr;
+  gap:clamp(.5rem,2vw,1.2rem);align-items:center}
+.dl-moto{display:flex;flex-direction:column;gap:.35rem;min-width:0;
+  text-decoration:none;color:inherit}
+.dl-moto:last-of-type{text-align:right}
+.dl-img{display:block;aspect-ratio:16/10;background:var(--creux);border-radius:8px;
+  overflow:hidden}
+.dl-img img{width:100%;height:100%;object-fit:cover}
+.dl-marque{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--doux);font-weight:600}
+.dl-nom{font-family:var(--police-titre);font-weight:600;line-height:1.1;
+  font-size:clamp(1.05rem,2.6vw,1.6rem)}
+.dl-vs{font-family:var(--police-titre);font-weight:700;color:var(--accent);
+  font-size:clamp(1.5rem,4vw,2.8rem);letter-spacing:.04em;line-height:1;
+  display:inline-block;transform:skewX(-8deg)}
+.dl-metriques{list-style:none;margin:1.4rem 0 0;padding:0;display:grid;gap:.9rem}
+.dl-m{display:grid;grid-template-columns:minmax(4.6rem,auto) 1fr minmax(4.6rem,auto);
+  grid-template-areas:"lib lib lib" "va bar vb";gap:.2rem .7rem;align-items:center}
+.dl-lib{grid-area:lib;text-align:center;font-size:.72rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--doux);font-weight:600}
+.dl-va{grid-area:va;text-align:right}
+.dl-vb{grid-area:vb}
+.dl-v{font-variant-numeric:tabular-nums;font-weight:600;font-size:.95rem}
+.dl-b{grid-area:bar;display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.dl-b i{display:block;height:12px;background:var(--trait-fort);transform:scaleX(0);
+  transition:transform .9s var(--ease);transition-delay:calc(var(--i,0)*110ms)}
+.dl-ba{transform-origin:right center;border-radius:6px 2px 2px 6px}
+.dl-bb{transform-origin:left center;border-radius:2px 6px 6px 2px}
+.dl-b i.gb{background:var(--accent)}
+.dl-panel.actif .dl-b i{transform:scaleX(var(--w))}
+.dl-panel.actif .dl-moto{animation:entree .45s var(--ease) both}
+.dl-panel.actif .dl-vs{animation:pop .5s var(--ease) .1s both}
+@keyframes entree{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.4) skewX(-8deg)}
+  to{opacity:1;transform:scale(1) skewX(-8deg)}}
+.dl-cta{margin-top:1.3rem}
+.dl-points{display:flex;gap:.3rem;justify-content:center;margin-top:.8rem}
+.dl-pt{width:30px;height:24px;background:none;border:0;padding:0;cursor:pointer;
+  position:relative}
+.dl-pt::before{content:"";position:absolute;left:0;right:0;top:9px;height:6px;
+  border-radius:3px;background:var(--trait-fort);
+  transition:background-color var(--d-rapide) var(--ease)}
+.dl-pt[aria-current="true"]::before{background:var(--accent)}
+
 /* --- couche mouvement : une duree, une courbe, partout --------------------
    Uniquement transform / opacity / couleurs : rien qui declenche un reflow. */
 :root{--ease:cubic-bezier(.2,.7,.2,1);--d-rapide:150ms;--d-normal:250ms;
@@ -701,7 +790,9 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
   box-shadow:var(--halo)}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.01ms !important;
-    animation-duration:.01ms !important;scroll-behavior:auto !important}
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    scroll-behavior:auto !important}
+  .dl-eyebrow::before{animation:none}
   .carte:hover,.carte-duel:hover,.carte-ecole:hover,.carte-guide-lien:hover,
   .carte-bento:hover,.liste-liens a:hover,.bouton:hover,.bouton-secondaire:hover,
   .lien-affilie:hover,.carte:active,.carte-duel:active,.carte-ecole:active,
@@ -1761,26 +1852,242 @@ JS = r"""
 """
 
 
-# Compteurs du hero : la valeur finale est deja dans le HTML (lisible sans JS).
-# Le script ne fait que la compter de 0 a cette valeur, une fois, a l'affichage.
-JS_COMPTEURS = """<script>
+# Script de l'accueil. Tout est deja rendu dans le HTML (valeurs finales,
+# compte-tours a son regime final, premier duel complet) : sans JS ou avec
+# "reduire les animations", rien ne bouge et rien ne manque.
+JS_ACCUEIL = """<script>
 (function(){
+  var reduit=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* compteurs du hero : 0 -> valeur finale */
   var els=document.querySelectorAll('.chiffre .v[data-cible]');
-  if(!els.length||!('IntersectionObserver' in window)||
-     matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-  els.forEach(function(el){el.dataset.final=el.textContent;el.textContent='0';});
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){
-    if(!e.isIntersecting)return; io.unobserve(e.target);
-    var el=e.target,cible=+el.dataset.cible,t0=performance.now(),d=900;
-    (function pas(t){
-      var p=Math.min((t-t0)/d,1),k=1-Math.pow(1-p,3);
-      el.textContent=p<1?Math.round(cible*k).toLocaleString('fr-FR'):el.dataset.final;
-      if(p<1)requestAnimationFrame(pas);
-    })(t0);
-  });});
-  els.forEach(function(el){io.observe(el);});
+  if(els.length&&!reduit&&'IntersectionObserver' in window){
+    els.forEach(function(el){el.dataset.final=el.textContent;el.textContent='0';});
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting)return; io.unobserve(e.target);
+      var el=e.target,cible=+el.dataset.cible,t0=performance.now();
+      (function pas(t){
+        var p=Math.min((t-t0)/900,1),k=1-Math.pow(1-p,3);
+        el.textContent=p<1?Math.round(cible*k).toLocaleString('fr-FR'):el.dataset.final;
+        if(p<1)requestAnimationFrame(pas);
+      })(t0);
+    });});
+    els.forEach(function(el){io.observe(el);});
+  }
+
+  /* compte-tours : l'aiguille monte en zone rouge puis se stabilise */
+  var ai=document.querySelector('.tach-aiguille'),val=document.getElementById('tach-val');
+  if(ai&&val&&!reduit){
+    var CIBLE=11.5,t1=performance.now(),D=2400;
+    (function tour(t){
+      var p=Math.min((t-t1)/D,1),c1=1.9,c3=c1+1,
+          k=1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2),v=CIBLE*k;
+      ai.style.transform='rotate('+(-135+v*270/14)+'deg)';
+      val.textContent=(Math.round(v*100)*10).toLocaleString('fr-FR');
+      if(p<1)requestAnimationFrame(tour);
+    })(t1);
+  }
+
+  /* duel du moment : carrousel, pause possible, arret avec "reduire les animations" */
+  var sc=document.querySelector('.duel-live');
+  if(sc){
+    var ps=[].slice.call(sc.querySelectorAll('.dl-panel'));
+    if(ps.length>1){
+      var ctrl=sc.querySelector('.dl-ctrl'),pts=sc.querySelector('.dl-points'),
+          bp=sc.querySelector('[data-act=pause]'),
+          i=0,auto=!reduit,survol=false,visible=false,minuteur=null,bts=[];
+      ctrl.hidden=false;
+      ps.forEach(function(p,k){
+        var b=document.createElement('button');b.type='button';b.className='dl-pt';
+        b.setAttribute('aria-label','Duel '+(k+1)+' sur '+ps.length);
+        b.addEventListener('click',function(){aller(k,true);});
+        pts.appendChild(b);bts.push(b);
+      });
+      var majPause=function(){
+        bp.setAttribute('aria-pressed',auto?'false':'true');
+        bp.setAttribute('aria-label',auto?'Mettre en pause le défilement':'Reprendre le défilement');
+      };
+      var planifier=function(){
+        clearTimeout(minuteur);
+        if(auto&&visible&&!survol)minuteur=setTimeout(function(){aller(i+1);},7000);
+      };
+      var aller=function(k,manuel){
+        k=(k+ps.length)%ps.length;
+        ps[i].hidden=true;ps[i].classList.remove('actif');
+        i=k;ps[i].hidden=false;void ps[i].offsetWidth;ps[i].classList.add('actif');
+        bts.forEach(function(b,n){b.setAttribute('aria-current',n===i?'true':'false');});
+        if(manuel){auto=false;majPause();}
+        planifier();
+      };
+      sc.querySelector('[data-act=prec]').addEventListener('click',function(){aller(i-1,true);});
+      sc.querySelector('[data-act=suiv]').addEventListener('click',function(){aller(i+1,true);});
+      bp.addEventListener('click',function(){auto=!auto;majPause();planifier();});
+      sc.addEventListener('mouseenter',function(){survol=true;planifier();});
+      sc.addEventListener('mouseleave',function(){survol=false;planifier();});
+      sc.addEventListener('focusin',function(){survol=true;planifier();});
+      sc.addEventListener('focusout',function(){survol=false;planifier();});
+      sc.addEventListener('keydown',function(e){
+        if(e.key==='ArrowLeft'){aller(i-1,true);}
+        else if(e.key==='ArrowRight'){aller(i+1,true);}
+      });
+      majPause();
+      bts[0].setAttribute('aria-current','true');
+      if('IntersectionObserver' in window){
+        ps[0].classList.remove('actif');
+        new IntersectionObserver(function(es){
+          visible=es[0].isIntersecting;
+          if(visible&&!ps[i].classList.contains('actif'))ps[i].classList.add('actif');
+          planifier();
+        },{threshold:.35}).observe(sc);
+      }else{visible=true;planifier();}
+    }
+  }
 })();
 </script>"""
+
+
+def tachymetre_svg():
+    # Compte-tours decoratif (aria-hidden) : cadran 0-14 x1000 tr/min, zone
+    # rouge a partir de 11. Geometrie calculee ici, aiguille animee par le JS.
+    from math import cos, sin, radians
+    cx = cy = 200
+
+    def pt(v, r):
+        a = radians(-135 + v * 270 / 14 - 90)
+        return cx + r * cos(a), cy + r * sin(a)
+
+    parts = []
+    # repères : demi-graduations, graduations pleines, chiffres
+    for i in range(29):
+        v = i / 2
+        majeur = i % 2 == 0
+        x1, y1 = pt(v, 172)
+        x2, y2 = pt(v, 148 if majeur else 160)
+        rouge = v >= 11
+        parts.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="%s" '
+                     'stroke-width="%s" stroke-linecap="round"/>'
+                     % (x1, y1, x2, y2, "#ff5a2b" if rouge else "#f3efe7",
+                        3 if majeur else 1.5))
+        if majeur:
+            tx, ty = pt(v, 124)
+            parts.append('<text x="%.1f" y="%.1f" text-anchor="middle" '
+                         'dominant-baseline="central" font-size="23" '
+                         'font-family="Oswald,Impact,sans-serif" font-weight="500" '
+                         'fill="%s">%d</text>'
+                         % (tx, ty, "#ff7a33" if rouge else "#f3efe7", int(v)))
+    ax, ay = pt(11, 182)
+    bx, by = pt(14, 182)
+    arc = ('<path d="M%.1f %.1f A182 182 0 0 1 %.1f %.1f" fill="none" '
+           'stroke="#ff4b1f" stroke-width="7"/>' % (ax, ay, bx, by))
+    final = -135 + 11.5 * 270 / 14
+    return ('<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" '
+            'focusable="false"><defs><radialGradient id="tface" cx="50%%" cy="45%%" '
+            'r="60%%"><stop offset="0" stop-color="#2a2217"/><stop offset="1" '
+            'stop-color="#0f0b07"/></radialGradient></defs>'
+            '<circle cx="200" cy="200" r="196" fill="url(#tface)" stroke="#3a3022" '
+            'stroke-width="3"/>%s%s'
+            '<text x="200" y="302" text-anchor="middle" font-size="40" '
+            'font-family="Oswald,Impact,sans-serif" font-weight="600" fill="#fff" '
+            'id="tach-val">11 500</text>'
+            '<text x="200" y="326" text-anchor="middle" font-size="14" '
+            'letter-spacing="3" font-family="Oswald,Impact,sans-serif" '
+            'fill="#a79c89">TR/MIN</text>'
+            '<g class="tach-aiguille" style="transform:rotate(%.1fdeg)">'
+            '<polygon points="199,36 201,36 206,214 194,214" fill="#ff7a33"/>'
+            '<circle cx="200" cy="200" r="18" fill="#15100a" stroke="#ff7a33" '
+            'stroke-width="4"/><circle cx="200" cy="200" r="5" fill="#ff7a33"/></g>'
+            '</svg>' % ("".join(parts), arc, final))
+
+
+def duel_live():
+    # Carrousel 'duel du moment' : tous les duels sont rendus dans le HTML
+    # (indexables, lisibles sans JS) ; le JS ne fait que changer le visible.
+    lots, vus = [], set()
+    for d in duels_ok:
+        a, b = par_id[d["modele_a_id"]], par_id[d["modele_b_id"]]
+        if a["modele_id"] in vus or b["modele_id"] in vus:
+            continue
+        try:
+            if min(float(a["puissance_ch"]), float(b["puissance_ch"]),
+                   float(a["poids_kg"]), float(b["poids_kg"])) <= 0:
+                continue
+        except (TypeError, ValueError):
+            continue
+        vus.update((a["modele_id"], b["modele_id"]))
+        lots.append((d, a, b))
+        if len(lots) == 8:
+            break
+    if len(lots) < 3:
+        return ""
+
+    defs = [("Puissance", "puissance_ch", "ch", "haut"),
+            ("Poids", "poids_kg", "kg", "bas"),
+            ("Cylindrée", "cylindree_cc", "cm³", None),
+            ("Prix", "prix_lancement_eur", "€", "bas")]
+
+    def moto(m):
+        c = _cote(m)
+        img = ('<img src="%s" alt="" loading="lazy" decoding="async">' % e(c["i"])
+               if c["i"] else "")
+        return ('<a class="dl-moto" href="%s%s"><span class="dl-img">%s</span>'
+                '<span class="dl-marque">%s</span><span class="dl-nom">%s</span></a>'
+                % (RACINE, e(m["url"]), img, e(m["marque"]), e(m["nom_affichage"])))
+
+    panneaux = []
+    for n, (d, a, b) in enumerate(lots):
+        lignes = []
+        for lib, champ, unite, sens in defs:
+            try:
+                va, vb = float(a[champ]), float(b[champ])
+            except (TypeError, ValueError):
+                continue
+            if va <= 0 or vb <= 0:
+                continue
+            gagne_a = gagne_b = False
+            if sens and va != vb:
+                gagne_a = (va > vb) if sens == "haut" else (va < vb)
+                gagne_b = not gagne_a
+            mx = max(va, vb)
+            lignes.append(
+                '<li class="dl-m" style="--i:%d"><span class="dl-lib">%s</span>'
+                '<span class="dl-v dl-va%s">%s</span>'
+                '<span class="dl-b"><i class="dl-ba%s" style="--w:%.3f"></i>'
+                '<i class="dl-bb%s" style="--w:%.3f"></i></span>'
+                '<span class="dl-v dl-vb%s">%s</span></li>'
+                % (len(lignes), lib,
+                   " gagne" if gagne_a else "", num(va, unite, 0),
+                   " gb" if gagne_a else "", va / mx,
+                   " gb" if gagne_b else "", vb / mx,
+                   " gagne" if gagne_b else "", num(vb, unite, 0)))
+        panneaux.append(
+            '<article class="dl-panel%s"%s id="dl-%d">'
+            '<div class="dl-motos">%s<span class="dl-vs" aria-hidden="true">VS</span>%s</div>'
+            '<ul class="dl-metriques">%s</ul>'
+            '<a class="bouton dl-cta" href="%s%s">Voir le duel complet</a></article>'
+            % (" actif" if n == 0 else "", "" if n == 0 else " hidden", n,
+               moto(a), moto(b), "".join(lignes), RACINE, e(d["url"])))
+
+    fleche = ('<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">'
+              '<path d="%s" fill="none" stroke="currentColor" stroke-width="2" '
+              'stroke-linecap="round" stroke-linejoin="round"/></svg>')
+    return ('<section class="conteneur duel-live" aria-roledescription="carrousel" '
+            'aria-label="Duels du moment">'
+            '<div class="dl-tete"><div><p class="dl-eyebrow">En direct</p>'
+            '<h2>Duel du moment</h2></div>'
+            '<div class="dl-ctrl" hidden>'
+            '<button type="button" class="dl-btn" data-act="prec" '
+            'aria-label="Duel précédent">%s</button>'
+            '<button type="button" class="dl-btn dl-pause" data-act="pause" '
+            'aria-pressed="false" aria-label="Mettre en pause le défilement">'
+            '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">'
+            '<path class="ic-pause" d="M7 5v10M13 5v10" fill="none" '
+            'stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'
+            '<path class="ic-play" d="M7 4.5l9 5.5-9 5.5z" fill="currentColor"/></svg></button>'
+            '<button type="button" class="dl-btn" data-act="suiv" '
+            'aria-label="Duel suivant">%s</button></div></div>'
+            '<div class="dl-scene">%s</div><div class="dl-points"></div></section>'
+            % (fleche % "M12.5 4.5L7 10l5.5 5.5", fleche % "M7.5 4.5L13 10l-5.5 5.5",
+               "".join(panneaux)))
 
 
 def page_accueil():
@@ -1868,7 +2175,10 @@ permis A2, puis comparez deux motos côte à côte.</p>
 </p>
 %(credit)s
 </div>
+<div class="tachy" aria-hidden="true">%(tachy)s</div>
 </section>
+
+%(duel)s
 
 %(bento)s
 
@@ -1898,6 +2208,7 @@ limites pour chaque modèle.</p>
 </div>""" % {"n": len(pub), "m": len(par_marque), "d": len(duels_ok),
              "nf": num(len(pub)), "df": num(len(duels_ok)),
              "a2": n_a2, "a2f": num(n_a2), "ng": len(GUIDES), "bento": bento,
+             "tachy": tachymetre_svg(), "duel": duel_live(),
              "top": grille(top, 6), "duels": duels_html,
              "guides": "".join(
                  '<a class="carte-guide-lien" href="/guides/%s.html">'
@@ -1909,7 +2220,7 @@ limites pour chaque modèle.</p>
 
     ecrire("index.html", page("%s, fiches techniques, comparateur et duels moto"
                               % SITE_NOM, SITE_DESC, corps, SITE_URL + "/",
-                              script=JS_COMPTEURS))
+                              script=JS_ACCUEIL))
     enregistrer("/", "1.0")
 
 
