@@ -269,7 +269,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 .fil a:hover{color:var(--accent);text-decoration:underline}
 .fil .sep{margin:0 .45rem;color:var(--trait-fort)}
 
-.section{padding:2.5rem 0}
+.section{padding-block:2.5rem}
 h1{font-family:var(--police-titre);font-weight:600;
   font-size:clamp(1.9rem,4.6vw,2.8rem);line-height:1.08;letter-spacing:.001em;
   margin:.4rem 0 .6rem;text-wrap:balance}
@@ -436,7 +436,7 @@ p{margin:0 0 1rem}
   opacity:.32;filter:grayscale(.3) contrast(1.08) saturate(1.1);z-index:0}
 .hero-nation::after,.hero-cat::after{content:"";position:absolute;inset:0;z-index:1;
   background:linear-gradient(105deg,#15100a 8%,rgba(21,16,10,.86) 48%,rgba(21,16,10,.42) 100%)}
-.hero-corps{position:relative;z-index:2;padding:clamp(2.6rem,7vw,4.4rem) 0 clamp(2rem,5vw,3rem);
+.hero-corps{position:relative;z-index:2;padding-block:clamp(2.6rem,7vw,4.4rem) clamp(2rem,5vw,3rem);
   max-width:min(680px,100%)}
 .hero-eyebrow{font-family:var(--police-titre);font-size:.8rem;text-transform:uppercase;
   letter-spacing:.16em;font-weight:600;color:var(--nat-actif,#ff7a33);margin:0 0 .5rem;
@@ -459,7 +459,7 @@ p{margin:0 0 1rem}
 .hero-accueil::after{content:"";position:absolute;inset:0;z-index:1;
   background:linear-gradient(100deg,#15100a 6%,rgba(21,16,10,.9) 46%,rgba(21,16,10,.5) 100%)}
 .hero-accueil .hero-corps{max-width:min(700px,100%);
-  padding:clamp(3rem,8vw,5.5rem) 0 clamp(2.4rem,5vw,3.4rem)}
+  padding-block:clamp(3rem,8vw,5.5rem) clamp(2.4rem,5vw,3.4rem)}
 .hero-accueil .hero-eyebrow{color:#ff7a33}
 .hero-accueil h1{font-family:var(--police-titre);color:#fff;font-weight:600;
   font-size:clamp(2.2rem,5.8vw,3.6rem);letter-spacing:.002em;line-height:1;
@@ -640,7 +640,8 @@ p{margin:0 0 1rem}
 .pied-titre{font-weight:700;color:var(--texte);margin-bottom:.3rem}
 .mention{font-size:.8rem;color:var(--pale);max-width:75ch}
 .pied-liens{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin:.8rem 0}
-.pied-liens a{color:var(--doux);font-size:.85rem;text-decoration:underline}
+.pied-liens a{color:var(--doux);font-size:.85rem;text-decoration:underline;
+  padding-block:.4rem}
 .pied-liens a:hover{color:var(--accent)}
 .tableau-large{overflow-x:auto}
 
