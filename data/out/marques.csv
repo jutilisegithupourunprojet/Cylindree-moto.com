@@ -23,6 +23,7 @@ benelli,Benelli,Italie,italienne,13,Roadster,1970,2021
 mz,MZ,Allemagne,allemande,13,Sportive,1934,2010
 hero-honda,Hero Honda,Inde,indienne,13,Roadster,1994,2023
 cagiva,Cagiva,Italie,italienne,12,Trail / Aventure,1983,2000
+cfmoto,CFMoto,Chine,chinoise,12,Trail / Aventure,2022,2026
 velocette,Velocette,Royaume-Uni,britannique,11,Scooter / Cyclomoteur,1925,1965
 vincent,Vincent,Royaume-Uni,britannique,10,Roadster,1935,1954
 tvs,TVS,Inde,indienne,9,Scooter / Cyclomoteur,1996,2020
@@ -32,11 +33,14 @@ ajs,AJS,Royaume-Uni,britannique,8,,1931,1958
 laverda,Laverda,Italie,italienne,8,Roadster,1962,1977
 indian-motorcycles,Indian Motorcycles,États-Unis,américaine,8,Roadster,1916,2019
 ariel,Ariel,Royaume-Uni,britannique,7,Roadster,1931,2014
+voge,Voge,Chine,chinoise,7,Trail / Aventure,2024,2026
 gilera,Gilera,Italie,italienne,7,Scooter / Cyclomoteur,1975,2006
+qj-motor,QJ Motor,Chine,chinoise,7,Roadster,2023,2026
 hyosung,Hyosung,Corée du Sud,coréenne,6,Custom / Cruiser,2001,2006
 kymco,Kymco,Taiwan,taiwanaise,6,Scooter / Cyclomoteur,1997,2017
 malaguti,Malaguti,Italie,italienne,5,Scooter / Cyclomoteur,1992,2005
 panther,Panther,Royaume-Uni,britannique,5,,1901,1959
+zontes,Zontes,Chine,chinoise,4,Trail / Aventure,2022,2025
 brough-superior,Brough Superior,Royaume-Uni,britannique,4,Roadster,1922,1938
 buell,Buell,États-Unis,américaine,3,Sportive,2000,2008
 douglas,Douglas,Royaume-Uni,britannique,3,,1907,1955
@@ -44,6 +48,8 @@ excelsior,Excelsior,États-Unis,américaine,3,,1925,1942
 nsu,NSU,Allemagne,allemande,3,Scooter / Cyclomoteur,1953,1962
 zero-motorcycles,Zero Motorcycles,États-Unis,américaine,2,Supermotard,2009,2009
 scott,Scott,Royaume-Uni,britannique,2,,1926,1938
+benda,Benda,Chine,chinoise,2,Custom / Cruiser,2025,2026
+kove,Kove,Chine,chinoise,2,Tout-terrain,,
 derbi,Derbi,Espagne,espagnole,2,Trail / Aventure,1990,1994
 maico,Maico,Allemagne,allemande,2,Scooter / Cyclomoteur,1950,1954
 campagna,Campagna,Canada,autre,2,,1988,2008
@@ -54,6 +60,8 @@ dnepr,Dnepr,Ukraine,autre,1,,1942,1942
 mtt,MTT,États-Unis,américaine,1,Sportive,2000,2000
 ideal-jawa,Ideal Jawa,Inde,indienne,1,Roadster,1978,1978
 sok,Sokół,,,1,,1933,1933
+zxmoto,ZXMOTO,Chine,chinoise,1,Sportive,2026,2026
+cyclone,Cyclone,Chine,chinoise,1,Custom / Cruiser,2026,2026
 mondial,Mondial,Italie,italienne,1,Sportive,2002,2002
 bombardier-recreational-products,Bombardier Recreational Products,Canada,autre,1,Roadster,2007,2007
 sunbeam,Sunbeam,Royaume-Uni,britannique,1,,1949,1949

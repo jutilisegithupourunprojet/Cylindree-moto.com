@@ -153,6 +153,8 @@ MARQUES_FR = {
  "Norton", "BSA", "Bimota", "Buell", "Cagiva", "Derbi", "Gilera", "Laverda",
  "Vincent", "Velocette", "AJS", "Ariel", "Brough Superior", "MZ", "NSU",
  "Sachs", "Maico", "Puch", "Jawa", "Malaguti", "Mondial", "Hyosung",
+ "CFMoto", "Voge", "QJ Motor", "Zontes", "Kove", "ZXMOTO", "Cyclone", "Benda",
+ "Keeway",
 }
 
 # --- modeles collectes directement sur Wikipedia FR (etapes 14-15) -------
@@ -409,6 +411,35 @@ PRIX_MANUELS = {
     "Honda NX500": (6799, "https://moto.honda.fr/motorcycles/range/adventure/nx500/specifications-and-price.html"),
     "Triumph Speed Triple": (20195, "https://wwws.moto-net.com/article/nouveaux-tarifs-2026-des-motos-triumph-en-france-vs-2025.html"),
 }
+# --- consommation moyenne en L/100 km ------------------------------------
+# Le champ source est un texte libre en unites variees ("34.3 mpgus",
+# "40 km/L", "5,8 L/100 km or 17.2 km/L"). On le convertit, sans jamais
+# inventer : texte illisible, unite inconnue ou valeur hors 1,5 a 15 L/100 km
+# (donnee manifestement fausse) donnent une cellule vide.
+def conso_l100(txt):
+    t = str(txt or "").lower().replace(",", ".")
+    v = None
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(?:l|litres?)\s*(?:/|per)\s*100\s*km", t)
+    if m:
+        v = float(m.group(1))
+    else:
+        m = re.search(r"(\d+(?:\.\d+)?)\s*(?:km\s*(?:/|per)\s*l\b|kmpl)", t)
+        if m and float(m.group(1)) > 0:
+            v = 100 / float(m.group(1))
+        else:
+            m = re.search(r"(\d+(?:\.\d+)?)\s*mpg", t)
+            if m and float(m.group(1)) > 0:
+                k = 282.481 if "imp" in t[m.start():m.end() + 6] else 235.215
+                v = k / float(m.group(1))
+    if v is None or not (1.5 <= v <= 15):
+        return ""
+    return round(v, 1)
+
+for r in rows:
+    r["conso_l100"] = conso_l100(r.get("consommation"))
+_n_conso = sum(1 for r in rows if r["conso_l100"] != "")
+print("consommation : %d fiche(s) avec une valeur L/100 km" % _n_conso)
+
 _prix_combles = 0
 for r in rows:
     if r["nom_affichage"] in PRIX_MANUELS and not r.get("prix_lancement_eur"):
@@ -431,7 +462,7 @@ COLS = ["modele_id", "marque", "marque_id", "modele", "nom_complet",
         "reservoir_l", "vitesse_max_kmh",
         "a2_compatible", "a2_detail",
         "moteur", "alesage_course", "compression", "transmission", "cadre",
-        "suspension", "freins", "pneus", "consommation",
+        "suspension", "freins", "pneus", "consommation", "conso_l100",
         "predecesseur", "successeur", "aussi_appele",
         "image_url", "wikidata_id", "url_wikipedia",
         "url_wikipedia_fr", "source_specs_fr", "image_vignette", "image_licence", "image_auteur", "image_page",
@@ -784,6 +815,7 @@ DICO = [
  ("empattement_mm", "decimal", "mm", "Distance entre axes de roues"),
  ("reservoir_l", "decimal", "L", "Capacite du reservoir"),
  ("vitesse_max_kmh", "decimal", "km/h", "Vitesse maximale annoncee"),
+ ("conso_l100", "decimal", "L/100 km", "Consommation moyenne, convertie depuis le champ source 'consommation' (mpg, km/L, L/100 km). Vide si absente ou invraisemblable"),
  ("a2_compatible", "texte", "-", "oui / non / a verifier - calcule : <=35 kW ET <=0,2 kW/kg"),
  ("a2_detail", "texte", "-", "Justification du calcul A2"),
  ("image_url", "URL", "-", "Image principale de l'article Wikipedia"),

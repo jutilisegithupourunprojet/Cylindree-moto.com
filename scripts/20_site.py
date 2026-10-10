@@ -682,8 +682,7 @@ p{margin:0 0 1rem}
 .tachy svg{display:block;width:100%;height:auto}
 .tach-aiguille{transform-origin:200px 200px;transform-box:view-box;
   filter:drop-shadow(0 0 6px rgba(255,122,51,.75))}
-.hero-accueil .hero-corps{margin-left:max(0px,calc((100% - var(--large)) / 2));
-  margin-right:auto}
+.hero-corps{margin-left:max(0px,calc((100% - var(--large)) / 2));margin-right:auto}
 @media(max-width:899px){
   .hero-accueil{display:flex;flex-direction:column}
   .hero-accueil .hero-corps{width:100%;padding-top:1.2rem}
@@ -1068,6 +1067,7 @@ LIGNES_SPECS = [
     ("Empattement", lambda m: num(m["empattement_mm"], "mm", 0)),
     ("Réservoir", lambda m: num(m["reservoir_l"], "L", 1)),
     ("Vitesse maximale", lambda m: num(m["vitesse_max_kmh"], "km/h", 0)),
+    ("Consommation moyenne", lambda m: num(m["conso_l100"], "L/100 km", 1)),
     ("Alésage × course", lambda m: e(m["alesage_course"])),
     ("Compression", lambda m: e(fr_tech(m["compression"]))),
     ("Transmission", lambda m: e(fr_tech(m["transmission"]))),
@@ -1283,6 +1283,15 @@ ECOLES = {
    "texte": "Le tout-terrain comme point de départ. Des machines légères, "
             "nerveuses, orientées performance, où l'orange n'est pas une "
             "coquetterie mais une signature de compétition."},
+ "chinoise": {
+   "pays": "Chine", "emoji": "🇨🇳",
+   "bandes": ["#DE2910", "#FFDE00", "#DE2910"],
+   "accent": "#B3261E", "accent_nuit": "#FF8F7A",
+   "signature": "L'équipement pour le prix",
+   "texte": "Arrivées en Europe dans les années 2010, ces marques jouent la "
+            "carte du tarif et de l'équipement, du 125 cm³ au gros twin. Le "
+            "réseau et la valeur de revente sont plus récents que chez les "
+            "constructeurs historiques : à vérifier avant l'achat."},
  "indienne": {
    "pays": "Inde", "emoji": "🇮🇳",
    "bandes": ["#FF9933", "#F7F7F7", "#138808"],
@@ -1508,6 +1517,7 @@ def page_duel(d):
             ("Hauteur de selle", "hauteur_selle_mm", "mm", 0, None),
             ("Réservoir", "reservoir_l", "L", 1, "haut"),
             ("Vitesse maximale", "vitesse_max_kmh", "km/h", 0, "haut"),
+            ("Consommation moyenne", "conso_l100", "L/100 km", 1, "bas"),
             ("Empattement", "empattement_mm", "mm", 0, None),
             ("Année", "annee_debut", "", 0, "brut"),
             ("Prix au lancement", "prix_lancement_eur", "€", 0, "bas")]

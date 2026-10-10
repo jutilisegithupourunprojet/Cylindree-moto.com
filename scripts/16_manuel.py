@@ -113,7 +113,8 @@ for m in MODELES:
             r[k] = m[k]
 
     if r.get("prix_lancement_eur"):
-        r["prix_source"] = "Tarif constructeur France relevé le %s" % DATE_SAISIE
+        r["prix_source"] = ("Tarif public France relevé le %s"
+                            % m.get("date_saisie", DATE_SAISIE))
     if r.get("puissance_ch") and not r.get("puissance_kw"):
         r["puissance_kw"] = round(float(r["puissance_ch"]) * 0.735499, 2)
     r["poids_kg"] = r.get("poids_tous_pleins_kg") or r.get("poids_sec_kg") or ""
