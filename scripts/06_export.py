@@ -437,6 +437,47 @@ def conso_l100(txt):
 
 for r in rows:
     r["conso_l100"] = conso_l100(r.get("consommation"))
+# Valeurs relevees a la main sur fiche constructeur ou fiche specialisee
+# (octobre 2026), appliquees seulement quand la base n'en a pas. Un modele
+# dont la generation de la base differe de celle de la source (MT-09 847 cc,
+# Tracer 900, Africa Twin CRF1000L, DesertX 937, Panigale V2 955) est exclu,
+# de meme que les valeurs contradictoires ou les electriques.
+CONSO_MANUELLES = {
+    "Yamaha 700 Ténéré": (4.3, "fiche Yamaha FR 2024-2026"),
+    "Yamaha MT-10": (6.83, "fiche Yamaha FR 2024"),
+    "Honda MSX 125": (1.5, "WMTC, lerepairedesmotards.com"),
+    "Aprilia RS 660": (4.9, "motoplanete.com 2025"),
+    "Royal Enfield Continental GT": (4.21, "fiche Royal Enfield"),
+    "Ducati Panigale V4": (6.5, "WMTC, fiche Ducati"),
+    "Honda CBR650R": (4.9, "fiche Honda 2026"),
+    "Yamaha YZF-R3": (4.0, "page Yamaha FR 2026"),
+    "Moto Guzzi V100 Mandello": (4.7, "moto-net.com 2026"),
+    "BMW F 450 GS": (3.8, "WMTC, donnees techniques BMW"),
+    "Kawasaki Z900": (4.8, "moto-net.com 2025"),
+    "Honda CB 125 F": (1.4, "WMTC, lerepairedesmotards.com"),
+    "Royal Enfield Hunter 350": (2.63, "fiche Royal Enfield France"),
+    "Yamaha YZF-R9": (5.0, "1000ps.com"),
+    "Royal Enfield Interceptor 650": (4.21, "fiche Royal Enfield"),
+    "Yamaha XSR700": (4.3, "moto-net.com 2024"),
+    "Honda CB125R": (2.2, "WMTC, motoplanete.com"),
+    "Yamaha NMAX": (2.2, "WMTC, motoplanete.com (125)"),
+    "Peugeot Metropolis 400": (3.9, "constructeur, lancement Euro 5"),
+    "Triumph Speed Twin 900": (4.0, "WMTC, motoplanete.com 2025"),
+    "Aprilia Tuareg": (4.0, "WMTC, motoplanete.com 2026"),
+    "Triumph Tiger Sport 660": (4.9, "WMTC, motoplanete.com 2026"),
+    "Royal Enfield Guerrilla 450": (3.39, "fiche Royal Enfield"),
+    "Triumph Tiger Sport 800": (4.7, "WMTC, motoplanete.com 2026"),
+    "Kawasaki ZX-4R": (5.1, "WMTC, motoplanete.com 2026"),
+    "Royal Enfield Meteor": (2.79, "fiche Royal Enfield France"),
+    "BMW S 1000 R": (6.2, "WMTC, tarif BMW Motorrad"),
+    "Honda NX 500": (3.6, "WMTC, fiche Honda"),
+}
+_conso_man = 0
+for r in rows:
+    if r["conso_l100"] == "" and r["nom_affichage"] in CONSO_MANUELLES:
+        r["conso_l100"] = CONSO_MANUELLES[r["nom_affichage"]][0]
+        _conso_man += 1
+print("consommation : %d fiche(s) completee(s) par saisie manuelle" % _conso_man)
 _n_conso = sum(1 for r in rows if r["conso_l100"] != "")
 print("consommation : %d fiche(s) avec une valeur L/100 km" % _n_conso)
 
