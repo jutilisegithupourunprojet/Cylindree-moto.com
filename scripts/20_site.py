@@ -15,7 +15,7 @@ Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
   site/assets/{style.css, comparateur.js, data.json}
   site/sitemap.xml, site/robots.txt
 """
-import csv, io, json, os, re, html, unicodedata, shutil, sys, base64, urllib.parse
+import csv, io, json, os, re, html, unicodedata, shutil, sys, base64, urllib.parse, statistics
 from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
@@ -837,6 +837,70 @@ print("%d duels publiables sur %d" % (len(duels_ok), len(duels)))
 urls = []
 
 
+# ----------------------------------------------------------------- occasion
+# Annonces d'occasion relevees sur les pages publiques de Motoplanete
+# (scripts/21_occasion_motoplanete.py). On ne publie que des agregats par modele,
+# et seulement a partir de 3 annonces rattachees sans ambiguite au modele.
+SUFFIXES_OK = {"", "abs", "a2", "35kw", "35kwabs", "dct", "e5", "euro5"}
+
+
+def _alnum(t):
+    t = unicodedata.normalize("NFD", t.lower())
+    return re.sub(r"[^a-z0-9]", "", "".join(c for c in t if not unicodedata.combining(c)))
+
+
+def charger_occasion():
+    chemin = os.path.join(BASE, "data", "raw", "occasion_motoplanete.json")
+    agregats = os.path.join(OUT, "occasion_stats.json")
+    if not os.path.exists(chemin):
+        # le releve brut n'est pas versionne : on reprend les agregats publies
+        if os.path.exists(agregats):
+            d = json.load(io.open(agregats, encoding="utf-8"))
+            return d["stats"], d["date"]
+        return {}, ""
+    d = json.load(io.open(chemin, encoding="utf-8"))
+    index = {}
+    for m in pub:
+        # un nom suivi d'une annee ("Versys 650 (2007)") designe une generation
+        # precise : des annonces plus recentes n'y seraient pas rattachables
+        if re.search(r"\((?:19|20)\d\d\)$", m["nom_affichage"]):
+            continue
+        index.setdefault(_alnum(m["nom_affichage"]), m["modele_id"])
+    par_modele = defaultdict(list)
+    for a in d["annonces"].values():
+        t = re.sub(r"\s*(?:19|20)\d\d\s*$", "", a["titre"])
+        n = _alnum(t)
+        if a["prix"] < 500 or not a["annee"]:
+            continue
+        # plus long nom de modele qui est un prefixe du titre, suffixe autorise
+        meilleur = None
+        for cle, mid in index.items():
+            if cle and n.startswith(cle) and n[len(cle):] in SUFFIXES_OK:
+                if meilleur is None or len(cle) > len(meilleur[0]):
+                    meilleur = (cle, mid)
+        if meilleur:
+            par_modele[meilleur[1]].append(a)
+    stats = {}
+    for mid, ls in par_modele.items():
+        if len(ls) < 3:
+            continue
+        prix = sorted(x["prix"] for x in ls)
+        kms = sorted(x["km"] for x in ls if x["km"])
+        ans = [x["annee"] for x in ls]
+        stats[mid] = {"n": len(ls), "min": prix[0], "max": prix[-1],
+                      "med": int(round(statistics.median(prix), -1)),
+                      "km": int(round(statistics.median(kms), -2)) if kms else 0,
+                      "a0": min(ans), "a1": max(ans)}
+    with io.open(agregats, "w", encoding="utf-8") as f:
+        json.dump({"date": d.get("date", ""), "stats": stats}, f, ensure_ascii=False,
+                  indent=1, sort_keys=True)
+    return stats, d.get("date", "")
+
+
+OCCASION, OCCASION_DATE = charger_occasion()
+print("occasion : %d modeles avec au moins 3 annonces" % len(OCCASION))
+
+
 def enregistrer(chemin, prio="0.6"):
     urls.append((chemin, prio))
 
@@ -1140,8 +1204,26 @@ def page_modele(m):
     # occasion : lien vers une recherche d'annonces (aucun prix invente)
     q_occ = re.sub(r"\s*\((?:19|20)\d\d\)$", "", nom)
     occasion = ""
+    obs = OCCASION.get(m["modele_id"])
+    obs_html = ""
+    if obs:
+        an = ("en %d" % obs["a0"] if obs["a0"] == obs["a1"]
+              else "de %d à %d" % (obs["a0"], obs["a1"]))
+        d_obs = OCCASION_DATE.split("-")
+        d_txt = ("%s/%s/%s" % (d_obs[2], d_obs[1], d_obs[0])) if len(d_obs) == 3 else ""
+        obs_html = ('<p class="occ-obs"><strong>%s annonces observées</strong> chez des '
+                    'concessionnaires (%s) : de %s à %s, médiane %s%s.</p>'
+                    '<p class="mention-affilie">Relevé du %s sur '
+                    '<a href="https://www.motoplanete.com/occasion-moto.html" '
+                    'rel="nofollow noopener" target="_blank">Motoplanete</a>. '
+                    'Ce n&rsquo;est pas une cote : la valeur dépend du kilométrage et de l&rsquo;état.</p>'
+                    % (obs["n"], an, num(obs["min"], "€"), num(obs["max"], "€"),
+                       num(obs["med"], "€"),
+                       (" pour %s" % num(obs["km"], "km")) if obs["km"] else "",
+                       d_txt))
     if m["annee_debut"] and int(m["annee_debut"]) >= 1990:
         occasion = ('<div class="encart encart-achat"><p class="encart-titre">Occasion</p>'
+                    + obs_html +
                     '<div class="liens-affilies"><a class="lien-affilie" '
                     'href="https://www.leboncoin.fr/recherche?text=%s" '
                     'rel="nofollow noopener" target="_blank">Voir les annonces '
