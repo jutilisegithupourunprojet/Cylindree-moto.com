@@ -155,7 +155,6 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
     <nav class="nav-principale" aria-label="Navigation principale">
       <a href="%(racine)s/guides/">Guides</a>
       <a href="%(racine)s/comparateur.html">Comparateur</a>
-      <a href="%(racine)s/marques/">Marques</a>
       <a href="%(racine)s/ecoles/">Écoles</a>
       <a href="%(racine)s/duels/">Duels</a>
     </nav>
