@@ -22,6 +22,7 @@ from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
 from guides_equipement import GUIDES_EQUIPEMENT as _G2
 GUIDES = _G1 + _G2
 from collections import defaultdict
+from outils_moto import CSS_OUTILS, JS_TROUVE, JS_SELLE
 
 BASE = os.path.join(os.path.dirname(__file__), "..")
 OUT = os.path.join(BASE, "data", "out")
@@ -155,6 +156,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
     <nav class="nav-principale" aria-label="Navigation principale">
       <a href="%(racine)s/guides/">Guides</a>
       <a href="%(racine)s/comparateur.html">Comparateur</a>
+      <a href="%(racine)s/trouve-ma-moto.html">Trouve ma moto</a>
       <a href="%(racine)s/ecoles/">Écoles</a>
       <a href="%(racine)s/duels/">Duels</a>
     </nav>
@@ -2099,6 +2101,123 @@ def duel_live():
                "".join(panneaux)))
 
 
+# ----------------------------------------------------------------- outils
+EXCLUES_OUTILS = ("Compétition", "Trois-roues", "Minibike", "Moto militaire")
+
+
+def pool_outils():
+    """Motos encore produites, vendues en France, avec puissance connue."""
+    out = []
+    for m in pub:
+        if m["annee_fin"] or m["marche_fr"] != "oui":
+            continue
+        if not m["annee_debut"] or int(m["annee_debut"]) < 2008:
+            continue
+        if not m["puissance_ch"] or m["categorie"] in EXCLUES_OUTILS:
+            continue
+        # un nom suivi d'une annee ancienne designe une generation remplacee
+        # (ex. "Ducati Multistrada (2010)") : on ne la propose pas comme neuve
+        a_nom = re.search(r"\((20\d\d)\)$", m["nom_affichage"])
+        if a_nom and int(a_nom.group(1)) < 2020:
+            continue
+        img = m["image_vignette"] or m["image_url"]
+        out.append({"n": m["nom_affichage"], "m": m["marque"], "c": m["categorie"],
+                    "a2": m["a2_compatible"] if m["a2_compatible"] in ("oui", "non") else "",
+                    "ch": round(float(m["puissance_ch"])),
+                    "kg": round(float(m["poids_kg"])) if m["poids_kg"] else 0,
+                    "s": round(float(m["hauteur_selle_mm"])) if m["hauteur_selle_mm"] else 0,
+                    "pz": round(float(m["prix_lancement_eur"])) if m["prix_lancement_eur"] else 0,
+                    "co": float(m["conso_l100"]) if m["conso_l100"] else 0,
+                    "u": m["url"], "i": img if m["image_utilisable"] == "oui" else ""})
+    return out
+
+
+POOL = pool_outils()
+
+
+def bandeau_outils():
+    return """<div class="conteneur outils-duo">
+<a class="outil-carte" href="%(r)s/trouve-ma-moto.html">
+  <b>Trouve ma moto</b>
+  <span>Cinq questions : permis, usage, taille, budget, niveau. Trois motos classées.</span>
+  <em>Faire le test</em>
+</a>
+<a class="outil-carte" href="%(r)s/touche-le-sol.html">
+  <b>Est-ce que je touche le sol ?</b>
+  <span>Ta taille contre la hauteur de selle de %(n)d motos.</span>
+  <em>Vérifier</em>
+</a>
+</div>""" % {"r": RACINE, "n": len([x for x in POOL if x["s"]])}
+
+
+def pages_outils():
+    ecrire("assets/outils.json", json.dumps(POOL, ensure_ascii=False, separators=(",", ":")))
+    n = len(POOL)
+    n_prix = sum(1 for x in POOL if x["pz"])
+    n_selle = sum(1 for x in POOL if x["s"])
+
+    corps = """<div class="conteneur outil">
+<h1>Trouve ta moto en cinq questions</h1>
+<p class="chapo">Permis, usage, taille, budget et niveau : le test classe %(n)d motos
+encore produites et en garde trois. Aucune réponse n&rsquo;est envoyée.</p>
+<div class="tm" id="tm" data-src="%(r)s/assets/outils.json">
+<noscript><p class="r-vide">Ce test demande JavaScript. Utilisez le
+<a href="%(r)s/comparateur.html">comparateur</a>.</p></noscript>
+</div>
+<h2>Comment le classement est calculé</h2>
+<ul class="liste-simple">
+<li>Le permis A2 écarte toute moto non compatible A2 dans nos fiches.</li>
+<li>L&rsquo;usage donne le gros des points : la catégorie de la moto doit correspondre.</li>
+<li>La taille sert à comparer la hauteur de selle à ton entrejambe, estimé à 45&nbsp;%% de ta
+taille si tu ne le donnes pas. <a href="%(r)s/touche-le-sol.html">Voir la règle</a>.</li>
+<li>Le budget retire les motos plus chères que ton plafond. %(np)d motos sur %(n)d ont un prix
+relevé ; les autres restent proposées, signalées « prix non relevé ».</li>
+<li>Le niveau favorise les motos légères pour un débutant, plus puissantes pour un confirmé.</li>
+</ul>
+<p class="outil-note">%(ns)d motos sur %(n)d ont une hauteur de selle publiée. Les
+caractéristiques viennent de nos fiches et peuvent comporter des erreurs.</p>
+</div>""" % {"n": n, "np": n_prix, "ns": n_selle, "r": RACINE}
+    ecrire("trouve-ma-moto.html",
+           page("Trouve ma moto : le test en 5 questions",
+                "Permis A2 ou A, usage, taille, budget, niveau : 5 questions pour trouver "
+                "les 3 motos qui te correspondent parmi %d modèles encore produits." % n,
+                corps, SITE_URL + "/trouve-ma-moto.html", "",
+                [("Accueil", "/"), ("Trouve ma moto", None)],
+                '<script src="%s/assets/trouve.js" defer></script>' % RACINE))
+    enregistrer("/trouve-ma-moto.html", "0.9")
+
+    corps = """<div class="conteneur outil">
+<h1>Est-ce que je touche le sol ?</h1>
+<p class="chapo">Règle ta taille : le site classe %(ns)d motos selon que tu poses les
+pieds à plat, sur la pointe ou pas du tout.</p>
+<div class="sl" id="sl" data-src="%(r)s/assets/outils.json">
+<noscript><p class="r-vide">Cet outil demande JavaScript. Le
+<a href="%(r)s/comparateur.html">comparateur</a> filtre aussi par hauteur de selle.</p></noscript>
+</div>
+<h2>La règle utilisée</h2>
+<ul class="liste-simple">
+<li>Entrejambe estimé&nbsp;: 45&nbsp;%% de ta taille, ou la valeur que tu saisis.</li>
+<li>Portée&nbsp;: entrejambe + 30&nbsp;mm, pour la semelle des bottes et l&rsquo;affaissement
+de la suspension sous ton poids.</li>
+<li>Écart&nbsp;: portée moins la hauteur de selle annoncée par le constructeur. À 0 ou plus, pieds
+à plat&nbsp;; jusqu&rsquo;à 40&nbsp;mm de moins, presque à plat&nbsp;; jusqu&rsquo;à 90&nbsp;mm
+de moins, pointe des pieds&nbsp;; au-delà, trop haute.</li>
+</ul>
+<p class="outil-note">Estimation indicative : la forme de la selle, le poids du pilote, les
+bottes et la suspension changent la sensation. Essaie la moto en concession avant d&rsquo;acheter.
+Seules les motos avec une hauteur de selle publiée sont classées.</p>
+</div>""" % {"ns": n_selle, "r": RACINE}
+    ecrire("touche-le-sol.html",
+           page("Est-ce que je touche le sol ? Hauteur de selle selon ta taille",
+                "Entre ta taille et vois quelles motos te laissent les pieds à plat, "
+                "sur la pointe ou trop haute, parmi %d modèles." % n_selle,
+                corps, SITE_URL + "/touche-le-sol.html", "",
+                [("Accueil", "/"), ("Trouve ma moto", "/trouve-ma-moto.html"),
+                 ("Hauteur de selle", None)],
+                '<script src="%s/assets/selle.js" defer></script>' % RACINE))
+    enregistrer("/touche-le-sol.html", "0.9")
+
+
 def page_accueil():
     top = sorted(pub, key=lambda x: -float(x["priorite"] or 0))[:12]
     a2 = [m for m in pub if m["a2_compatible"] == "oui"][:8]
@@ -2191,6 +2310,8 @@ permis A2, puis comparez deux motos côte à côte.</p>
 
 %(bento)s
 
+%(outils)s
+
 <div class="conteneur section">
 <h2>Guides d&rsquo;achat</h2>
 <p class="chapo">%(ng)d guides d&rsquo;achat, chacun avec ses sources.</p>
@@ -2217,7 +2338,7 @@ limites pour chaque modèle.</p>
 </div>""" % {"n": len(pub), "m": len(par_marque), "d": len(duels_ok),
              "nf": num(len(pub)), "df": num(len(duels_ok)),
              "a2": n_a2, "a2f": num(n_a2), "ng": len(GUIDES), "bento": bento,
-             "tachy": tachymetre_svg(), "duel": duel_live(),
+             "tachy": tachymetre_svg(), "duel": duel_live(), "outils": bandeau_outils(),
              "top": grille(top, 6), "duels": duels_html,
              "guides": "".join(
                  '<a class="carte-guide-lien" href="/guides/%s.html">'
@@ -2500,7 +2621,9 @@ JS_DUELS = r"""
 
 
 def fichiers_techniques():
-    ecrire("assets/style.css", CSS)
+    ecrire("assets/style.css", CSS + CSS_OUTILS)
+    ecrire("assets/trouve.js", JS_TROUVE)
+    ecrire("assets/selle.js", JS_SELLE)
     ecrire("assets/duels.js", JS_DUELS)
     ecrire("assets/comparateur.js", JS)
     ecrire("robots.txt", "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE_URL)
@@ -2797,6 +2920,8 @@ for d in duels_ok:
     page_duel(d)
 print("Generation du comparateur...")
 page_comparateur()
+print("Generation des outils...")
+pages_outils()
 print("Generation des guides...")
 page_legal()
 page_guides_index()
