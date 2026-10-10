@@ -19,13 +19,9 @@ DATE_MAJ = "25 août 2026"
 
 # --- briques reutilisables ------------------------------------------------
 
-METHODE = """<p>Ce guide ne repose pas sur un essai que nous aurions conduit :
-nous ne roulons pas les motos que nous décrivons. Il croise trois sources,
-les caractéristiques constructeur de notre base, les essais publiés par la
-presse spécialisée, et les retours de propriétaires sur les forums français.
-Les impressions de conduite rapportées ici sont donc <strong>celles des
-motards qui roulent ces machines</strong>, résumées et référencées en fin de
-page. Les points faibles sont mentionnés au même titre que les qualités.</p>"""
+METHODE = """<p><strong>Nous n'avons pas essayé ces motos.</strong> Ce guide croise
+nos fiches techniques, les essais de la presse et les avis de propriétaires
+(sources en bas de page). Les défauts sont listés aussi.</p>"""
 
 REGLE_A2 = """<p>Une moto est autorisée au permis A2 si elle respecte
 <strong>trois conditions cumulatives</strong> :</p>

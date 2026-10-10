@@ -643,6 +643,38 @@ p{margin:0 0 1rem}
 .pied-liens a{color:var(--doux);font-size:.85rem;text-decoration:underline}
 .pied-liens a:hover{color:var(--accent)}
 .tableau-large{overflow-x:auto}
+
+/* --- couche mouvement : une duree, une courbe, partout --------------------
+   Uniquement transform / opacity / couleurs : rien qui declenche un reflow. */
+:root{--ease:cubic-bezier(.2,.7,.2,1);--d-rapide:150ms;--d-normal:250ms;
+  --halo:0 0 0 4px color-mix(in srgb,var(--accent) 24%,transparent)}
+.carte,.carte-duel,.carte-ecole,.carte-guide-lien,.liste-liens a,.bouton,
+.bouton-secondaire,.lien-affilie,.md-bouton,.nav-principale a,.carte-bento{
+  transition:transform var(--d-rapide) var(--ease),
+    border-color var(--d-rapide) var(--ease),
+    background-color var(--d-rapide) var(--ease),
+    color var(--d-rapide) var(--ease),
+    box-shadow var(--d-normal) var(--ease)}
+.carte:hover,.carte-duel:hover,.carte-ecole:hover,.carte-guide-lien:hover,
+.carte-bento:hover{
+  box-shadow:0 2px 4px rgba(26,23,20,.08),0 18px 32px -18px rgba(26,23,20,.4)}
+.carte-guide-lien:hover{border-color:var(--accent)}
+.liste-liens a:hover{transform:translateY(-1px)}
+.carte:active,.carte-duel:active,.carte-ecole:active,.carte-guide-lien:active,
+.liste-liens a:active,.bouton:active,.bouton-secondaire:active,
+.lien-affilie:active,.carte-bento:active{
+  transform:scale(.98);transition-duration:80ms}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
+  box-shadow:var(--halo)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms !important;
+    animation-duration:.01ms !important;scroll-behavior:auto !important}
+  .carte:hover,.carte-duel:hover,.carte-ecole:hover,.carte-guide-lien:hover,
+  .carte-bento:hover,.liste-liens a:hover,.bouton:hover,.bouton-secondaire:hover,
+  .lien-affilie:hover,.carte:active,.carte-duel:active,.carte-ecole:active,
+  .carte-guide-lien:active,.liste-liens a:active,.bouton:active,
+  .bouton-secondaire:active,.lien-affilie:active,.carte-bento:active{transform:none}
+}
 """
 
 
@@ -1522,9 +1554,8 @@ def page_comparateur():
 
     corps = """<div class="conteneur section">
 <h1>Comparateur de motos</h1>
-<p class="chapo">Filtrez %d modèles par école, catégorie, année, cylindrée, hauteur
-de selle et compatibilité permis A2. Le filtrage est instantané et ne demande
-aucun compte.</p>
+<p class="chapo">Filtrez %d motos par catégorie, année, cylindrée et permis A2.
+Résultats instantanés, sans compte.</p>
 %s
 <p class="compteur" id="compteur" role="status"></p>
 <div class="grille" id="resultats"></div>
@@ -1697,6 +1728,28 @@ JS = r"""
 """
 
 
+# Compteurs du hero : la valeur finale est deja dans le HTML (lisible sans JS).
+# Le script ne fait que la compter de 0 a cette valeur, une fois, a l'affichage.
+JS_COMPTEURS = """<script>
+(function(){
+  var els=document.querySelectorAll('.chiffre .v[data-cible]');
+  if(!els.length||!('IntersectionObserver' in window)||
+     matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  els.forEach(function(el){el.dataset.final=el.textContent;el.textContent='0';});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(!e.isIntersecting)return; io.unobserve(e.target);
+    var el=e.target,cible=+el.dataset.cible,t0=performance.now(),d=900;
+    (function pas(t){
+      var p=Math.min((t-t0)/d,1),k=1-Math.pow(1-p,3);
+      el.textContent=p<1?Math.round(cible*k).toLocaleString('fr-FR'):el.dataset.final;
+      if(p<1)requestAnimationFrame(pas);
+    })(t0);
+  });});
+  els.forEach(function(el){io.observe(el);});
+})();
+</script>"""
+
+
 def page_accueil():
     top = sorted(pub, key=lambda x: -float(x["priorite"] or 0))[:12]
     a2 = [m for m in pub if m["a2_compatible"] == "oui"][:8]
@@ -1728,19 +1781,19 @@ def page_accueil():
                              ", © " + e(vedette["image_auteur"])
                              if vedette.get("image_auteur") else ""))
 
+    n_a2 = sum(1 for m in pub if m["a2_compatible"] == "oui")
     corps = """<section class="hero-accueil">
 %(fond)s
 <div class="conteneur hero-corps">
 <p class="hero-eyebrow">Annuaire moto</p>
-<h1>Les fiches techniques moto, sans le bruit</h1>
-<p class="hero-chapo">%(n)d modèles documentés, un comparateur qui filtre vraiment, et des
-duels chiffrés pour trancher entre deux motos. Compatibilité permis A2 calculée
-pour chaque machine.</p>
+<h1>Fiches techniques et duels de motos</h1>
+<p class="hero-chapo">%(nf)s modèles, %(m)d marques. Filtrez par cylindrée ou
+permis A2, puis comparez deux motos côte à côte.</p>
 <div class="chiffres">
-  <div class="chiffre"><span class="v">%(n)d</span><span class="l">modèles</span></div>
-  <div class="chiffre"><span class="v">%(m)d</span><span class="l">marques</span></div>
-  <div class="chiffre"><span class="v">%(a2)d</span><span class="l">compatibles A2</span></div>
-  <div class="chiffre"><span class="v">%(d)d</span><span class="l">duels</span></div>
+  <div class="chiffre"><span class="v" data-cible="%(n)d">%(nf)s</span><span class="l">modèles</span></div>
+  <div class="chiffre"><span class="v" data-cible="%(m)d">%(m)d</span><span class="l">marques</span></div>
+  <div class="chiffre"><span class="v" data-cible="%(a2)d">%(a2f)s</span><span class="l">compatibles A2</span></div>
+  <div class="chiffre"><span class="v" data-cible="%(d)d">%(df)s</span><span class="l">duels</span></div>
 </div>
 <p class="hero-actions">
   <a class="bouton" href="%(racine)s/comparateur.html">Ouvrir le comparateur</a>
@@ -1752,8 +1805,7 @@ pour chaque machine.</p>
 
 <div class="conteneur section">
 <h2>Guides d&rsquo;achat</h2>
-<p class="chapo">Des sélections argumentées, croisant caractéristiques
-constructeur et retours de motards qui roulent ces machines.</p>
+<p class="chapo">%(ng)d guides d&rsquo;achat, chacun avec ses sources.</p>
 <div class="grille-guides-index">%(guides)s</div>
 
 <h2>Les modèles les plus consultés</h2>
@@ -1763,20 +1815,20 @@ constructeur et retours de motards qui roulent ces machines.</p>
 <ul class="liste-liens">%(duels)s</ul>
 
 <h2>Par école</h2>
-<p class="chapo">Chaque pays a sa façon de concevoir une moto. La fiabilité
-japonaise, le caractère italien, le twin américain : trois philosophies, trois
-manières de rouler.</p>
+<p class="chapo">Trois traditions : fiabilité japonaise, caractère italien,
+gros twin américain.</p>
 <div class="grille-ecoles">%(ecoles)s</div>
 
 <h2>Par catégorie</h2>
 <ul class="liste-liens">%(cats)s</ul>
 
 <h2>Accessibles au permis A2</h2>
-<p class="chapo">Moins de 35 kW et un rapport poids/puissance sous 0,2 kW/kg :
-le calcul est fait pour chaque modèle à partir des données constructeur.</p>
+<p class="chapo">35 kW maximum et 0,2 kW/kg maximum. Nous calculons ces deux
+limites pour chaque modèle.</p>
 %(bloca2)s
 </div>""" % {"n": len(pub), "m": len(par_marque), "d": len(duels_ok),
-             "a2": sum(1 for m in pub if m["a2_compatible"] == "oui"),
+             "nf": num(len(pub)), "df": num(len(duels_ok)),
+             "a2": n_a2, "a2f": num(n_a2), "ng": len(GUIDES),
              "top": grille(top, 6), "duels": duels_html,
              "guides": "".join(
                  '<a class="carte-guide-lien" href="/guides/%s.html">'
@@ -1787,7 +1839,8 @@ le calcul est fait pour chaque modèle à partir des données constructeur.</p>
              "fond": fond_accueil, "credit": credit_accueil, "racine": RACINE}
 
     ecrire("index.html", page("%s, fiches techniques, comparateur et duels moto"
-                              % SITE_NOM, SITE_DESC, corps, SITE_URL + "/"))
+                              % SITE_NOM, SITE_DESC, corps, SITE_URL + "/",
+                              script=JS_COMPTEURS))
     enregistrer("/", "1.0")
 
 
@@ -1822,8 +1875,7 @@ def pages_hubs():
     # ecoles
     corps = ('<div class="conteneur section"><h1>Les écoles de la moto</h1>'
              '<p class="chapo">Japonaise, italienne, américaine, britannique : '
-             'chaque tradition industrielle a façonné une manière de concevoir '
-             'une machine. Un classement que personne d\'autre ne propose.</p>'
+             'parcourez les motos par pays de conception.</p>'
              '<div class="grille-ecoles">%s</div></div>'
              % "".join(carte_ecole(k, v)
                        for k, v in sorted(par_ecole.items(), key=lambda x: -len(x[1]))))
@@ -1885,9 +1937,8 @@ def pages_hubs():
 
     corps = """<div class="conteneur section">
 <h1>Duels</h1>
-<p class="chapo">%(n)d comparaisons chiffrées entre deux motos de même catégorie et
-de cylindrée voisine. Choisissez la moto qui vous intéresse pour voir directement
-les machines auxquelles elle se mesure.</p>
+<p class="chapo">%(n)d duels entre deux motos de même catégorie et de cylindrée
+voisine. Cherchez votre moto pour voir ses rivales.</p>
 %(sel)s
 <h2 id="titre-res">Les duels les plus consultés</h2>
 <div class="grille-duels" id="res-duels">%(def)s</div>
@@ -2326,10 +2377,8 @@ def page_guides_index():
                   '<span class="cgl-desc">%s</span></a>'
                   % (e(g["slug"]), e(g["h1"]), e(g["desc"])))
     corps = ('<div class="conteneur section"><h1>Guides d&rsquo;achat</h1>'
-             '<p class="chapo">Des sélections argumentées, croisant les '
-             'caractéristiques constructeur et les retours de motards qui '
-             'roulent ces machines. Sans essai maison : nous le disons '
-             'clairement sur chaque page.</p>'
+             '<p class="chapo">Chaque guide cite ses sources. Nous n\'essayons '
+             'pas les motos nous-mêmes, et nous le précisons sur chaque page.</p>'
              '<div class="grille-guides-index">%s</div></div>' % "".join(li))
     ecrire("guides/index.html",
            page("Guides d'achat moto : bien choisir sa machine",
