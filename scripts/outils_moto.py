@@ -101,6 +101,7 @@ CSS_OUTILS = r"""
 .tm-opts.compact{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
 .tm-opts.compact .q-opt span{min-height:3rem;padding:.6rem .85rem}
 .tm-pref{margin:.1rem 0 .6rem;font-size:.9rem;color:var(--doux)}
+.tm-compte{margin:.4rem 0 0;font-weight:650;color:var(--accent)}
 
 /* hauteur de selle */
 .sl{background:var(--carte);border:1px solid var(--trait);border-radius:10px;box-shadow:var(--ombre);
@@ -405,6 +406,7 @@ JS_TROUVE = r"""
   }
 
   function rendreAffiner(){
+    var avant={};AFFINER.forEach(function(q){avant[q.id]=rep[q.id]||'';});
     var h='<div class="tm-affiner"><h2 id="tm-leg" tabindex="-1">Affiner mes résultats</h2>'
       +'<p class="tm-aide">Quatre questions facultatives. « Peu importe » ne change rien au classement.</p>';
     AFFINER.forEach(function(q){
@@ -416,17 +418,34 @@ JS_TROUVE = r"""
       });
       h+='</div></fieldset>';
     });
+    h+='<p class="tm-compte" id="aff-compte" role="status" aria-live="polite"></p>';
     h+='<div class="tm-nav"><button type="button" class="q-btn" id="aff-ok">Voir mes motos</button>'
       +'<button type="button" class="q-btn second" id="aff-annuler">Annuler</button></div></div>';
     conteneur.innerHTML=h;
-    document.getElementById('aff-ok').addEventListener('click',function(){
+    function lireChoix(){
       AFFINER.forEach(function(q){
         var c=conteneur.querySelector('input[name="aff-'+q.id+'"]:checked');
         rep[q.id]=c?c.value:'';
       });
+    }
+    /* nombre de motos qui respectent TOUS les criteres, sans assouplissement */
+    function majCompte(){
+      lireChoix();
+      var n=classer({sel:!!(rep.taille&&rep.plat),orig:true,auto:true,leger:true,bud:parseInt(rep.budget,10)||0}).length;
+      document.getElementById('aff-compte').textContent=n===0
+        ?'Aucune moto ne respecte tous ces critères : le classement les assouplira.'
+        :n+' moto'+(n>1?'s':'')+' respectent tous ces critères.';
+    }
+    conteneur.querySelectorAll('input[type=radio]').forEach(function(r){r.addEventListener('change',majCompte);});
+    majCompte();
+    document.getElementById('aff-ok').addEventListener('click',function(){
+      lireChoix();
       rendreResultats();
     });
-    document.getElementById('aff-annuler').addEventListener('click',rendreResultats);
+    document.getElementById('aff-annuler').addEventListener('click',function(){
+      AFFINER.forEach(function(q){rep[q.id]=avant[q.id];});
+      rendreResultats();
+    });
     document.getElementById('tm-leg').focus({preventScroll:false});
   }
 
@@ -448,7 +467,8 @@ JS_TROUVE = r"""
     }
     h+='<div class="tm-nav"><button type="button" class="q-btn" id="tm-affiner">'
       +(pa.length?'Modifier mes préférences':'Affiner mes résultats')+'</button>'
-      +'<button type="button" class="q-btn second" id="tm-refaire">Refaire le test</button>'
+      +'<button type="button" class="q-btn second" id="tm-modifier">Modifier mes réponses</button>'
+      +'<button type="button" class="q-btn second" id="tm-refaire">Recommencer</button>'
       +'<a class="q-btn second" href="/touche-le-sol.html">Vérifier la hauteur de selle</a>'
       +'<a class="q-btn second" href="/comparateur.html">Ouvrir le comparateur</a></div>'
       +'<p class="outil-note">Classement calculé sur '+D.length+' motos encore produites, d’après les '
@@ -458,6 +478,7 @@ JS_TROUVE = r"""
       rep={};idx=0;history.replaceState(null,'',location.pathname);rendreEtape(true);
     });
     document.getElementById('tm-affiner').addEventListener('click',rendreAffiner);
+    document.getElementById('tm-modifier').addEventListener('click',function(){idx=0;rendreEtape(true);});
     var t=conteneur.querySelector('h2');t.setAttribute('tabindex','-1');t.focus({preventScroll:false});
     sauver();
     if(window.gtag) gtag('event','quiz_resultat',{usage:rep.usage,permis:rep.permis,affine:pa.length});

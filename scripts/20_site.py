@@ -15,7 +15,7 @@ Hebergeable gratuitement (Cloudflare Pages, Netlify) et parfait pour le SEO.
   site/assets/{style.css, comparateur.js, data.json}
   site/sitemap.xml, site/robots.txt
 """
-import csv, io, json, os, re, html, unicodedata, shutil, sys, base64, urllib.parse, statistics
+import csv, io, json, os, re, html, unicodedata, shutil, sys, base64, urllib.parse, statistics, hashlib
 from datetime import date
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from guides_contenu import GUIDES as _G1, METHODE, DATE_MAJ
@@ -2591,8 +2591,15 @@ def bandeau_outils():
 </div>""" % {"r": RACINE, "n": len([x for x in POOL if x["s"]]), "chine": carte_chinoises()}
 
 
+def _v(texte):
+    """Empreinte courte : l'adresse change quand le contenu change, donc jamais de cache perime."""
+    return hashlib.md5(texte.encode("utf-8")).hexdigest()[:8]
+
+
 def pages_outils():
-    ecrire("assets/outils.json", json.dumps(POOL, ensure_ascii=False, separators=(",", ":")))
+    _json = json.dumps(POOL, ensure_ascii=False, separators=(",", ":"))
+    ecrire("assets/outils.json", _json)
+    v_json, v_trouve, v_selle = _v(_json), _v(JS_TROUVE), _v(JS_SELLE)
     n = len(POOL)
     n_prix = sum(1 for x in POOL if x["pz"])
     n_selle = sum(1 for x in POOL if x["s"])
@@ -2601,7 +2608,7 @@ def pages_outils():
 <h1>Trouve ta moto en cinq questions</h1>
 <p class="chapo">Permis, usage, taille, budget et niveau : le test classe %(n)d motos
 encore produites et en garde trois. Aucune réponse n&rsquo;est envoyée.</p>
-<div class="tm" id="tm" data-src="%(r)s/assets/outils.json">
+<div class="tm" id="tm" data-src="%(r)s/assets/outils.json?v=%(vj)s">
 <noscript><p class="r-vide">Ce test demande JavaScript. Utilisez le
 <a href="%(r)s/comparateur.html">comparateur</a>.</p></noscript>
 </div>
@@ -2617,21 +2624,21 @@ relevé ; les autres restent proposées, signalées « prix non relevé ».</li>
 </ul>
 <p class="outil-note">%(ns)d motos sur %(n)d ont une hauteur de selle publiée. Les
 caractéristiques viennent de nos fiches et peuvent comporter des erreurs.</p>
-</div>""" % {"n": n, "np": n_prix, "ns": n_selle, "r": RACINE}
+</div>""" % {"n": n, "np": n_prix, "ns": n_selle, "r": RACINE, "vj": v_json}
     ecrire("trouve-ma-moto.html",
            page("Trouve ma moto : le test en 5 questions",
                 "Permis A2 ou A, usage, taille, budget, niveau : 5 questions pour trouver "
                 "les 3 motos qui te correspondent parmi %d modèles encore produits." % n,
                 corps, SITE_URL + "/trouve-ma-moto.html", "",
                 [("Accueil", "/"), ("Trouve ma moto", None)],
-                '<script src="%s/assets/trouve.js" defer></script>' % RACINE))
+                '<script src="%s/assets/trouve.js?v=%s" defer></script>' % (RACINE, v_trouve)))
     enregistrer("/trouve-ma-moto.html", "0.9")
 
     corps = """<div class="conteneur outil">
 <h1>Est-ce que je touche le sol ?</h1>
 <p class="chapo">Règle ta taille : le site classe %(ns)d motos selon que tu poses les
 pieds à plat, sur la pointe ou pas du tout.</p>
-<div class="sl" id="sl" data-src="%(r)s/assets/outils.json">
+<div class="sl" id="sl" data-src="%(r)s/assets/outils.json?v=%(vj)s">
 <noscript><p class="r-vide">Cet outil demande JavaScript. Le
 <a href="%(r)s/comparateur.html">comparateur</a> filtre aussi par hauteur de selle.</p></noscript>
 </div>
@@ -2647,7 +2654,7 @@ de moins, pointe des pieds&nbsp;; au-delà, trop haute.</li>
 <p class="outil-note">Estimation indicative : la forme de la selle, le poids du pilote, les
 bottes et la suspension changent la sensation. Essaie la moto en concession avant d&rsquo;acheter.
 Seules les motos avec une hauteur de selle publiée sont classées.</p>
-</div>""" % {"ns": n_selle, "r": RACINE}
+</div>""" % {"ns": n_selle, "r": RACINE, "vj": v_json}
     ecrire("touche-le-sol.html",
            page("Est-ce que je touche le sol ? Hauteur de selle selon ta taille",
                 "Entre ta taille et vois quelles motos te laissent les pieds à plat, "
@@ -2655,7 +2662,7 @@ Seules les motos avec une hauteur de selle publiée sont classées.</p>
                 corps, SITE_URL + "/touche-le-sol.html", "",
                 [("Accueil", "/"), ("Trouve ma moto", "/trouve-ma-moto.html"),
                  ("Hauteur de selle", None)],
-                '<script src="%s/assets/selle.js" defer></script>' % RACINE))
+                '<script src="%s/assets/selle.js?v=%s" defer></script>' % (RACINE, v_selle)))
     enregistrer("/touche-le-sol.html", "0.9")
 
 
