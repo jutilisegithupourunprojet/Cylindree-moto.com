@@ -1171,6 +1171,32 @@ LIGNES_SPECS = [
 
 
 # ----------------------------------------------------------------- pages
+LIB_CHAMPS = {"cylindree_cc": "cylindrée", "puissance_ch": "puissance", "puissance_tr_min": "régime de puissance",
+              "couple_nm": "couple", "couple_tr_min": "régime de couple", "poids_tous_pleins_kg": "poids",
+              "poids_sec_kg": "poids à sec", "hauteur_selle_mm": "hauteur de selle",
+              "empattement_mm": "empattement", "longueur_mm": "longueur", "largeur_mm": "largeur",
+              "reservoir_l": "réservoir", "vitesse_max_kmh": "vitesse maximale", "cadre": "cadre",
+              "freins": "freins", "pneus": "pneus", "transmission": "transmission",
+              "architecture": "moteur", "refroidissement": "refroidissement",
+              "consommation": "consommation", "prix_lancement_eur": "prix"}
+
+
+def complement_html(m):
+    """Mention des champs completes par une seconde source (Motoplanete)."""
+    url = m.get("complement_source")
+    if not url:
+        return ""
+    champs = []
+    for c in (m.get("complement_champs") or "").split(","):
+        lib = LIB_CHAMPS.get(c)
+        if lib and lib not in champs:
+            champs.append(lib)
+    if not champs:
+        return ""
+    return ('<p>Compléments (%s) d&rsquo;après <a href="%s" rel="nofollow noopener" '
+            'target="_blank">la fiche Motoplanete</a>.</p>' % (e(", ".join(champs)), e(url)))
+
+
 def page_modele(m):
     nom = m["nom_affichage"]
     marque = m["marque"]
@@ -1212,6 +1238,9 @@ def page_modele(m):
     lignes = []
     for lib, fn in LIGNES_SPECS:
         v = fn(m)
+        if lib == "Prix au lancement" and m["prix_source"] and not m["annee_fin"]:
+            # les prix relevés (grilles de tarifs, fiches de marque) sont des tarifs actuels
+            lib = "Prix neuf (tarif public)"
         if v and v.strip():
             lignes.append("<tr><th scope=\"row\">%s</th><td>%s</td></tr>" % (lib, v))
     tableau = ('<table class="specs"><caption>Caractéristiques techniques</caption>'
@@ -1337,8 +1366,8 @@ def page_modele(m):
 <div class="encart"><p class="encart-titre">Source</p>
 <p>Caractéristiques extraites de <a href="%(wen)s" rel="nofollow">Wikipédia</a>
 (CC BY-SA 4.0). Complétude de cette fiche : %(comp)s %%.
-Les valeurs absentes ne figurent pas dans la source.</p></div>
-</div>""" % {"ident": " ".join(ident), "nom": e(nom), "resume": resume,
+Les valeurs absentes ne figurent pas dans la source.</p>%(compl)s</div>
+</div>""" % {"compl": complement_html(m), "ident": " ".join(ident), "nom": e(nom), "resume": resume,
              "photo": photo, "a2": a2, "occasion": occasion, "tab": tableau,
              "duels": bloc_duels, "proches": bloc_proches,
              "wen": e(m["url_wikipedia"]), "comp": e(m["completude_pct"])}

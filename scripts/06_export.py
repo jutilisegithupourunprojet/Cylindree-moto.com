@@ -6,7 +6,7 @@ Etape 6 : export final.
   data/out/duels.csv            - matchs "A vs B" generes (plan editorial palier B)
   data/out/base_motos.xlsx      - classeur multi-feuilles pour travail manuel
 """
-import json, os, csv, re, math
+import json, os, csv, re, math, unicodedata
 from collections import Counter, defaultdict
 
 RAW = os.path.join(os.path.dirname(__file__), "..", "data", "raw")
@@ -442,6 +442,145 @@ PRIX_MANUELS.update({
     "BMW R12": (15000, _MN + "bmw", "octobre 2026"),
     "Honda NT1100": (14799, "https://moto.honda.fr/motorcycles.html", "octobre 2026"),
 })
+# --- complements Motoplanete (scripts/22_motoplanete_fiches.py) ------------
+# Comblement des trous uniquement : une valeur deja presente (Wikipedia, saisie
+# manuelle verifiee) n'est jamais ecrasee. Garde-fou : si les deux cylindrees
+# sont connues et different de plus de 10 %, la fiche est ignoree (autre
+# generation ou autre modele).
+MP = {}
+_pmp = os.path.join(RAW, "motoplanete_fiches.json")
+if os.path.exists(_pmp):
+    MP = json.load(open(_pmp, encoding="utf-8"))
+_mp_champs = Counter()
+_mp_modeles = 0
+_MP_CHAMPS = ("cylindree_cc", "puissance_ch", "puissance_tr_min", "couple_nm", "couple_tr_min",
+              "poids_tous_pleins_kg", "poids_sec_kg", "hauteur_selle_mm", "empattement_mm",
+              "longueur_mm", "largeur_mm", "reservoir_l", "vitesse_max_kmh", "cadre", "freins",
+              "pneus", "transmission", "architecture", "refroidissement")
+
+
+def _fl(x):
+    try:
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+for r in rows:
+    d = MP.get(r["modele_id"])
+    if not d or d.get("erreur"):
+        continue
+    cc_n, cc_m = _fl(r.get("cylindree_cc")), _fl(d.get("cylindree_cc"))
+    if cc_n and cc_m and abs(cc_n - cc_m) / cc_n > 0.10:
+        continue
+    # rattachement approchant (noms differents) : cylindree obligatoirement concordante a 3 %
+    if d.get("confiance") != "exact" and not (cc_n and cc_m and abs(cc_n - cc_m) / cc_n <= 0.03):
+        continue
+    ajoutes = []
+
+    def poser(cle, val, r=r, ajoutes=ajoutes):
+        if val in (None, "", 0):
+            return
+        if r.get(cle) in (None, "", 0):
+            r[cle] = val
+            ajoutes.append(cle)
+            _mp_champs[cle] += 1
+
+    for cle in _MP_CHAMPS:
+        poser(cle, d.get(cle))
+    if d.get("conso"):
+        poser("consommation", "%s L/100 km (Motoplanete)" % str(d["conso"]).replace(".", ","))
+    # pas de prix pour les machines de collection (fiches "legendes") ni de course
+    if (d.get("prix_eur") and not r.get("prix_lancement_eur") and d.get("an", 0) >= 2005
+            and r.get("categorie") not in ("Compétition", "Moto militaire")):
+        r["prix_lancement_eur"] = d["prix_eur"]
+        r["prix_source"] = "Prix de base relevé sur Motoplanete (millésime %d)" % d["an"]
+        ajoutes.append("prix_lancement_eur")
+        _mp_champs["prix_lancement_eur"] += 1
+    if d.get("places") and not r.get("places"):
+        r["places"] = d["places"]
+    if not ajoutes and not d.get("places"):
+        continue
+    if ajoutes:
+        _mp_modeles += 1
+        r["complement_source"] = d["url"]
+        r["complement_champs"] = ",".join(ajoutes)
+    # champs derives
+    if r.get("puissance_ch") and not r.get("puissance_kw"):
+        r["puissance_kw"] = round(float(r["puissance_ch"]) * 0.735499, 2)
+    if not r.get("poids_kg"):
+        r["poids_kg"] = r.get("poids_tous_pleins_kg") or r.get("poids_sec_kg") or ""
+        if r["poids_kg"]:
+            r["poids_type"] = "tous pleins faits" if r.get("poids_tous_pleins_kg") else "à sec"
+    if r.get("a2_compatible") in (None, "", "à vérifier") and r.get("puissance_kw"):
+        pw = float(r["puissance_kw"])
+        poids = _fl(r.get("poids_kg"))
+        if pw > 35:
+            r["a2_compatible"], r["a2_detail"] = "non", "puissance > 35 kW"
+        elif poids:
+            ratio = pw / poids
+            if ratio <= 0.2:
+                r["a2_compatible"], r["a2_detail"] = "oui", "%.1f kW, %.3f kW/kg" % (pw, ratio)
+            else:
+                r["a2_compatible"], r["a2_detail"] = "non", "rapport %.3f kW/kg > 0.2" % ratio
+    r["completude_pct"] = round(
+        100 * sum(1 for k in _KEY if r.get(k) not in (None, "", 0)) / len(_KEY))
+print("Motoplanete : %d fiche(s) completee(s), %d valeurs ajoutees" % (_mp_modeles, sum(_mp_champs.values())))
+for _k, _n in _mp_champs.most_common():
+    print("   %-22s +%d" % (_k, _n))
+
+# --- tarifs moto-net (scripts/23_motonet_tarifs.py) ------------------------
+# Prix maximum conseille France, modeles encore produits uniquement, et seulement
+# quand le nom de base correspond exactement (jamais une variante : Y-AMT, SP, Tech Max).
+# Comblement d'un prix VIDE : un prix deja present n'est jamais remplace.
+_ptf = os.path.join(RAW, "motonet_tarifs.json")
+_tarifs = {}
+if os.path.exists(_ptf):
+    _tarifs = json.load(open(_ptf, encoding="utf-8"))
+
+
+def _cle_nom(t):
+    t = unicodedata.normalize("NFD", (t or "").lower())
+    return re.sub(r"[^a-z0-9]", "", "".join(c for c in t if not unicodedata.combining(c)))
+
+
+_MN_MARQUES = {"bmw": "bmw", "ducati": "ducati", "harleydavidson": "harley-davidson",
+               "honda": "honda", "kawasaki": "kawasaki", "ktm": "ktm", "suzuki": "suzuki",
+               "triumphmotorcyclesltd": "triumph", "triumph": "triumph", "yamaha": "yamaha"}
+_mn_ajoutes = 0
+for r in rows:
+    if r.get("prix_lancement_eur") or r.get("annee_fin"):
+        continue
+    liste = _tarifs.get(_MN_MARQUES.get(_cle_nom(r.get("marque"))), [])
+    if not liste:
+        continue
+    # un nom suivi d'une annee ("Versys 650 (2007)") designe une generation precise,
+    # et une famille ancienne (Sportster 1957, Monster 1991) ne se confond pas avec
+    # le modele vendu aujourd'hui sous le meme nom : on s'abstient dans les deux cas
+    nom = r.get("nom_affichage") or r.get("modele") or ""
+    if re.search(r"\((?:19|20)\d\d\)$", nom):
+        continue
+    try:
+        if int(r.get("annee_debut") or 0) < 2005:
+            continue
+    except (TypeError, ValueError):
+        continue
+    ours = _cle_nom(nom)
+    marque_cle = _cle_nom(r.get("marque"))
+    if ours.startswith(marque_cle):
+        ours = ours[len(marque_cle):]
+    if len(ours) < 2:
+        continue
+    exacts = [t for t in liste if _cle_nom(t["nom"]) == ours]
+    if not exacts:
+        continue
+    t = max(exacts, key=lambda x: x["an"])
+    r["prix_lancement_eur"] = t["prix"]
+    r["prix_source"] = ("Prix maximum conseillé relevé sur moto-net.com%s"
+                        % (" (millésime %d)" % t["an"] if t["an"] else ""))
+    _mn_ajoutes += 1
+print("moto-net : %d prix ajoutes" % _mn_ajoutes)
+
 # --- consommation moyenne en L/100 km ------------------------------------
 # Le champ source est un texte libre en unites variees ("34.3 mpgus",
 # "40 km/L", "5,8 L/100 km or 17.2 km/L"). On le convertit, sans jamais
@@ -462,7 +601,7 @@ def conso_l100(txt):
             if m and float(m.group(1)) > 0:
                 k = 282.481 if "imp" in t[m.start():m.end() + 6] else 235.215
                 v = k / float(m.group(1))
-    if v is None or not (1.5 <= v <= 15):
+    if v is None or not (1.2 <= v <= 15):
         return ""
     return round(v, 1)
 
@@ -539,7 +678,8 @@ COLS = ["modele_id", "marque", "marque_id", "modele", "nom_complet",
         "image_url", "wikidata_id", "url_wikipedia",
         "url_wikipedia_fr", "source_specs_fr", "image_vignette", "image_licence", "image_auteur", "image_page",
         "image_utilisable", "resume_fr",
-        "production_raw", "completude_pct", "alertes", "source"]
+        "production_raw", "completude_pct", "alertes", "source",
+        "places", "complement_source", "complement_champs"]
 
 # ------------------------------------------------------------- modeles.csv
 rows.sort(key=lambda x: -x["priorite"])
