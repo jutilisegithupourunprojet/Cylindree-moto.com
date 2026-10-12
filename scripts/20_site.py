@@ -176,6 +176,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
       la licence et l'auteur indiqués sur la fiche.</p>
     <p class="mention">Les caractéristiques sont fournies à titre indicatif et
       peuvent comporter des erreurs. Vérifiez auprès du constructeur avant tout achat.</p>
+    <nav class="pied-marques" aria-label="Marques de motos">%(marques_pied)s</nav>
     <nav class="pied-liens" aria-label="Informations légales">
       <a href="%(racine)s/mentions-legales.html">Mentions légales</a>
       <a href="%(racine)s/politique-de-confidentialite.html">Politique de confidentialité</a>
@@ -189,7 +190,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
 </body>
 </html>""" % {"titre": e(titre), "desc": e(desc), "canon": e(canon),
               "extra": extra_head, "corps": corps, "fil": fil_html,
-              "site": e(SITE_NOM), "racine": RACINE, "script": script,
+              "site": e(SITE_NOM), "racine": RACINE, "script": script, "marques_pied": liens_marques_pied(),
               "og_image": e(SITE_URL + "/assets/og-image.jpg"), "ga_id": GA_ID,
               "adsense": ADSENSE_CLIENT, "annee": date.today().year}
 
@@ -898,6 +899,30 @@ def charger_occasion():
 
 
 OCCASION, OCCASION_DATE = charger_occasion()
+
+# Noms usuels pour les titres : les internautes cherchent "honda moto", pas la
+# raison sociale ("Triumph Motorcycles Ltd").
+NOM_COURT = {"Triumph Motorcycles Ltd": "Triumph"}
+TITRE_MARQUE = {"CFMoto": ("CF Moto (CFMoto) : toutes les motos, prix et fiches techniques",
+                           "Motos CF Moto (CFMoto)")}
+MARQUES_PIED = ["Honda", "Yamaha", "BMW", "Suzuki", "Kawasaki", "Triumph Motorcycles Ltd",
+                "KTM", "Ducati", "Moto Guzzi", "CFMoto", "Voge"]
+
+
+def nom_court(marque):
+    return NOM_COURT.get(marque, marque)
+
+
+def liens_marques_pied():
+    """Maillage interne : les marques les plus cherchees, sur chaque page."""
+    li = []
+    for mq in MARQUES_PIED:
+        if mq in par_marque:
+            c = nom_court(mq)
+            li.append('<a href="%s/marques/%s.html">%s</a>'
+                      % (RACINE, slug(mq), e(c if "moto" in c.lower() else c + " moto")))
+    li.append('<a href="%s/marques/">Toutes les marques</a>' % RACINE)
+    return "".join(li)
 print("occasion : %d modeles avec au moins 3 annonces" % len(OCCASION))
 
 
@@ -2247,6 +2272,145 @@ def pool_outils():
 POOL = pool_outils()
 
 
+# ----------------------------------------------------------------- guide chinoises
+def guide_chinoises():
+    liste = [m for m in pub if m["ecole"] == "chinoise"]
+    if len(liste) < 5:
+        return None
+
+    def prix(m):
+        return float(m["prix_lancement_eur"]) if m["prix_lancement_eur"] else 0
+
+    def ch(m):
+        return float(m["puissance_ch"]) if m["puissance_ch"] else 0
+
+    avec_prix = sorted([m for m in liste if prix(m)], key=prix)
+    puissantes = sorted([m for m in liste if ch(m)], key=lambda m: -ch(m))
+    a2 = [m for m in liste if m["a2_compatible"] == "oui"]
+    marques = defaultdict(list)
+    for m in liste:
+        marques[m["marque"]].append(m)
+
+    def lien(m, detail=""):
+        return ('<li><a href="%s">%s<span class="liste-detail"> %s</span></a></li>'
+                % (m["url"], e(m["nom_affichage"]), detail))
+
+    def details(m):
+        b = []
+        if m["puissance_ch"]:
+            b.append(num(m["puissance_ch"], "ch", 0))
+        if m["poids_kg"]:
+            b.append(num(m["poids_kg"], "kg", 0))
+        if m["prix_lancement_eur"]:
+            b.append(num(m["prix_lancement_eur"], "€", 0))
+        return "· " + " · ".join(b) if b else ""
+
+    lignes_marques = []
+    for mq, ls in sorted(marques.items(), key=lambda x: -len(x[1])):
+        pr = sorted(prix(m) for m in ls if prix(m))
+        chs = sorted(ch(m) for m in ls if ch(m))
+        t = "%d modèle%s" % (len(ls), "s" if len(ls) > 1 else "")
+        if pr:
+            t += (", de %s à %s" % (num(pr[0], "€"), num(pr[-1], "€")) if pr[0] != pr[-1]
+                  else ", %s" % num(pr[0], "€"))
+        if chs:
+            t += (", %s à %s" % (num(chs[0], "ch", 0), num(chs[-1], "ch", 0))
+                  if chs[0] != chs[-1] else ", %s" % num(chs[0], "ch", 0))
+        lignes_marques.append('<li><a href="/marques/%s.html">%s<span class="liste-detail"> · %s</span></a></li>'
+                              % (slug(mq), e(mq), e(t)))
+
+    moins_cheres = avec_prix[:8]
+    sections = [
+        {"h2": "Les marques chinoises présentes sur le site",
+         "html": ('<p>Nous répertorions <strong>%d modèles</strong> de <strong>%d marques</strong> '
+                  'dont le constructeur est chinois. Le prix indiqué est le tarif public France '
+                  'relevé sur les sites des marques ou chez des distributeurs, en octobre 2026.</p>'
+                  '<ul class="liste-liens">%s</ul>'
+                  % (len(liste), len(marques), "".join(lignes_marques)))},
+        {"h2": "Les moins chères",
+         "html": ('<p>Les modèles dont nous avons relevé le prix, du moins cher au plus cher. '
+                  'Un prix manquant signifie que nous ne l&rsquo;avons pas trouvé.</p>'
+                  '<ul class="liste-liens">%s</ul>'
+                  % "".join(lien(m, details(m)) for m in moins_cheres))},
+        {"h2": "Les plus puissantes",
+         "html": ('<ul class="liste-liens">%s</ul>'
+                  % "".join(lien(m, details(m)) for m in puissantes[:6]))},
+    ]
+    if a2:
+        sections.append({"h2": "Quelles chinoises au permis A2 ?",
+                         "html": ('<p>%d modèles de notre base existent en version compatible A2 '
+                                  '(35 kW maximum, 0,2 kW/kg), parfois bridée. Vérifiez auprès du '
+                                  'distributeur la version homologuée pour le millésime visé.</p>'
+                                  '<ul class="liste-liens">%s</ul>'
+                                  % (len(a2), "".join(lien(m, details(m)) for m in a2[:12])))})
+    sections.append({"h2": "Ce que nous ne pouvons pas dire",
+                     "html": ('<p>Nous n&rsquo;avons pas de donnée de fiabilité ni de valeur de revente '
+                              'à publier pour ces marques. Avant d&rsquo;acheter, vérifiez la durée de '
+                              'garantie, la distance du concessionnaire le plus proche et la '
+                              'disponibilité des pièces. Pour comparer deux modèles côte à côte, '
+                              'ouvrez le <a href="/duels/">duel moto</a> ou le '
+                              '<a href="/comparateur.html">comparateur</a> ; pour une sélection '
+                              'adaptée à votre permis et votre taille, faites le '
+                              '<a href="/trouve-ma-moto.html">test Trouve ma moto</a>.</p>')})
+
+    faq = []
+    if moins_cheres:
+        m0 = moins_cheres[0]
+        faq.append(("Quelle est la moto chinoise la moins chère de notre base ?",
+                    "%s, à %s (tarif public France relevé en octobre 2026)."
+                    % (m0["nom_affichage"], num(prix(m0), "€"))))
+    if a2:
+        faq.append(("Quelles motos chinoises sont compatibles A2 ?",
+                    "%d modèles de notre base existent en version compatible A2, dont %s."
+                    % (len(a2), ", ".join(m["nom_affichage"] for m in a2[:4]))))
+    if puissantes:
+        faq.append(("Quelle est la moto chinoise la plus puissante de notre base ?",
+                    "%s, avec %s." % (puissantes[0]["nom_affichage"],
+                                      num(ch(puissantes[0]), "ch", 0))))
+    faq.append(("Que veut dire moto chinoise ?",
+                "Une moto dont la marque appartient à un constructeur chinois, comme CFMoto, "
+                "Voge, Zontes ou QJ Motor. La fabrication peut avoir lieu en Chine ou ailleurs."))
+
+    return {
+        "slug": "motos-chinoises-cfmoto-voge-zontes",
+        "titre": "Motos chinoises en 2026 : CFMoto, Voge, Zontes, gamme et prix",
+        "h1": "Motos chinoises : CFMoto, Voge, Zontes, la gamme en France",
+        "desc": ("%d motos chinoises de %d marques (CFMoto, Voge, Zontes, QJ Motor…) : prix, "
+                 "puissance, poids et compatibilité permis A2." % (len(liste), len(marques))),
+        "chapo": ("CFMoto, Voge, Zontes et QJ Motor proposent des motos équipées à des prix "
+                  "souvent inférieurs à ceux des marques japonaises. Voici ce que contient notre "
+                  "base : gamme, prix relevés, puissance et permis A2."),
+        "maj": "12 octobre 2026", "maj_iso": "2026-10-12",
+        "methode": ('<p><strong>Nous n&rsquo;avons pas essayé ces motos.</strong> Les chiffres viennent '
+                    'des sites des marques et de distributeurs (sources en bas de page), relevés '
+                    'en octobre 2026. Aucune impression de conduite n&rsquo;est avancée.</p>'),
+        "sources_note": "Fiches et tarifs relevés sur les sites ci-dessous.",
+        "sections": sections, "faq": faq,
+        "sources": [("CFMoto France", "https://www.cf-moto.fr"),
+                    ("Voge France", "https://vogefrance.fr"),
+                    ("Zontes France", "https://www.zontes.fr"),
+                    ("Motoplanete", "https://www.motoplanete.com"),
+                    ("Le Repaire des Motards", "https://www.lerepairedesmotards.com")],
+    }
+
+
+_g_chinoises = guide_chinoises()
+if _g_chinoises:
+    GUIDES.append(_g_chinoises)
+
+
+def carte_chinoises():
+    if not _g_chinoises:
+        return ""
+    ls = [m for m in pub if m["ecole"] == "chinoise"]
+    pr = sorted(float(m["prix_lancement_eur"]) for m in ls if m["prix_lancement_eur"])
+    t = "%d modèles de CFMoto, Voge, Zontes et d&rsquo;autres marques" % len(ls)
+    t += (", dès %s." % num(pr[0], "€")) if pr else "."
+    return ('<a class="outil-carte" href="%s/guides/%s.html"><b>Motos chinoises</b>'
+            '<span>%s</span><em>Voir le guide</em></a>'
+            % (RACINE, _g_chinoises["slug"], t))
+
+
 def bandeau_outils():
     return """<div class="conteneur outils-duo">
 <a class="outil-carte" href="%(r)s/trouve-ma-moto.html">
@@ -2259,7 +2423,8 @@ def bandeau_outils():
   <span>Ta taille contre la hauteur de selle de %(n)d motos.</span>
   <em>Vérifier</em>
 </a>
-</div>""" % {"r": RACINE, "n": len([x for x in POOL if x["s"]])}
+%(chine)s
+</div>""" % {"r": RACINE, "n": len([x for x in POOL if x["s"]]), "chine": carte_chinoises()}
 
 
 def pages_outils():
@@ -2489,9 +2654,15 @@ def pages_hubs():
                  % (len(liste), e(marque)))
         if ecole:
             intro += " Marque de l'école %s." % e(ecole)
-        page_liste("/marques/%s.html" % s,
-                   "Motos %s : tous les modèles et fiches techniques" % marque,
-                   "Motos %s" % marque, intro, liste,
+        court = nom_court(marque)
+        if "moto" in court.lower():
+            defaut_m = ("%s : tous les modèles, prix et fiches techniques" % court,
+                        "%s : tous les modèles" % court)
+        else:
+            defaut_m = ("%s moto : tous les modèles, prix et fiches techniques" % court,
+                        "Moto %s : tous les modèles" % court)
+        titre_m, h1_m = TITRE_MARQUE.get(marque, defaut_m)
+        page_liste("/marques/%s.html" % s, titre_m, h1_m, intro, liste,
                    [("Accueil", "/"), ("Marques", "/marques/"), (marque, None)], "0.8")
 
     # ecoles
@@ -2515,8 +2686,9 @@ def pages_hubs():
         intro = ident["texte"] or ("Les modèles de l'école %s." % e(ecole))
         intro += (" %d modèles répertoriés, de %s." %
                   (len(liste), ", ".join(sorted({m["marque"] for m in liste})[:6])))
-        page_liste("/ecoles/%s.html" % s,
-                   "Motos de l'école %s : modèles et caractéristiques" % ecole,
+        titre_e = {"chinoise": "Motos chinoises : CFMoto, Voge, Zontes, QJ Motor, gamme et prix"}.get(
+            s, "Motos de l'école %s : modèles et caractéristiques" % ecole)
+        page_liste("/ecoles/%s.html" % s, titre_e,
                    "L'école %s" % ecole, intro, liste,
                    [("Accueil", "/"), ("Écoles", "/ecoles/"), (ecole.capitalize(), None)],
                    "0.85", entete=hero_ecole(ecole, liste))
@@ -2841,14 +3013,16 @@ def page_guide(g):
     src = "".join('<li><a href="%s" rel="nofollow">%s</a></li>' % (e(u), e(t))
                   for t, u in g.get("sources", []))
     sources_html = ('<h2 id="sources">Sources</h2>'
-                    '<p class="mention">Les impressions de conduite citées dans ce '
-                    'guide proviennent des essais et retours de propriétaires '
-                    'ci-dessous. Elles sont résumées, jamais recopiées.</p>'
-                    '<ol class="sources">%s</ol>' % src)
+                    '<p class="mention">%s</p>'
+                    '<ol class="sources">%s</ol>'
+                    % (g.get("sources_note",
+                             "Les impressions de conduite citées dans ce guide proviennent "
+                             "des essais et retours de propriétaires ci-dessous. Elles sont "
+                             "résumées, jamais recopiées."), src))
 
     ld = {"@context": "https://schema.org", "@type": "Article",
           "headline": g["titre"], "description": g["desc"],
-          "inLanguage": "fr-FR", "dateModified": "2026-08-25",
+          "inLanguage": "fr-FR", "dateModified": g.get("maj_iso", "2026-08-25"),
           "author": {"@type": "Organization", "name": SITE_NOM},
           "publisher": {"@type": "Organization", "name": SITE_NOM}}
     extra = ('<script type="application/ld+json">%s</script>'
@@ -2871,8 +3045,8 @@ def page_guide(g):
 %(corps)s
 %(faq)s
 %(sources)s
-</div>""" % {"maj": DATE_MAJ, "h1": e(g["h1"]), "chapo": e(g["chapo"]),
-             "methode": METHODE, "sommaire": "".join(sommaire),
+</div>""" % {"maj": g.get("maj", DATE_MAJ), "h1": e(g["h1"]), "chapo": e(g["chapo"]),
+             "methode": g.get("methode", METHODE), "sommaire": "".join(sommaire),
              "corps": "".join(corps), "faq": faq_html, "sources": sources_html}
 
     url = "/guides/%s.html" % g["slug"]

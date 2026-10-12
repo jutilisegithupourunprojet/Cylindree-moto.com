@@ -141,6 +141,12 @@ CSS_OUTILS = r"""
 .sl-vide{color:var(--pale);font-size:.9rem;margin:0 0 1rem}
 @media (max-width:640px){.sl-tete{grid-template-columns:1fr}}
 
+/* maillage des marques dans le pied de page */
+.pied-marques{display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;margin:.9rem 0 .4rem}
+.pied-marques a{font-size:.88rem;color:var(--doux);text-decoration:none;padding-block:.4rem}
+.pied-marques a:hover{color:var(--accent);text-decoration:underline}
+.liste-detail{color:var(--doux);font-size:.88rem}
+
 /* acces aux outils depuis l'accueil */
 .outils-duo{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));
   margin-top:1.1rem}
