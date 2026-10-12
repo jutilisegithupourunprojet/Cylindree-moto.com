@@ -117,6 +117,9 @@ for m in MODELES:
                             % m.get("date_saisie", DATE_SAISIE))
     if r.get("puissance_ch") and not r.get("puissance_kw"):
         r["puissance_kw"] = round(float(r["puissance_ch"]) * 0.735499, 2)
+    if r.get("puissance_kw") and not r.get("puissance_ch"):
+        # conversion d'unite (1 ch = 0,735499 kW), pas une estimation
+        r["puissance_ch"] = round(float(r["puissance_kw"]) / 0.735499, 1)
     r["poids_kg"] = r.get("poids_tous_pleins_kg") or r.get("poids_sec_kg") or ""
     r["poids_type"] = ("tous pleins faits" if r.get("poids_tous_pleins_kg")
                        else ("à sec" if r.get("poids_sec_kg") else ""))

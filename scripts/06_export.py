@@ -148,7 +148,7 @@ if _comble:
 MARQUES_FR = {
  "Honda", "Yamaha", "Suzuki", "Kawasaki", "BMW", "KTM", "Ducati",
  "Triumph Motorcycles Ltd", "Triumph Engineering", "Aprilia", "Moto Guzzi",
- "Harley-Davidson", "Royal Enfield", "MV Agusta", "Husqvarna", "Benelli",
+ "Harley-Davidson", "Royal Enfield", "MV Agusta", "Husqvarna", "Benelli", "Brixton",
  "Piaggio", "Zero Motorcycles", "Indian Motorcycles", "Peugeot", "Kymco",
  "Norton", "BSA", "Bimota", "Buell", "Cagiva", "Derbi", "Gilera", "Laverda",
  "Vincent", "Velocette", "AJS", "Ariel", "Brough Superior", "MZ", "NSU",
@@ -177,8 +177,12 @@ if _sources_sup:
         if mid in _ids:
             # une fiche saisie a la main est verifiee : elle remplace une fiche
             # automatique du meme modele, jamais l'inverse
-            if r.get("saisie_manuelle") and not _par_id[mid].get("saisie_manuelle"):
-                _par_id[mid].update(r)
+            cible = _par_id.get(mid)
+            if cible is None:
+                # fiche deja ajoutee plus haut dans cette boucle (fichier fr_pret)
+                cible = next((x for x in _ajout if x["modele_id"] == mid), None)
+            if cible is not None and r.get("saisie_manuelle") and not cible.get("saisie_manuelle"):
+                cible.update(r)
                 _remplaces += 1
             continue
         _ids.add(mid)

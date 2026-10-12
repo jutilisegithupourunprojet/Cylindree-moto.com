@@ -1,9 +1,9 @@
 ﻿marque_id,marque,pays_origine,ecole,nb_modeles,categorie_dominante,premiere_annee,derniere_annee
-honda,Honda,Japon,japonaise,300,Roadster,1949,2025
-yamaha,Yamaha,Japon,japonaise,210,Roadster,1955,2025
-suzuki,Suzuki,Japon,japonaise,134,Roadster,1960,2024
+honda,Honda,Japon,japonaise,301,Roadster,1949,2025
+yamaha,Yamaha,Japon,japonaise,211,Roadster,1955,2025
+suzuki,Suzuki,Japon,japonaise,135,Roadster,1960,2024
 bmw,BMW,Allemagne,allemande,120,Roadster,1923,2025
-kawasaki,Kawasaki,Japon,japonaise,113,Roadster,1962,2025
+kawasaki,Kawasaki,Japon,japonaise,114,Roadster,1962,2025
 ducati,Ducati,Italie,italienne,107,Sportive,1946,2022
 bimota,Bimota,Italie,italienne,54,Sportive,1972,2025
 ktm,KTM,Autriche,autrichienne,49,Trail / Aventure,1984,2021
@@ -27,8 +27,8 @@ cfmoto,CFMoto,Chine,chinoise,12,Trail / Aventure,2022,2026
 velocette,Velocette,Royaume-Uni,britannique,11,Scooter / Cyclomoteur,1925,1965
 vincent,Vincent,Royaume-Uni,britannique,10,Roadster,1935,1954
 tvs,TVS,Inde,indienne,9,Scooter / Cyclomoteur,1996,2020
+husqvarna,Husqvarna,Suède,suédoise,9,Trail / Aventure,1930,2024
 amc,AMC,Royaume-Uni,britannique,9,Roadster,1912,1958
-husqvarna,Husqvarna,Suède,suédoise,8,Trail / Aventure,1930,2024
 ajs,AJS,Royaume-Uni,britannique,8,,1931,1958
 laverda,Laverda,Italie,italienne,8,Roadster,1962,1977
 indian-motorcycles,Indian Motorcycles,États-Unis,américaine,8,Roadster,1916,2019
@@ -50,6 +50,7 @@ zero-motorcycles,Zero Motorcycles,États-Unis,américaine,2,Supermotard,2009,200
 scott,Scott,Royaume-Uni,britannique,2,,1926,1938
 benda,Benda,Chine,chinoise,2,Custom / Cruiser,2025,2026
 kove,Kove,Chine,chinoise,2,Tout-terrain,,
+brixton,Brixton,,,2,Roadster,,
 derbi,Derbi,Espagne,espagnole,2,Trail / Aventure,1990,1994
 maico,Maico,Allemagne,allemande,2,Scooter / Cyclomoteur,1950,1954
 campagna,Campagna,Canada,autre,2,,1988,2008

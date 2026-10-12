@@ -2432,11 +2432,11 @@ if _g_chinoises:
 LISTE_125 = [
     "Honda CB 125 F", "Honda MSX 125", "Honda CB125R", "Yamaha MT-125",
     "Yamaha YZF-R125", "Yamaha XSR125", "Yamaha NMAX", "Honda PCX", "KTM 125 Duke",
-    "KTM RC 125", "Aprilia RS125", "CFMoto 125NK", "Voge R125", "Benelli Leoncino 125",
+    "Aprilia RS125", "CFMoto 125NK", "Voge R125", "Benelli Leoncino 125",
     "Kawasaki Ninja 125", "Kawasaki Z125", "Suzuki GSX-S125", "Suzuki GSX-R125",
-    "Benda Napoleon 125", "Husqvarna Svartpilen 125", "Honda Super Cub C125",
+    "Benda Napoleon 125", "Husqvarna Svartpilen 125", 
     "Honda Monkey 125", "Brixton Rayburn 125", "Brixton Crossfire 125 XS",
-    "Mash Seventy Five 125",
+    
 ]
 
 
