@@ -149,6 +149,9 @@ CSS_OUTILS = r"""
 .sl-vide{color:var(--pale);font-size:.9rem;margin:0 0 1rem}
 @media (max-width:640px){.sl-tete{grid-template-columns:1fr}}
 
+.logo-ico{width:38px;height:38px;flex:none}
+@media (max-width:560px){.logo-ico{width:32px;height:32px}}
+
 /* maillage des marques dans le pied de page */
 .pied-marques{display:flex;flex-wrap:wrap;gap:.2rem 1.1rem;margin:.9rem 0 .4rem}
 .pied-marques a{font-size:.88rem;color:var(--doux);text-decoration:none;padding-block:.4rem}
