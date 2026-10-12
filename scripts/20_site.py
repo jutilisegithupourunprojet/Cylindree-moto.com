@@ -2237,7 +2237,30 @@ HORS_CATALOGUE = {
     "Honda Livo", "Kawasaki Ninja ZX-25R", "Suzuki Boulevard C109R",
     "Honda Dream Yuga", "Kawasaki Ninja 250SL", "Honda CB Twister",
     "Kawasaki Versys 1000", "Yamaha FZ S Hybrid",
+    "MV Agusta Rush 1000",  # serie limitee a 300 exemplaires, aucun tarif 2026
 }
+
+
+def code_architecture(txt):
+    """Famille de moteur pour le test : '' si l'architecture n'est pas renseignee."""
+    t = (txt or "").lower()
+    if not t:
+        return ""
+    if "v4" in t:
+        return "v4"
+    if "flat" in t or "boxer" in t:
+        return "boxer"
+    if "v-twin" in t or "v twin" in t or "v2" in t:
+        return "vtwin"
+    if "mono" in t:
+        return "mono"
+    if "twin" in t:
+        return "twin"
+    if "3 cyl" in t or "triple" in t:
+        return "3"
+    if "4 cyl" in t:
+        return "4"
+    return ""
 
 
 def pool_outils():
@@ -2265,6 +2288,9 @@ def pool_outils():
                     "s": round(float(m["hauteur_selle_mm"])) if m["hauteur_selle_mm"] else 0,
                     "pz": round(float(m["prix_lancement_eur"])) if m["prix_lancement_eur"] else 0,
                     "co": float(m["conso_l100"]) if m["conso_l100"] else 0,
+                    "e": m["ecole"], "ar": code_architecture(m["architecture"]),
+                    "cp": round(float(m["couple_nm"])) if m["couple_nm"] else 0,
+                    "cc": round(float(m["cylindree_cc"])) if m["cylindree_cc"] else 0,
                     "u": m["url"], "i": img if m["image_utilisable"] == "oui" else ""})
     return out
 
@@ -2397,6 +2423,144 @@ def guide_chinoises():
 _g_chinoises = guide_chinoises()
 if _g_chinoises:
     GUIDES.append(_g_chinoises)
+
+
+# ----------------------------------------------------------------- guide 125
+# Liste editoriale : 125 cm3 encore au catalogue France. On n'utilise pas un
+# filtre automatique sur la cylindrée : la base contient des 125 de course,
+# des modeles vendus seulement en Asie et des generations arretees.
+LISTE_125 = [
+    "Honda CB 125 F", "Honda MSX 125", "Honda CB125R", "Yamaha MT-125",
+    "Yamaha YZF-R125", "Yamaha XSR125", "Yamaha NMAX", "Honda PCX", "KTM 125 Duke",
+    "KTM RC 125", "Aprilia RS125", "CFMoto 125NK", "Voge R125", "Benelli Leoncino 125",
+    "Kawasaki Ninja 125", "Kawasaki Z125", "Suzuki GSX-S125", "Suzuki GSX-R125",
+    "Benda Napoleon 125", "Husqvarna Svartpilen 125", "Honda Super Cub C125",
+    "Honda Monkey 125", "Brixton Rayburn 125", "Brixton Crossfire 125 XS",
+    "Mash Seventy Five 125",
+]
+
+
+def guide_125():
+    par_nom = {m["nom_affichage"]: m for m in pub}
+    liste = [par_nom[n] for n in LISTE_125 if n in par_nom]
+    if len(liste) < 8:
+        return None
+
+    def f(m, k):
+        return float(m[k]) if m[k] else 0
+
+    def details(m):
+        b = []
+        if m["puissance_ch"]:
+            b.append(num(m["puissance_ch"], "ch", 0))
+        if m["poids_kg"]:
+            b.append(num(m["poids_kg"], "kg", 0))
+        if m["hauteur_selle_mm"]:
+            b.append("selle " + num(m["hauteur_selle_mm"], "mm", 0))
+        if m["conso_l100"]:
+            b.append(num(m["conso_l100"], "L/100 km", 1))
+        if m["prix_lancement_eur"]:
+            b.append(num(m["prix_lancement_eur"], "€", 0))
+        return "· " + " · ".join(b) if b else ""
+
+    def li(m, detail=None):
+        return ('<li><a href="%s">%s<span class="liste-detail"> %s</span></a></li>'
+                % (m["url"], e(m["nom_affichage"]), detail if detail is not None else details(m)))
+
+    types = [("Roadster", "Roadsters et néo-rétro"), ("Sportive", "Sportives"),
+             ("Trail / Aventure", "Trails"), ("Custom / Cruiser", "Customs"),
+             ("Scooter / Cyclomoteur", "Scooters")]
+    sections = [{"h2": "Ce que permet le permis pour une 125",
+                 "html": ('<p>Une moto de 125 cm³ ne dépasse pas <strong>11 kW</strong> (environ 15 ch). '
+                          'Deux voies :</p><ul class="tick">'
+                          '<li><strong>Permis B depuis au moins deux ans</strong>, plus une formation de '
+                          '<strong>7 heures</strong> en moto-école. Pas d&rsquo;examen.</li>'
+                          '<li><strong>Permis A1</strong>, avec une formation d&rsquo;au moins 20 heures '
+                          'et un examen. Il s&rsquo;obtient dès 16 ans.</li></ul>'
+                          '<p>Cette formation ne donne pas le permis A1 : elle est rattachée à votre '
+                          'permis B. Certaines personnes en sont dispensées, par exemple les titulaires d&rsquo;un '
+                          'permis obtenu avant le 1er mars 1980. Vérifiez votre cas auprès d&rsquo;une '
+                          'moto-école ou sur service-public.fr. Au-delà de 125 cm³ ou de 11 kW, il '
+                          'faut le <a href="/guides/meilleure-moto-permis-a2.html">permis A2</a> ou le permis A.</p>')},
+                {"h2": "Les 125 de notre base, par type",
+                 "html": "<p>%d modèles encore au catalogue en France. Les chiffres viennent des fiches "
+                         "constructeur ; un champ vide signifie que nous ne l&rsquo;avons pas trouvé.</p>"
+                         % len(liste)}]
+    for cat, titre in types:
+        ls = [m for m in liste if m["categorie"] == cat]
+        if ls:
+            sections.append({"h2": titre,
+                             "html": '<ul class="liste-liens">%s</ul>' % "".join(li(m) for m in ls)})
+
+    def classement(cle, h2, inverse=False, unite="", dec=0, intro="", n=5, sans=None):
+        ls = [m for m in liste if f(m, cle)]
+        if len(ls) < 3:
+            return
+        ls = sorted(ls, key=lambda m: -f(m, cle) if inverse else f(m, cle))[:n]
+        sections.append({"h2": h2, "html": (intro and "<p>%s</p>" % intro) + '<ul class="liste-liens">%s</ul>'
+                         % "".join(li(m, "· " + num(m[cle], unite, dec)) for m in ls)})
+
+    classement("prix_lancement_eur", "Les moins chères", unite="€",
+               intro="Tarif public France relevé en 2026. Les modèles sans prix relevé ne figurent pas dans ce classement.")
+    classement("poids_kg", "Les plus légères", unite="kg",
+               intro="Poids annoncé par le constructeur. Selon les marques, il est donné à sec ou tous pleins faits : comparez avec prudence.")
+    classement("conso_l100", "Les plus sobres", unite="L/100 km", dec=1,
+               intro="Consommation annoncée par le constructeur, sans mesure indépendante.")
+    classement("hauteur_selle_mm", "Les plus basses de selle", unite="mm",
+               intro="Hauteur de selle annoncée. Pour savoir si vous touchez le sol, utilisez "
+                     "<a href=\"/touche-le-sol.html\">l&rsquo;outil taille et selle</a>.")
+
+    sections.append({"h2": "Choisir sa 125",
+                     "html": ('<p>Nous n&rsquo;avons pas essayé ces motos : seules les données des fiches '
+                              'sont comparées. Pour trier selon votre taille, votre budget et votre '
+                              'permis, faites le <a href="/trouve-ma-moto.html">test Trouve ma moto</a>. '
+                              'Pour comparer deux modèles, ouvrez un <a href="/duels/">duel moto</a> '
+                              'ou le <a href="/comparateur.html">comparateur</a>.</p>')})
+
+    faq = [("Peut-on conduire une 125 avec le permis B ?",
+            "Oui, avec un permis B de plus de deux ans et une formation de 7 heures en moto-école, "
+            "pour une moto de 125 cm³ au plus et de 11 kW au plus.")]
+    pr = sorted([m for m in liste if f(m, "prix_lancement_eur")], key=lambda m: f(m, "prix_lancement_eur"))
+    if pr:
+        faq.append(("Quelle est la 125 la moins chère de notre base ?",
+                    "%s, à %s (tarif public France relevé en 2026)."
+                    % (pr[0]["nom_affichage"], num(f(pr[0], "prix_lancement_eur"), "€"))))
+    cs = sorted([m for m in liste if f(m, "conso_l100")], key=lambda m: f(m, "conso_l100"))
+    if cs:
+        faq.append(("Quelle est la 125 la plus sobre de notre base ?",
+                    "%s, avec %s annoncés par le constructeur."
+                    % (cs[0]["nom_affichage"], num(f(cs[0], "conso_l100"), "L/100 km", 1))))
+    faq.append(("Une 125 est-elle compatible avec le permis A2 ?",
+                "Oui : une 125 est bien sous la limite de 35 kW du permis A2. La question ne se pose "
+                "que si vous visez plus de 125 cm³."))
+
+    return {
+        "slug": "moto-125-quelle-choisir",
+        "titre": "Moto 125 : quelle choisir en 2026 ? Gamme, prix et permis",
+        "h1": "Quelle moto 125 choisir ?",
+        "desc": ("%d motos 125 cm³ au catalogue France : prix, poids, hauteur de selle, "
+                 "consommation, et ce que permet le permis B ou A1." % len(liste)),
+        "chapo": ("Une 125 se conduit avec le permis B et sept heures de formation. Voici les "
+                  "modèles de notre base, avec leur prix, leur poids, leur hauteur de selle et "
+                  "leur consommation quand nous les avons."),
+        "maj": "12 octobre 2026", "maj_iso": "2026-10-12",
+        "methode": ('<p><strong>Nous n&rsquo;avons pas essayé ces motos.</strong> Les chiffres viennent des '
+                    'fiches constructeur et de sites spécialisés, relevés en octobre 2026. Aucune '
+                    'impression de conduite n&rsquo;est avancée.</p>'),
+        "sources_note": "Règles du permis : sites ci-dessous. Fiches et tarifs : sites des constructeurs.",
+        "sections": sections, "faq": faq,
+        "sources": [("Permis A1 pour la conduite d'une moto légère (125 cm3), justice.fr",
+                     "https://www.justice.fr/fiche/permis-moto-permis-a1-permis-125-moto-legere"),
+                    ("Conduite 125 avec le permis B, Le Repaire des Motards",
+                     "https://www.lerepairedesmotards.com/dossiers/conduite-125-permis-b-equivalence.php"),
+                    ("Motoplanete", "https://www.motoplanete.com"),
+                    ("Le Repaire des Motards", "https://www.lerepairedesmotards.com")],
+    }
+
+
+_g_125 = guide_125()
+if _g_125:
+    GUIDES.append(_g_125)
 
 
 def carte_chinoises():

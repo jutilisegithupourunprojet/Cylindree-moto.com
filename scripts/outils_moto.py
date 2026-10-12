@@ -95,6 +95,13 @@ CSS_OUTILS = r"""
   .r-corps{padding:0 1rem 1rem}
 }
 
+.tm-affiner h2{font-family:var(--police-titre);font-size:clamp(1.5rem,4vw,2rem);margin:0 0 .3rem}
+.tm-aff-groupe{margin:0 0 1.4rem}
+.tm-aff-groupe legend{font-weight:650;font-size:1.05rem;margin-bottom:.5rem;padding:0}
+.tm-opts.compact{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.tm-opts.compact .q-opt span{min-height:3rem;padding:.6rem .85rem}
+.tm-pref{margin:.1rem 0 .6rem;font-size:.9rem;color:var(--doux)}
+
 /* hauteur de selle */
 .sl{background:var(--carte);border:1px solid var(--trait);border-radius:10px;box-shadow:var(--ombre);
   padding:clamp(1rem,3vw,1.8rem);margin-top:1.4rem}
@@ -227,38 +234,99 @@ JS_TROUVE = r"""
     return w;
   }
 
-  function classer(strictSelle,budgetMax){
+  /* percentiles poids/puissance et couple/poids, calcules au chargement */
+  var PCT={};
+  function pctDe(vals){
+    var s=vals.slice().sort(function(a,b){return a-b;});
+    return function(v){
+      if(s.length<2) return .5;
+      var i=0;while(i<s.length&&s[i]<v) i++;
+      return Math.min(1,i/(s.length-1));
+    };
+  }
+  function preparer(){
+    var pp=[],pc=[];
+    D.forEach(function(m){
+      if(m.kg){m.pw=m.ch/m.kg;pp.push(m.pw);}
+      if(m.kg&&m.cp){m.pc=m.cp/m.kg;pc.push(m.pc);}
+    });
+    PCT.pw=pctDe(pp);PCT.pc=pctDe(pc);
+  }
+  var ECOLES_OPT=['japonaise','italienne','allemande','britannique','chinoise'];
+  var LIB_AR={mono:'monocylindre',twin:'bicylindre',vtwin:'V-twin',boxer:'flat-twin','3':'3 cylindres','4':'4 cylindres',v4:'V4'};
+  function dansOrigine(m){
+    if(!rep.orig) return true;
+    if(rep.orig==='autre') return ECOLES_OPT.indexOf(m.e)<0;
+    return m.e===rep.orig;
+  }
+  function ajouter(raisons,txt,neutre){
+    for(var i=0;i<raisons.length;i++) if(raisons[i][0]===txt) return;
+    raisons.push([txt,neutre?1:0]);
+  }
+
+  function classer(o){
     var out=[];
     D.forEach(function(m){
       if(rep.permis==='a2'&&m.a2!=='oui') return;
       var w=poidsUsage(m);
       if(w===0) return;
+      if(o.orig&&!dansOrigine(m)) return;
+      if(o.auto&&rep.auto==='souvent'&&(m.ch<30||(m.cc&&m.cc<300))) return;
+      if(o.leger&&rep.leger==='oui'&&m.kg&&m.kg>200) return;
       var ec=ecart(m),sc=45*w,raisons=[];
       if(ec!==null){
         var z=zone(ec);
-        if(strictSelle&&z>0) return;
+        if(o.sel&&z>0) return;
         if(z>1) return;
         sc+=z===0?15:10;
         raisons.push([z===0?'Pieds à plat pour toi':'Presque à plat pour toi',0]);
       }
-      if(budgetMax&&m.pz){
-        if(m.pz>budgetMax) return;
+      if(o.bud&&m.pz){
+        if(m.pz>o.bud) return;
         sc+=15;
         raisons.push(['Dans ton budget',0]);
-      }else if(budgetMax&&!m.pz){
+      }else if(o.bud&&!m.pz){
         raisons.push(['Prix non relevé',1]);
       }
       if(rep.permis==='a2') sc+=20*Math.min(m.ch,47.6)/47.6;
       if(rep.exp==='deb'){
         if(m.kg){sc+=m.kg<=170?12:m.kg<=200?8:m.kg<=230?3:0;
-          if(m.kg<=200) raisons.push(['Légère : '+fmt(m.kg)+' kg',0]);}
+          if(m.kg<=200) ajouter(raisons,'Légère : '+fmt(m.kg)+' kg');}
         if(rep.permis==='a'){sc+=m.ch<=75?8:m.ch>120?-12:0;}
       }else if(rep.exp==='conf'){
         sc+=Math.min(m.ch,150)/150*8;
+      }else if(rep.exp==='int'&&rep.permis==='a'){
+        sc+=Math.min(m.ch,90)/90*8;
+      }
+      /* questions "Affiner" */
+      if(rep.orig&&dansOrigine(m)) ajouter(raisons,rep.orig==='autre'?'Autre origine : '+(m.e||'')
+        :'École '+rep.orig);
+      if(rep.auto==='parfois'&&m.ch<20) sc-=15;
+      if((rep.auto==='souvent'||rep.auto==='parfois')&&m.ch>=30){sc+=6;ajouter(raisons,'À l\u2019aise sur autoroute');}
+      if(rep.leger==='oui'&&m.kg){
+        sc+=m.kg<=160?15:m.kg<=185?11:m.kg<=210?6:0;
+        if(m.kg<=185) ajouter(raisons,'Légère : '+fmt(m.kg)+' kg');
+      }
+      if(rep.car){
+        var pw=m.pw!==undefined?PCT.pw(m.pw):null,pcc=m.pc!==undefined?PCT.pc(m.pc):null,ar=m.ar,
+            lib=ar&&LIB_AR[ar]?' ('+LIB_AR[ar]+')':'';
+        if(rep.car==='vif'){
+          if(pw!==null) sc+=25*pw;
+          if(ar==='3'||ar==='4'||ar==='v4') sc+=6;
+          if((pw!==null&&pw>=.6)||ar==='3'||ar==='4'||ar==='v4') ajouter(raisons,'Moteur vif'+lib);
+        }else if(rep.car==='docile'){
+          if(pw!==null) sc+=25*(1-pw);
+          if(ar==='mono'||ar==='twin'||ar==='boxer') sc+=6;
+          if((pw!==null&&pw<=.45)||ar==='mono'||ar==='twin') ajouter(raisons,'Moteur docile'+lib);
+        }else if(rep.car==='couple'){
+          if(pcc!==null) sc+=25*pcc;
+          if(ar==='vtwin'||ar==='boxer') sc+=6;
+          if((pcc!==null&&pcc>=.6)||ar==='vtwin'||ar==='boxer') ajouter(raisons,'Du couple'+(m.cp?' : '+m.cp+' Nm':''));
+        }
       }
       sc+=((m.pz?1:0)+(m.s?1:0)+(m.kg?1:0)+(m.co?1:0))*1.5;
       if(w===1) raisons.unshift(['Pensée pour '+LIB_USAGE[rep.usage],0]);
-      if(m.a2==='oui'&&rep.permis==='a2') raisons.push(['Compatible A2',0]);
+      if(m.a2==='oui'&&rep.permis==='a2') ajouter(raisons,'Compatible A2');
       out.push({m:m,sc:sc,r:raisons,ec:ec});
     });
     out.sort(function(a,b){return b.sc-a.sc||a.m.n.localeCompare(b.m.n);});
@@ -267,15 +335,22 @@ JS_TROUVE = r"""
 
   function calculer(){
     var notes=[],budget=parseInt(rep.budget,10)||0,strict=!!(rep.taille&&rep.plat);
-    var liste=classer(strict,budget);
-    if(liste.length<3&&strict){
-      liste=classer(false,budget);
-      notes.push('Peu de motos te laissent les pieds à plat : on a élargi aux motos où tu poses presque les pieds à plat.');
+    var niveaux=[
+      {sel:strict,orig:true,auto:true,leger:true,bud:budget},
+      {sel:strict,orig:true,auto:false,leger:false,bud:budget},
+      {sel:false,orig:true,auto:false,leger:false,bud:budget},
+      {sel:false,orig:false,auto:false,leger:false,bud:budget},
+      {sel:false,orig:false,auto:false,leger:false,bud:0}
+    ];
+    var liste=[],n=0;
+    for(var i=0;i<niveaux.length;i++){
+      liste=classer(niveaux[i]);n=i;
+      if(liste.length>=3) break;
     }
-    if(liste.length<3&&budget){
-      liste=classer(false,0);
-      notes.push('Peu de motos entrent dans ce budget parmi nos fiches : on a levé la limite de prix.');
-    }
+    if(n>=1&&(rep.auto==='souvent'||rep.leger==='oui')) notes.push('Peu de motos répondent à tous tes critères (autoroute, légèreté) : ils comptent dans le classement mais n\u2019écartent plus de moto.');
+    if(n>=2&&strict) notes.push('Peu de motos te laissent les pieds à plat : on a élargi aux motos où tu poses presque les pieds à plat.');
+    if(n>=3&&rep.orig) notes.push('Peu de motos de cette origine correspondent : on a élargi à toutes les origines.');
+    if(n>=4&&budget) notes.push('Peu de motos entrent dans ce budget parmi nos fiches : on a levé la limite de prix.');
     return {liste:liste,notes:notes};
   }
 
@@ -301,9 +376,64 @@ JS_TROUVE = r"""
       +(pq?'<ul class="r-pourquoi">'+pq+'</ul>':'')+'</div></li>';
   }
 
+  var AFFINER=[
+    {id:'orig',q:'Une préférence d\u2019origine ?',
+     opts:[['','Peu importe'],['japonaise','Japonaise','Honda, Yamaha, Kawasaki, Suzuki'],
+           ['italienne','Italienne','Ducati, Aprilia, Moto Guzzi…'],['allemande','Allemande','BMW'],
+           ['britannique','Britannique','Triumph'],['chinoise','Chinoise','CFMoto, Voge, Zontes…'],
+           ['autre','Autre','KTM, Royal Enfield, Harley-Davidson…']]},
+    {id:'car',q:'Quel caractère moteur ?',
+     opts:[['','Peu importe'],['docile','Docile et souple','Facile à vivre, sans à-coups'],
+           ['vif','Vif et sportif','Monte vite dans les tours'],
+           ['couple','Plein de couple','De la poussée dès les bas régimes']]},
+    {id:'auto',q:'Tu prends l\u2019autoroute ?',
+     opts:[['','Peu importe'],['jamais','Jamais'],['parfois','De temps en temps'],['souvent','Souvent','Il faut de la puissance en réserve']]},
+    {id:'leger',q:'Une moto légère à manœuvrer ?',
+     opts:[['','Peu importe'],['oui','Oui, c\u2019est essentiel','Moins de 200 kg quand le poids est connu']]}
+  ];
+  var LIB_PREF={
+    orig:{japonaise:'Origine japonaise',italienne:'Origine italienne',allemande:'Origine allemande',
+          britannique:'Origine britannique',chinoise:'Origine chinoise',autre:'Autre origine'},
+    car:{docile:'Moteur docile',vif:'Moteur vif',couple:'Du couple'},
+    auto:{jamais:'Pas d\u2019autoroute',parfois:'Autoroute parfois',souvent:'Autoroute souvent'},
+    leger:{oui:'Légère'}
+  };
+  function prefsActives(){
+    var a=[];
+    AFFINER.forEach(function(q){if(rep[q.id]&&LIB_PREF[q.id][rep[q.id]]) a.push(LIB_PREF[q.id][rep[q.id]]);});
+    return a;
+  }
+
+  function rendreAffiner(){
+    var h='<div class="tm-affiner"><h2 id="tm-leg" tabindex="-1">Affiner mes résultats</h2>'
+      +'<p class="tm-aide">Quatre questions facultatives. « Peu importe » ne change rien au classement.</p>';
+    AFFINER.forEach(function(q){
+      h+='<fieldset class="tm-aff-groupe"><legend>'+esc(q.q)+'</legend><div class="tm-opts compact" role="radiogroup">';
+      q.opts.forEach(function(o){
+        var on=(rep[q.id]||'')===o[0];
+        h+='<label class="q-opt"><input type="radio" name="aff-'+q.id+'" value="'+o[0]+'"'+(on?' checked':'')
+          +'><span><b>'+esc(o[1])+'</b>'+(o[2]?'<small>'+esc(o[2])+'</small>':'')+'</span></label>';
+      });
+      h+='</div></fieldset>';
+    });
+    h+='<div class="tm-nav"><button type="button" class="q-btn" id="aff-ok">Voir mes motos</button>'
+      +'<button type="button" class="q-btn second" id="aff-annuler">Annuler</button></div></div>';
+    conteneur.innerHTML=h;
+    document.getElementById('aff-ok').addEventListener('click',function(){
+      AFFINER.forEach(function(q){
+        var c=conteneur.querySelector('input[name="aff-'+q.id+'"]:checked');
+        rep[q.id]=c?c.value:'';
+      });
+      rendreResultats();
+    });
+    document.getElementById('aff-annuler').addEventListener('click',rendreResultats);
+    document.getElementById('tm-leg').focus({preventScroll:false});
+  }
+
   function rendreResultats(){
-    var r=calculer(),l=r.liste,h='';
+    var r=calculer(),l=r.liste,h='',pa=prefsActives();
     h+='<div class="tm-res"><h2>'+(l.length?'Tes '+Math.min(3,l.length)+' motos':'Aucune moto trouvée')+'</h2>';
+    if(pa.length) h+='<p class="tm-pref">Préférences : '+pa.map(esc).join(' · ')+'</p>';
     if(r.notes.length) h+='<ul class="tm-notes">'+r.notes.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
     if(!l.length){
       h+='<p class="r-vide">Aucune fiche ne correspond à ces réponses. Essaie un autre usage ou un budget plus large, '
@@ -316,7 +446,9 @@ JS_TROUVE = r"""
             +(x.m.pz?' · '+fmt(x.m.pz)+' €':'')+'</span></a></li>';}).join('')+'</ul></div>';
       }
     }
-    h+='<div class="tm-nav"><button type="button" class="q-btn" id="tm-refaire">Refaire le test</button>'
+    h+='<div class="tm-nav"><button type="button" class="q-btn" id="tm-affiner">'
+      +(pa.length?'Modifier mes préférences':'Affiner mes résultats')+'</button>'
+      +'<button type="button" class="q-btn second" id="tm-refaire">Refaire le test</button>'
       +'<a class="q-btn second" href="/touche-le-sol.html">Vérifier la hauteur de selle</a>'
       +'<a class="q-btn second" href="/comparateur.html">Ouvrir le comparateur</a></div>'
       +'<p class="outil-note">Classement calculé sur '+D.length+' motos encore produites, d’après les '
@@ -325,14 +457,15 @@ JS_TROUVE = r"""
     document.getElementById('tm-refaire').addEventListener('click',function(){
       rep={};idx=0;history.replaceState(null,'',location.pathname);rendreEtape(true);
     });
+    document.getElementById('tm-affiner').addEventListener('click',rendreAffiner);
     var t=conteneur.querySelector('h2');t.setAttribute('tabindex','-1');t.focus({preventScroll:false});
     sauver();
-    if(window.gtag) gtag('event','quiz_resultat',{usage:rep.usage,permis:rep.permis});
+    if(window.gtag) gtag('event','quiz_resultat',{usage:rep.usage,permis:rep.permis,affine:pa.length});
   }
 
   function sauver(){
     var p=new URLSearchParams();
-    ['permis','usage','taille','entre','budget','exp'].forEach(function(k){if(rep[k]) p.set(k,rep[k]);});
+    ['permis','usage','taille','entre','budget','exp','orig','car','auto','leger'].forEach(function(k){if(rep[k]) p.set(k,rep[k]);});
     if(rep.plat) p.set('plat','1');
     history.replaceState(null,'','?'+p.toString());
   }
@@ -402,12 +535,16 @@ JS_TROUVE = r"""
     if(!p.get('permis')||!p.get('usage')||!p.get('exp')||!p.get('budget')) return false;
     rep={permis:p.get('permis'),usage:p.get('usage'),budget:p.get('budget'),exp:p.get('exp'),
          taille:parseInt(p.get('taille'),10)||'',entre:parseInt(p.get('entre'),10)||'',plat:p.get('plat')?1:''};
+    AFFINER.forEach(function(q){
+      var v=p.get(q.id)||'';
+      rep[q.id]=q.opts.some(function(o){return o[0]===v;})?v:'';
+    });
     return !!CAT_USAGE[rep.usage];
   }
 
   conteneur.innerHTML='<p class="tm-aide">Chargement des fiches…</p>';
   fetch(SRC).then(function(r){return r.json();}).then(function(d){
-    D=d;
+    D=d;preparer();
     if(depuisUrl()) rendreResultats(); else rendreEtape(false);
   }).catch(function(){
     conteneur.innerHTML='<p class="r-vide">Impossible de charger les fiches. Réessaie, ou ouvre le '
