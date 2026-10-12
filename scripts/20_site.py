@@ -32,7 +32,7 @@ SITE_NOM = "Cylindrée"
 SITE_URL = "https://www.cylindree-moto.com"       # cylindree-moto.com redirige (308) vers www, jamais l'inverse
 GA_ID = "G-MNFQ3GT2YM"
 ADSENSE_CLIENT = "ca-pub-6448509444467784"
-SITE_DESC = ("Fiches techniques, comparateur et duels de motos. "
+SITE_DESC = ("Fiches techniques, comparateur et duel moto. "
              "Caractéristiques vérifiées, compatibilité permis A2, "
              "écoles japonaise, italienne et américaine.")
 
@@ -158,7 +158,7 @@ def page(titre, desc, corps, canon, extra_head="", fil=None, script=""):
       <a href="%(racine)s/comparateur.html">Comparateur</a>
       <a href="%(racine)s/trouve-ma-moto.html">Trouve ma moto</a>
       <a href="%(racine)s/ecoles/">Écoles</a>
-      <a href="%(racine)s/duels/">Duels</a>
+      <a href="%(racine)s/duels/">Duel moto</a>
     </nav>
   </div>
 </header>
@@ -1602,8 +1602,8 @@ def page_liste(chemin, titre, h1, intro, liste, fil, prio="0.7", extra_corps="",
 def page_duel(d):
     a, b = par_id[d["modele_a_id"]], par_id[d["modele_b_id"]]
     na, nb = a["nom_affichage"], b["nom_affichage"]
-    titre = "%s ou %s : lequel choisir ?" % (na, nb)
-    desc = ("Comparatif %s contre %s : cylindrée, puissance, couple, poids et "
+    titre = "Duel moto : %s contre %s, lequel choisir ?" % (na, nb)
+    desc = ("Duel moto %s contre %s : cylindrée, puissance, couple, poids et "
             "hauteur de selle%s." % (na, nb,
             ", toutes deux compatibles permis A2" if d["a2"] == "oui" else ""))
 
@@ -1696,7 +1696,7 @@ nos sources, pas qu'elle vaut zéro.</p></div>
              "a2": (", toutes deux compatibles permis A2" if d["a2"] == "oui" else ""),
              "duo": duo, "tab": tab, "synth": synth, "bloc": bloc}
 
-    fil = [("Accueil", "/"), ("Duels", "/duels/"), ("%s / %s" % (na, nb), None)]
+    fil = [("Accueil", "/"), ("Duel moto", "/duels/"), ("%s / %s" % (na, nb), None)]
     ecrire(d["url"].lstrip("/"), page(titre, desc, corps, SITE_URL + d["url"], "", fil))
     enregistrer(d["url"], "0.7")
 
@@ -2400,7 +2400,7 @@ def page_accueil():
 %(fond)s
 <div class="conteneur hero-corps">
 <p class="hero-eyebrow">Annuaire moto</p>
-<h1>Fiches techniques et duels de motos</h1>
+<h1>Fiches techniques, comparateur et duel moto</h1>
 <p class="hero-chapo">%(nf)s modèles, %(m)d marques. Filtrez par cylindrée ou
 permis A2, puis comparez deux motos côte à côte.</p>
 <div class="chiffres">
@@ -2460,7 +2460,7 @@ limites pour chaque modèle.</p>
              "ecoles": ecoles_html, "cats": cats_html, "bloca2": grille(a2),
              "fond": fond_accueil, "credit": credit_accueil, "racine": RACINE}
 
-    ecrire("index.html", page("%s, fiches techniques, comparateur et duels moto"
+    ecrire("index.html", page("%s, fiches techniques, comparateur et duel moto"
                               % SITE_NOM, SITE_DESC, corps, SITE_URL + "/",
                               script=JS_ACCUEIL))
     enregistrer("/", "1.0")
@@ -2558,7 +2558,7 @@ def pages_hubs():
     defaut = "".join(carte_duel(d) for d in duels_ok[:24])
 
     corps = """<div class="conteneur section">
-<h1>Duels</h1>
+<h1>Duel moto</h1>
 <p class="chapo">%(n)d duels entre deux motos de même catégorie et de cylindrée
 voisine. Cherchez votre moto pour voir ses rivales.</p>
 %(sel)s
@@ -2572,11 +2572,11 @@ duels pour éviter les comparaisons redondantes.</p></div>
 </div>""" % {"n": len(duels_ok), "sel": selecteur, "def": defaut}
 
     ecrire("duels/index.html",
-           page("Duels moto : comparer deux modèles face à face",
+           page("Duel moto : comparer deux modèles face à face",
                 "Choisissez votre moto et découvrez à quelles machines elle se "
                 "compare : puissance, poids, hauteur de selle, permis A2.",
                 corps, SITE_URL + "/duels/", "",
-                [("Accueil", "/"), ("Duels", None)],
+                [("Accueil", "/"), ("Duel moto", None)],
                 '<script src="/assets/duels.js" defer></script>'))
     enregistrer("/duels/", "0.9")
 
